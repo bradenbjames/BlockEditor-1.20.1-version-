@@ -174,28 +174,21 @@ public class DynamicBlock extends Block implements EntityBlock {
         super.onPlace(state, level, pos, oldState, isMoving);
         LOGGER.info("DynamicBlock.onPlace at {} oldState={} isMoving={} isClient={}", pos, oldState, isMoving, level.isClientSide);
 
-        // Schedule a delayed check to see if block still exists
-        if (!level.isClientSide) {
-            level.scheduleTick(pos, this, 5);
+        // For UserBlocks, check for color data when first placed
+        if (!level.isClientSide && this instanceof com.blockeditor.mod.content.UserBlock) {
+            if (level.getBlockEntity(pos) instanceof DynamicBlockEntity blockEntity) {
+                // Only apply if no color has been set yet (default white)
+                if (blockEntity.getColor() == 0xFFFFFF) {
+                    blockEntity.checkAndApplyUserBlockData();
+                }
+            }
         }
     }
 
     @Override
     public void tick(BlockState state, net.minecraft.server.level.ServerLevel level, BlockPos pos, net.minecraft.util.RandomSource random) {
-        // Delayed check to verify block still exists
-        BlockState currentState = level.getBlockState(pos);
-        LOGGER.info("DynamicBlock.tick delayed check at {}: currentBlock={}", pos, currentState.getBlock());
-        if (currentState.getBlock() != this) {
-            LOGGER.error("BLOCK WAS REPLACED! Now has: {}", currentState);
-        } else {
-            LOGGER.info("Block still exists correctly at {}", pos);
-            
-            // Check for UserBlock auto-application during tick
-            if (this instanceof com.blockeditor.mod.content.UserBlock && level.getBlockEntity(pos) instanceof DynamicBlockEntity blockEntity) {
-                // Force the auto-application check during tick
-                blockEntity.getColor(); // This will trigger checkAndApplyUserBlockData()
-            }
-        }
+        // Tick method disabled to prevent loading lag
+        // Use manual /be refresh command instead for color updates
     }
 
     @Override

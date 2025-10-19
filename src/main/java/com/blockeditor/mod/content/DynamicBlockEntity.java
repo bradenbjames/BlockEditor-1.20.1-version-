@@ -54,7 +54,11 @@ public class DynamicBlockEntity extends BlockEntity {
     }
 
     public int getColor() {
-        checkAndApplyUserBlockData();
+        // For UserBlocks, check if we need to apply color data (only if still default white)
+        if (color == 0xFFFFFF && getBlockState().getBlock() instanceof com.blockeditor.mod.content.UserBlock) {
+            checkAndApplyUserBlockData();
+        }
+        
         // Add client-side debug logging
         if (getLevel() != null && getLevel().isClientSide) {
             LOGGER.info("CLIENT: getColor() called for block at {}, returning color: {}", getBlockPos(), String.format("%06X", color));
@@ -95,8 +99,10 @@ public class DynamicBlockEntity extends BlockEntity {
                 side, getBlockPos(), String.format("%06X", color), mimicBlock);
         }
         
-        // Check and apply UserBlock data after loading
-        checkAndApplyUserBlockData();
+        // Only check for UserBlock data if we don't already have a color set
+        if (color == 0xFFFFFF) { // Default white color means it hasn't been set yet
+            checkAndApplyUserBlockData();
+        }
     }
 
     @Override
@@ -158,7 +164,7 @@ public class DynamicBlockEntity extends BlockEntity {
     
     private boolean hasCheckedUserBlockData = false;
     
-    private void checkAndApplyUserBlockData() {
+    public void checkAndApplyUserBlockData() {
         if (getLevel() == null || getLevel().isClientSide) {
             return;
         }
@@ -169,16 +175,11 @@ public class DynamicBlockEntity extends BlockEntity {
         }
         
         hasCheckedUserBlockData = true;
-        // Reduced logging during world loading
-        if (getLevel() instanceof net.minecraft.server.level.ServerLevel serverLevel && serverLevel.players().size() > 0) {
-            LOGGER.info("DynamicBlockEntity: Checking for UserBlock data at {}", getBlockPos());
-        }
+        // Minimal logging to prevent spam during world loading
         
         if (getBlockState().getBlock() instanceof com.blockeditor.mod.content.UserBlock userBlock) {
-            LOGGER.info("DynamicBlockEntity: Found UserBlock, attempting auto-application");
+            // Minimal logging for UserBlock detection
             autoApplyUserBlockData(userBlock);
-        } else {
-            LOGGER.info("DynamicBlockEntity: Not a UserBlock, block type: {}", getBlockState().getBlock().getClass().getSimpleName());
         }
     }
     
@@ -207,31 +208,17 @@ public class DynamicBlockEntity extends BlockEntity {
                     registry.getUserBlockData(identifier);
                 
                 if (data != null) {
-                    // Set values directly to avoid double client updates
+                    // Set values directly
                     this.color = data.color();
                     this.mimicBlock = data.mimicBlock();
                     setChanged(); // Mark as changed
                     
-                    // Force multiple types of client updates with delay for WorldEdit
+                    // Simple client update
                     if (getLevel() != null && !getLevel().isClientSide) {
-                        // Immediate update
-                        sendClientUpdatePackets();
-                        
-                        // Also schedule a delayed update to ensure WorldEdit blocks get refreshed
-                        if (getLevel() instanceof net.minecraft.server.level.ServerLevel server) {
-                            server.getServer().execute(() -> {
-                                // Small delay to ensure WorldEdit has finished placing
-                                try {
-                                    Thread.sleep(50); // 50ms delay
-                                } catch (InterruptedException e) {
-                                    Thread.currentThread().interrupt();
-                                }
-                                sendClientUpdatePackets();
-                            });
-                        }
+                        getLevel().sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
                     }
                     
-                    LOGGER.info("DynamicBlockEntity: Auto-applied registry data for {}: color={}, mimic={} with delayed client refresh", 
+                    LOGGER.info("DynamicBlockEntity: Auto-applied registry data for {}: color={}, mimic={}", 
                         identifier, String.format("%06X", data.color()), data.mimicBlock());
                 } else {
                     LOGGER.warn("DynamicBlockEntity: No registry data found for identifier: {} - You may need to create and register a custom block first", identifier);
@@ -240,33 +227,5 @@ public class DynamicBlockEntity extends BlockEntity {
                 LOGGER.warn("DynamicBlockEntity: Block name doesn't start with 'user_': {}", blockName);
             }
         }
-    }
-    
-    /**
-     * Sends comprehensive client update packets to ensure block entity changes are visible
-     */
-    private void sendClientUpdatePackets() {
-        if (getLevel() == null || getLevel().isClientSide) {
-            return;
-        }
-        
-        if (getLevel() instanceof net.minecraft.server.level.ServerLevel server) {
-            // Force block entity update packet to all tracking players
-            var packet = getUpdatePacket();
-            if (packet != null) {
-                server.getChunkSource().chunkMap.getPlayers(
-                    new net.minecraft.world.level.ChunkPos(getBlockPos()), false)
-                    .forEach(player -> player.connection.send(packet));
-            }
-            
-            // Force chunk update
-            server.getChunkSource().blockChanged(getBlockPos());
-        }
-        
-        // Force block state update (this triggers client-side re-rendering)
-        getLevel().sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
-        
-        // Force neighbor updates to trigger client refresh
-        getLevel().updateNeighborsAt(getBlockPos(), getBlockState().getBlock());
     }
 }

@@ -73,7 +73,7 @@ public class ModCommands {
                 int centerZ = (int) pos.z;
                 
                 int refreshed = 0;
-                int radius = 32; // 32 block radius
+                int radius = 16; // Reduced to 16 block radius to prevent lag
                 
                 // Scan area around command source
                 for (int x = centerX - radius; x <= centerX + radius; x++) {
@@ -84,23 +84,8 @@ public class ModCommands {
                             
                             if (serverLevel.getBlockEntity(blockPos) instanceof com.blockeditor.mod.content.DynamicBlockEntity blockEntity) {
                                 if (blockEntity.getBlockState().getBlock() instanceof com.blockeditor.mod.content.UserBlock) {
-                                    // Force color refresh
+                                    // Simple refresh - just trigger the auto-apply
                                     blockEntity.forceUserBlockDataCheck();
-                                    
-                                    // Force aggressive client update
-                                    serverLevel.sendBlockUpdated(blockPos, blockEntity.getBlockState(), 
-                                        blockEntity.getBlockState(), 3);
-                                    
-                                    // Send block entity update packet
-                                    var packet = blockEntity.getUpdatePacket();
-                                    if (packet != null) {
-                                        for (var player : serverLevel.players()) {
-                                            if (player.distanceToSqr(x, y, z) < 64 * 64) {
-                                                player.connection.send(packet);
-                                            }
-                                        }
-                                    }
-                                    
                                     refreshed++;
                                 }
                             }
@@ -109,7 +94,7 @@ public class ModCommands {
                 }
                 
                 final int finalRefreshed = refreshed;
-                source.sendSuccess(() -> Component.literal("§aRefreshed " + finalRefreshed + " user blocks in 32-block radius"), true);
+                source.sendSuccess(() -> Component.literal("§aRefreshed " + finalRefreshed + " user blocks in 16-block radius"), true);
                 LOGGER.info("User {} refreshed {} user blocks", source.getTextName(), refreshed);
                 return refreshed;
             } else {
