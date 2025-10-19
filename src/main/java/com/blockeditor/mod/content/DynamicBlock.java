@@ -55,18 +55,9 @@ public class DynamicBlock extends Block implements EntityBlock {
     @Override
     public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
         super.setPlacedBy(level, pos, state, placer, stack);
-        LOGGER.info("=== DynamicBlock.setPlacedBy ===");
-        LOGGER.info("Position: {} | Is Client: {}", pos, level.isClientSide);
-        BlockState worldState = level.getBlockState(pos);
-        LOGGER.info("World has block: {} (same as placed: {})", worldState.getBlock(), worldState.getBlock() == state.getBlock());
-        if (!level.isClientSide) {
-            LOGGER.info("[SERVER] Block placed at {}. Block: {}", pos, state.getBlock());
-        } else {
-            LOGGER.info("[CLIENT] Block placed at {}. Block: {}", pos, state.getBlock());
-        }
+        
         // Transfer NBT data from item to block entity
         if (level.getBlockEntity(pos) instanceof DynamicBlockEntity blockEntity) {
-            LOGGER.info("Found DynamicBlockEntity at {}", pos);
             CompoundTag tag = stack.getTag();
             if (tag != null) {
                 // Read color from NBT
@@ -75,7 +66,6 @@ public class DynamicBlock extends Block implements EntityBlock {
                     try {
                         int color = Integer.parseInt(hexColor, 16);
                         blockEntity.setColor(color);
-                        LOGGER.info("Set block color to: #{} (int: {})", hexColor, color);
                     } catch (NumberFormatException e) {
                         LOGGER.error("Failed to parse color: {}", hexColor);
                     }
@@ -85,16 +75,9 @@ public class DynamicBlock extends Block implements EntityBlock {
                 if (tag.contains("OriginalBlock")) {
                     String originalBlock = tag.getString("OriginalBlock");
                     blockEntity.setMimicBlock(originalBlock);
-                    LOGGER.info("Set mimic block to: {}", originalBlock);
                 }
-            } else {
-                LOGGER.warn("No NBT tag found on placed item");
             }
-        } else {
-            LOGGER.error("ERROR: BlockEntity not found at {}!", pos);
-            LOGGER.error("BlockEntity type: {}", level.getBlockEntity(pos) != null ? level.getBlockEntity(pos).getClass().getName() : "null");
         }
-        LOGGER.info("=== End setPlacedBy ===");
     }
 
     @Override
@@ -172,7 +155,6 @@ public class DynamicBlock extends Block implements EntityBlock {
     @Override
     public void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean isMoving) {
         super.onPlace(state, level, pos, oldState, isMoving);
-        LOGGER.info("DynamicBlock.onPlace at {} oldState={} isMoving={} isClient={}", pos, oldState, isMoving, level.isClientSide);
 
         // For UserBlocks, check for color data when first placed
         if (!level.isClientSide && this instanceof com.blockeditor.mod.content.UserBlock) {
@@ -193,7 +175,6 @@ public class DynamicBlock extends Block implements EntityBlock {
 
     @Override
     public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
-        LOGGER.warn("DynamicBlock.onRemove at {} newState={} isMoving={}", pos, newState, isMoving);
         super.onRemove(state, level, pos, newState, isMoving);
     }
 
@@ -227,7 +208,6 @@ public class DynamicBlock extends Block implements EntityBlock {
                 "§r" + mimicBlockName + " §7(#" + hexColor + ")"
             ));
             
-            LOGGER.info("getCloneItemStack: Created item with color #{} and mimic {}", hexColor, blockEntity.getMimicBlock());
             return stack;
         }
         

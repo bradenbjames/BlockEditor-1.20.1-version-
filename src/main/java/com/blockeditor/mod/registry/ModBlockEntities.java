@@ -16,7 +16,6 @@ public class ModBlockEntities {
 
     public static final RegistryObject<BlockEntityType<DynamicBlockEntity>> DYNAMIC_BLOCK_ENTITY =
         BLOCK_ENTITIES.register("dynamic_block_entity", () -> {
-            LOGGER.info("Registering DynamicBlockEntity for all dynamic block variants");
             return BlockEntityType.Builder.of(DynamicBlockEntity::new,
                 ModBlocks.DYNAMIC_BLOCK.get(),
                 ModBlocks.DYNAMIC_BLOCK_DIRT.get(),

@@ -33,7 +33,6 @@ public class WorldEditIntegration {
             BlockState state = level.getBlockState(pos);
             
             if (state.getBlock() instanceof UserBlock) {
-                LOGGER.info("WorldEditIntegration: NeighborNotifyEvent detected UserBlock at {}", pos);
                 handleBlockPlacement(level, pos, state);
             }
         }
@@ -47,8 +46,6 @@ public class WorldEditIntegration {
             return;
         }
         
-        LOGGER.info("=== WorldEditIntegration: UserBlock placed at {} ===", pos);
-        
         if (!level.isClientSide && level instanceof ServerLevel serverLevel) {
             // Get the block entity
             if (level.getBlockEntity(pos) instanceof DynamicBlockEntity blockEntity) {
@@ -58,21 +55,15 @@ public class WorldEditIntegration {
                 String blockName = userBlock.getBlockType(); // e.g., "wool", "stone", etc.
                 String blockId = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(block).getPath();
                 
-                LOGGER.info("WorldEditIntegration: Block ID: {}, Type: {}", blockId, blockName);
-                
                 // Parse identifier (e.g., "wool1" from "user_wool1")
                 if (blockId.startsWith("user_")) {
                     String identifier = blockId.substring(5); // Remove "user_" prefix
-                    LOGGER.info("WorldEditIntegration: Looking up identifier: {}", identifier);
                     
                     UserBlockRegistry.UserBlockData data = registry.getUserBlockData(identifier);
                     if (data != null) {
                         blockEntity.setColor(data.color());
                         blockEntity.setMimicBlock(data.mimicBlock());
                         blockEntity.setChanged();
-                        
-                        LOGGER.info("WorldEditIntegration: Applied color {} to {} block at {}", 
-                            String.format("%06X", data.color()), identifier, pos);
                         
                         // Force block update to clients
                         level.sendBlockUpdated(pos, newState, newState, 3);

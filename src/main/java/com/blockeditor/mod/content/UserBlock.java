@@ -33,18 +33,12 @@ public class UserBlock extends DynamicBlock {
 
     @Override
     public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
-        LOGGER.info("=== UserBlock.setPlacedBy CALLED ===");
-        LOGGER.info("Position: {} | Block Type: {} | Is Client: {}", pos, blockType, level.isClientSide);
-        
         // Call the parent method first
         super.setPlacedBy(level, pos, state, placer, stack);
         
         // Then handle UserBlock-specific logic
         if (!level.isClientSide && level.getBlockEntity(pos) instanceof DynamicBlockEntity blockEntity) {
             CompoundTag tag = stack.getTag();
-            
-            LOGGER.info("UserBlock setPlacedBy at {} for blockType {}", pos, blockType);
-            LOGGER.info("ItemStack NBT: {}", tag);
             
             if (tag != null && tag.contains("Color")) {
                 // NBT color data was provided (from WorldEdit command)

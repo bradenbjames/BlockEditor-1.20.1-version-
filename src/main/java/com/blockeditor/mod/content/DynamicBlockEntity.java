@@ -59,10 +59,6 @@ public class DynamicBlockEntity extends BlockEntity {
             checkAndApplyUserBlockData();
         }
         
-        // Add client-side debug logging
-        if (getLevel() != null && getLevel().isClientSide) {
-            LOGGER.info("CLIENT: getColor() called for block at {}, returning color: {}", getBlockPos(), String.format("%06X", color));
-        }
         return color;
     }
 
@@ -90,13 +86,6 @@ public class DynamicBlockEntity extends BlockEntity {
         }
         if (tag.contains("Color")) {
             color = tag.getInt("Color");
-        }
-        
-        // Debug logging for client/server
-        if (getLevel() != null) {
-            String side = getLevel().isClientSide ? "CLIENT" : "SERVER";
-            LOGGER.info("{}: Loaded block entity at {} with color={}, mimic={}", 
-                side, getBlockPos(), String.format("%06X", color), mimicBlock);
         }
         
         // Only check for UserBlock data if we don't already have a color set
