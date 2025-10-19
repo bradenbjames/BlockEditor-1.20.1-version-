@@ -1,0 +1,48 @@
+{
+  "itemGroup.blockeditor": "Block Editor",
+  "key.categories.blockeditor": "Block Editor",
+  "key.blockeditor.open_editor": "Open Block Editor",
+  
+  "block.blockeditor.dynamic_block": "Dynamic Block",
+  "block.blockeditor.dynamic_block_dirt": "Dynamic Block (Dirt)",
+  "block.blockeditor.dynamic_block_sand": "Dynamic Block (Sand)",
+  "block.blockeditor.dynamic_block_wool": "Dynamic Block (Wool)",
+  "block.blockeditor.dynamic_block_concrete": "Dynamic Block (Concrete)",
+  "block.blockeditor.dynamic_block_deepslate": "Dynamic Block (Deepslate)",
+  "block.blockeditor.dynamic_block_wood": "Dynamic Block (Wood)",
+  "block.blockeditor.dynamic_block_stone": "Dynamic Block (Stone)",
+  
+  "block.blockeditor.user_wool1": "USER_WOOL1",
+  "block.blockeditor.user_wool2": "USER_WOOL2",
+  "block.blockeditor.user_wool3": "USER_WOOL3",
+  "block.blockeditor.user_wool4": "USER_WOOL4",
+  "block.blockeditor.user_wool5": "USER_WOOL5",
+  
+  "block.blockeditor.user_stone1": "USER_STONE1",
+  "block.blockeditor.user_stone2": "USER_STONE2",
+  "block.blockeditor.user_stone3": "USER_STONE3",
+  "block.blockeditor.user_stone4": "USER_STONE4",
+  "block.blockeditor.user_stone5": "USER_STONE5",
+  
+  "block.blockeditor.user_concrete1": "USER_CONCRETE1",
+  "block.blockeditor.user_concrete2": "USER_CONCRETE2",
+  "block.blockeditor.user_concrete3": "USER_CONCRETE3",
+  "block.blockeditor.user_concrete4": "USER_CONCRETE4",
+  "block.blockeditor.user_concrete5": "USER_CONCRETE5",
+  
+  "block.blockeditor.user_wood1": "USER_WOOD1",
+  "block.blockeditor.user_wood2": "USER_WOOD2",
+  "block.blockeditor.user_wood3": "USER_WOOD3",
+  
+  "block.blockeditor.user_dirt1": "USER_DIRT1",
+  "block.blockeditor.user_dirt2": "USER_DIRT2",
+  "block.blockeditor.user_dirt3": "USER_DIRT3",
+  
+  "block.blockeditor.user_sand1": "USER_SAND1",
+  "block.blockeditor.user_sand2": "USER_SAND2",
+  "block.blockeditor.user_sand3": "USER_SAND3",
+  
+  "block.blockeditor.user_deepslate1": "USER_DEEPSLATE1",
+  "block.blockeditor.user_deepslate2": "USER_DEEPSLATE2",
+  "block.blockeditor.user_deepslate3": "USER_DEEPSLATE3"
+}

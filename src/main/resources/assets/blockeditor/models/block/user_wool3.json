@@ -1,0 +1,6 @@
+﻿{
+  "parent": "blockeditor:block/tinted_cube_all",
+  "textures": {
+    "all": "minecraft:block/white_wool"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "blockeditor:block/colored_block"
+    }
+  }
+}
