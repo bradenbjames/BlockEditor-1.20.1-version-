@@ -23,6 +23,7 @@ public class ClientModEvents {
 
     @SubscribeEvent
     public static void registerBlockColors(RegisterColorHandlersEvent.Block event) {
+        System.out.println("=== STARTING BLOCK COLOR REGISTRATION ===");
         // Log that we're registering colors
         System.out.println("=== REGISTERING BLOCK COLORS FOR USER BLOCKS ===");
         

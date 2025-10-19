@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "blockeditor:block/dynamic_block_cobblestone"
+    }
+  }
+}

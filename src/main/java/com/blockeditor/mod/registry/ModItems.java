@@ -35,6 +35,9 @@ public class ModItems {
     public static final RegistryObject<Item> DYNAMIC_BLOCK_STONE_ITEM = ITEMS.register("dynamic_block_stone",
         () -> new DynamicBlockItem(ModBlocks.DYNAMIC_BLOCK_STONE.get(), new Item.Properties()));
 
+    public static final RegistryObject<Item> DYNAMIC_BLOCK_COBBLESTONE_ITEM = ITEMS.register("dynamic_block_cobblestone",
+        () -> new DynamicBlockItem(ModBlocks.DYNAMIC_BLOCK_COBBLESTONE.get(), new Item.Properties()));
+
     // User block items for WorldEdit autocomplete (numbered system)
     // Wool blocks
     public static final RegistryObject<Item> USER_WOOL_1_ITEM = ITEMS.register("user_wool1",

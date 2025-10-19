@@ -38,6 +38,9 @@ public class ModBlocks {
     public static final RegistryObject<Block> DYNAMIC_BLOCK_STONE = BLOCKS.register("dynamic_block_stone",
         () -> new DynamicBlock());
 
+    public static final RegistryObject<Block> DYNAMIC_BLOCK_COBBLESTONE = BLOCKS.register("dynamic_block_cobblestone",
+        () -> new DynamicBlock());
+
     // User-created block variants for WorldEdit autocomplete (numbered system)
     // Wool blocks (up to 10 custom wool blocks)
     public static final RegistryObject<Block> USER_WOOL_1 = BLOCKS.register("user_wool1",

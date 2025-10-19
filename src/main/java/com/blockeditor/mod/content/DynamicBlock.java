@@ -51,7 +51,7 @@ public class DynamicBlock extends Block implements EntityBlock {
         // Use vanilla model rendering; tint is applied via BlockColors based on BlockEntity data
         return RenderShape.MODEL;
     }
-
+    
     @Override
     public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
         super.setPlacedBy(level, pos, state, placer, stack);

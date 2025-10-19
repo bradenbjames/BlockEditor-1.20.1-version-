@@ -24,6 +24,7 @@ public class BlockEditorScreen extends Screen {
     private String hexColor = "FFFFFF";
     private Block selectedBlock = Blocks.STONE;
     private int scrollOffset = 0;
+    private int historyScrollOffset = 0;
 
     private EditBox hexBox;
     private EditBox searchBox;
@@ -43,11 +44,25 @@ public class BlockEditorScreen extends Screen {
         Block originalBlock;
         String hexColor;
         int color;
+        String blockName;
+        long timestamp;
 
         CreatedBlockInfo(Block block, String hex, int color) {
             this.originalBlock = block;
             this.hexColor = hex;
             this.color = color;
+            this.timestamp = System.currentTimeMillis();
+            
+            // Generate a readable block name
+            ResourceLocation blockId = BuiltInRegistries.BLOCK.getKey(block);
+            String path = blockId.getPath();
+            if (path.startsWith("dynamic_block_")) {
+                this.blockName = path.substring(14) + " #" + hex; // Remove "dynamic_block_" prefix
+            } else if (path.equals("dynamic_block")) {
+                this.blockName = "stone #" + hex; // Default case
+            } else {
+                this.blockName = path.replace("_", " ") + " #" + hex;
+            }
         }
     }
 
@@ -73,7 +88,7 @@ public class BlockEditorScreen extends Screen {
 
         int centerX = this.width / 2;
 
-        // Calculate total width needed: search (180) + gap (10) + # (10) + hex (80) + gap (10) + color preview (40) + gap (10) + block preview (16) = 356
+        // Calculate total width needed: search (180) + gap (10) + # (10) + hex (80) + gap (10) + block preview (16) = 306
         int totalWidth = 180 + 10 + 10 + 80 + 10 + 40 + 10 + 16;
         int startX = centerX - (totalWidth / 2);
 
@@ -134,18 +149,9 @@ public class BlockEditorScreen extends Screen {
         // Draw "#" label before hex input box (positioned correctly with centering)
         graphics.drawString(this.font, "#", hexX - 10, 34, 0xFFFFFF);
 
-        // Draw live color preview box next to hex input (to the right)
-        int colorPreviewX = hexX + 90;
-        int colorPreviewY = 30;
+        // Draw block preview with color tint next to hex input
         int color = parseHexColor(hexBox.getValue());
-
-        // Draw border for color preview
-        graphics.fill(colorPreviewX - 1, colorPreviewY - 1, colorPreviewX + 41, colorPreviewY + 21, 0xFFFFFFFF);
-        // Draw color preview
-        graphics.fill(colorPreviewX, colorPreviewY, colorPreviewX + 40, colorPreviewY + 20, 0xFF000000 | color);
-
-        // Draw block preview with color tint next to color preview
-        int blockPreviewX = colorPreviewX + 50;
+        int blockPreviewX = hexX + 90;
         int blockPreviewY = 28;
 
         // Save the current pose
@@ -181,22 +187,36 @@ public class BlockEditorScreen extends Screen {
     private void renderHistoryPanel(GuiGraphics graphics) {
         if (createdBlocksHistory.isEmpty()) return;
 
-        int panelX = this.width - 110;
+        int panelX = this.width - 180; // Made wider for better text display
         int panelY = 60;
-        int panelWidth = 100;
-        int itemHeight = 30;
-        int maxItems = Math.min(createdBlocksHistory.size(), 8);
+        int panelWidth = 170;
+        int panelHeight = 300; // Fixed height for scrolling
+        int itemHeight = 24; // Smaller items to fit more
+        int maxVisibleItems = panelHeight / itemHeight;
+        int totalItems = createdBlocksHistory.size();
 
         // Draw panel background
-        graphics.fill(panelX - 5, panelY - 25, panelX + panelWidth + 5, panelY + (maxItems * itemHeight) + 5, 0xD0000000);
+        graphics.fill(panelX - 5, panelY - 25, panelX + panelWidth + 5, panelY + panelHeight + 5, 0xE0000000);
 
-        // Draw title
-        graphics.drawCenteredString(this.font, "§eRecent", panelX + panelWidth / 2, panelY - 15, 0xFFFFFF);
+        // Draw title bar
+        graphics.fill(panelX - 5, panelY - 25, panelX + panelWidth + 5, panelY - 5, 0xFF333333);
+        graphics.drawCenteredString(this.font, "§eRecent Blocks", panelX + panelWidth / 2, panelY - 18, 0xFFFFFF);
 
-        // Draw each created block in history
-        for (int i = 0; i < maxItems; i++) {
+        // Calculate visible range
+        int startIndex = Math.max(0, Math.min(historyScrollOffset, totalItems - maxVisibleItems));
+        int endIndex = Math.min(totalItems, startIndex + maxVisibleItems);
+
+        // Enable scissoring for scrolling
+        graphics.enableScissor(panelX - 5, panelY, panelX + panelWidth + 5, panelY + panelHeight);
+
+        // Draw each visible created block in history
+        for (int i = startIndex; i < endIndex; i++) {
             CreatedBlockInfo info = createdBlocksHistory.get(i);
-            int itemY = panelY + (i * itemHeight);
+            int itemY = panelY + ((i - startIndex) * itemHeight);
+
+            // Draw item background (alternating colors)
+            int bgColor = (i % 2 == 0) ? 0x40FFFFFF : 0x20FFFFFF;
+            graphics.fill(panelX, itemY, panelX + panelWidth, itemY + itemHeight - 1, bgColor);
 
             // Draw block icon with color tint
             var pose = graphics.pose();
@@ -209,13 +229,38 @@ public class BlockEditorScreen extends Screen {
                 1.0f
             );
 
-            graphics.renderItem(info.originalBlock.asItem().getDefaultInstance(), panelX, itemY);
+            graphics.renderItem(info.originalBlock.asItem().getDefaultInstance(), panelX + 2, itemY + 4);
 
             RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
             pose.popPose();
 
-            // Draw hex color text
-            graphics.drawString(this.font, "#" + info.hexColor, panelX + 20, itemY + 4, 0xFFFFFF);
+            // Draw block name (truncated if too long)
+            String displayName = info.blockName;
+            if (font.width(displayName) > panelWidth - 25) {
+                displayName = font.plainSubstrByWidth(displayName, panelWidth - 25) + "...";
+            }
+            graphics.drawString(this.font, displayName, panelX + 20, itemY + 6, 0xFFFFFF);
+        }
+
+        graphics.disableScissor();
+
+        // Draw scroll indicators
+        if (totalItems > maxVisibleItems) {
+            // Draw scrollbar background
+            graphics.fill(panelX + panelWidth - 3, panelY, panelX + panelWidth, panelY + panelHeight, 0xFF666666);
+            
+            // Draw scrollbar thumb
+            int thumbHeight = Math.max(10, (maxVisibleItems * panelHeight) / totalItems);
+            int thumbY = panelY + (startIndex * (panelHeight - thumbHeight)) / Math.max(1, totalItems - maxVisibleItems);
+            graphics.fill(panelX + panelWidth - 3, thumbY, panelX + panelWidth, thumbY + thumbHeight, 0xFFCCCCCC);
+
+            // Draw scroll hint text
+            if (startIndex > 0) {
+                graphics.drawString(this.font, "▲", panelX + panelWidth - 12, panelY - 10, 0xFFFFFF);
+            }
+            if (endIndex < totalItems) {
+                graphics.drawString(this.font, "▼", panelX + panelWidth - 12, panelY + panelHeight - 5, 0xFFFFFF);
+            }
         }
     }
 
@@ -266,6 +311,26 @@ public class BlockEditorScreen extends Screen {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        // Check if clicking in history panel first
+        int panelX = this.width - 180;
+        int panelY = 60;
+        int panelWidth = 170;
+        int panelHeight = 300;
+        int itemHeight = 24;
+        
+        if (mouseX >= panelX && mouseX <= panelX + panelWidth && 
+            mouseY >= panelY && mouseY <= panelY + panelHeight) {
+            
+            int clickedIndex = (int) ((mouseY - panelY) / itemHeight) + historyScrollOffset;
+            if (clickedIndex >= 0 && clickedIndex < createdBlocksHistory.size()) {
+                CreatedBlockInfo info = createdBlocksHistory.get(clickedIndex);
+                selectedBlock = info.originalBlock;
+                hexColor = info.hexColor;
+                hexBox.setValue(hexColor);
+                return true;
+            }
+        }
+
         // Handle block selection clicks - MUST match renderBlockGrid positions
         int startX = this.width / 2 - (BLOCKS_PER_ROW * (BLOCK_SIZE + BLOCK_PADDING)) / 2;
         int startY = 55;  // Changed from 60 to match renderBlockGrid
@@ -291,9 +356,24 @@ public class BlockEditorScreen extends Screen {
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
-        int maxScroll = Math.max(0, (filteredBlocks.size() / BLOCKS_PER_ROW) - 4);  // Changed from 5 to 4 to match maxRows
-        scrollOffset = Math.max(0, Math.min(maxScroll, scrollOffset - (int) delta));
-        return true;
+        // Check if mouse is over history panel
+        int panelX = this.width - 180;
+        int panelY = 60;
+        int panelWidth = 170;
+        int panelHeight = 300;
+        
+        if (mouseX >= panelX - 5 && mouseX <= panelX + panelWidth + 5 && 
+            mouseY >= panelY - 25 && mouseY <= panelY + panelHeight + 5) {
+            // Scroll in history panel
+            int maxHistoryScroll = Math.max(0, createdBlocksHistory.size() - (panelHeight / 24));
+            historyScrollOffset = Math.max(0, Math.min(maxHistoryScroll, historyScrollOffset - (int) delta));
+            return true;
+        } else {
+            // Scroll in main block grid
+            int maxScroll = Math.max(0, (filteredBlocks.size() / BLOCKS_PER_ROW) - 4);
+            scrollOffset = Math.max(0, Math.min(maxScroll, scrollOffset - (int) delta));
+            return true;
+        }
     }
 
     @Override
@@ -386,16 +466,16 @@ public class BlockEditorScreen extends Screen {
     private boolean isFullSolidBlock(Block block) {
         String blockId = BuiltInRegistries.BLOCK.getKey(block).getPath().toLowerCase();
 
-        // Only allow specific block types: sand, wool, dirt, stone, concrete, deepslate
+        // Only allow specific block types: wood planks, stone, wool, concrete, dirt, cobblestone
         String[] allowedKeywords = {
-            "sand", "wool", "dirt", "stone", "concrete", "deepslate"
+            "planks", "wool", "dirt", "stone", "concrete", "cobblestone"
         };
 
         for (String keyword : allowedKeywords) {
             if (blockId.contains(keyword)) {
                 // Additional check: exclude non-full blocks even if they contain the keyword
                 String[] excludedKeywords = {
-                    "stair", "slab", "fence", "wall", "button", "pressure"
+                    "stair", "slab", "fence", "wall", "button", "pressure", "door", "trapdoor", "sign"
                 };
 
                 for (String excluded : excludedKeywords) {
@@ -422,20 +502,23 @@ public class BlockEditorScreen extends Screen {
         if (blockName.contains("dirt") || blockName.contains("coarse")) {
             System.out.println("Matched DIRT texture");
             return ModBlocks.DYNAMIC_BLOCK_DIRT.get();
-        } else if (blockName.contains("sand")) {
-            System.out.println("Matched SAND texture");
-            return ModBlocks.DYNAMIC_BLOCK_SAND.get();
+        } else if (blockName.contains("planks") || blockName.contains("wood")) {
+            System.out.println("Matched WOOD texture");
+            return ModBlocks.DYNAMIC_BLOCK_WOOD.get();
         } else if (blockName.contains("wool")) {
             System.out.println("Matched WOOL texture");
             return ModBlocks.DYNAMIC_BLOCK_WOOL.get();
         } else if (blockName.contains("concrete") && !blockName.contains("powder")) {
             System.out.println("Matched CONCRETE texture");
             return ModBlocks.DYNAMIC_BLOCK_CONCRETE.get();
-        } else if (blockName.contains("deepslate") && !blockName.contains("ore")) {
-            System.out.println("Matched DEEPSLATE texture");
-            return ModBlocks.DYNAMIC_BLOCK_DEEPSLATE.get();
+        } else if (blockName.contains("cobblestone")) {
+            System.out.println("Matched COBBLESTONE texture");
+            return ModBlocks.DYNAMIC_BLOCK_COBBLESTONE.get();
+        } else if (blockName.contains("stone")) {
+            System.out.println("Matched STONE texture");
+            return ModBlocks.DYNAMIC_BLOCK.get();
         } else {
-            // Default to stone texture for stone and any other blocks
+            // Default to stone texture for any other blocks
             System.out.println("Defaulting to STONE texture");
             return ModBlocks.DYNAMIC_BLOCK.get();
         }
