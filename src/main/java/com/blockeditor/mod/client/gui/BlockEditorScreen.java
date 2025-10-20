@@ -185,18 +185,66 @@ public class BlockEditorScreen extends Screen {
         searchBox.setHint(Component.literal("Search blocks..."));
         // Don't add to renderableWidget - keep functionality but hide UI
         
-        // Hex color input box - positioned so # aligns with block grid
+        // Hex color input box - positioned to align with block grid
         int hexY = 30;
-        int hexX = gridStartX + 10; // Offset to align # with block grid left edge
+        int hexX = gridStartX; // Align with block grid left edge
 
-        hexBox = new EditBox(this.font, hexX, hexY, 80, 20, Component.literal("Hex Color"));
+        // Custom hex input box with integrated # symbol and two-tone background
+        hexBox = new EditBox(this.font, hexX + 16, hexY, 74, 20, Component.literal("Hex Color")) {
+            @Override
+            public void renderWidget(net.minecraft.client.gui.GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+                if (this.isVisible()) {
+                    // Draw custom two-tone background aligned with EditBox position
+                    int x = this.getX() - 16; // Use actual EditBox position minus prefix width
+                    int y = this.getY();
+                    int totalWidth = 90;
+                    int prefixWidth = 16;
+                    
+                    // Dark gray background for # section
+                    int darkGray = 0xFF666666;
+                    graphics.fill(x, y, x + prefixWidth, y + 20, darkGray);
+                    
+                    // Light gray background for text input section
+                    int lightBackground = 0xFF3F3F3F;
+                    graphics.fill(x + prefixWidth, y, x + totalWidth, y + 20, lightBackground);
+                    
+                    // Border around entire box
+                    int borderColor = this.isFocused() ? 0xFFFFFFFF : 0xFF999999;
+                    graphics.fill(x - 1, y - 1, x + totalWidth + 1, y, borderColor); // Top
+                    graphics.fill(x - 1, y + 20, x + totalWidth + 1, y + 21, borderColor); // Bottom
+                    graphics.fill(x - 1, y - 1, x, y + 21, borderColor); // Left
+                    graphics.fill(x + totalWidth, y - 1, x + totalWidth + 1, y + 21, borderColor); // Right
+                    
+                    // Draw # symbol in the dark section
+                    graphics.drawString(BlockEditorScreen.this.font, "#", x + 4, y + 6, 0xFFFFFFFF);
+                    
+                    // Render text content manually in the light section
+                    String text = this.getValue();
+                    if (!text.isEmpty() || this.isFocused()) {
+                        graphics.drawString(BlockEditorScreen.this.font, text, x + prefixWidth + 4, y + 6, 0xFFFFFFFF);
+                        
+                        // Draw cursor if focused
+                        if (this.isFocused() && this.getCursorPosition() >= 0) {
+                            int cursorX = x + prefixWidth + 4 + BlockEditorScreen.this.font.width(text.substring(0, Math.min(this.getCursorPosition(), text.length())));
+                            if ((System.currentTimeMillis() / 500) % 2 == 0) { // Blinking cursor
+                                graphics.fill(cursorX, y + 2, cursorX + 1, y + 18, 0xFFFFFFFF);
+                            }
+                        }
+                    } else if (!this.isFocused()) {
+                        // Draw hint text
+                        graphics.drawString(BlockEditorScreen.this.font, "FFFFFF", x + prefixWidth + 4, y + 6, 0xFF888888);
+                    }
+                }
+            }
+        };
+        
         hexBox.setValue(hexColor);
         hexBox.setMaxLength(6);
         hexBox.setHint(Component.literal("FFFFFF"));
         this.addRenderableWidget(hexBox);
 
         // Custom name input box - positioned after hex box with clear placeholder
-        int nameX = hexX + 80 + 15; // After hex box + gap
+        int nameX = hexX + 90 + 15; // After hex box + gap (updated for 90px hex box)
         nameBox = new EditBox(this.font, nameX, hexY, 140, 20, Component.literal("Block Name"));
         nameBox.setMaxLength(32);
         nameBox.setHint(Component.literal("Block name (required)"));
@@ -247,13 +295,12 @@ public class BlockEditorScreen extends Screen {
         int hexX = gridStartX + 10; // Offset to align # with block grid
         int gridEndY = 55 + (4 * (BLOCK_SIZE + BLOCK_PADDING));
 
-        // Draw "#" label before hex input box - now aligned with block grid
-        graphics.drawString(this.font, "#", gridStartX, 34, 0xFFFFFF);
+        // # symbol is now integrated into the hex input box
         
         // Draw red border around name box if invalid (no external label needed)
         if (nameBox != null && !isNameBoxValid()) {
             int borderColor = 0xFFFF4444; // Bright red
-            int nameX = hexX + 80 + 15; // Match the new nameBox position (updated gap)
+            int nameX = hexX + 90 + 15; // Match the new nameBox position (updated for 90px hex box)
             int boxX = nameX;
             int boxY = 30;
             int boxWidth = 140; // Updated width to match nameBox
@@ -264,27 +311,15 @@ public class BlockEditorScreen extends Screen {
             graphics.fill(boxX - 2, boxY + boxHeight + 1, boxX + boxWidth + 2, boxY + boxHeight + 2, borderColor); // Bottom  
             graphics.fill(boxX - 2, boxY - 1, boxX - 1, boxY + boxHeight + 1, borderColor); // Left
             graphics.fill(boxX + boxWidth + 1, boxY - 1, boxX + boxWidth + 2, boxY + boxHeight + 1, borderColor); // Right
-            
-            // Draw error message below the name box
-            String errorText;
-            if (nameBox.getValue().trim().isEmpty()) {
-                errorText = "Name required!";
-            } else {
-                errorText = "Invalid characters!";
-            }
-            graphics.drawString(this.font, errorText, nameX, 52, 0xFFFF4444);
         }
 
-        // Draw block preview to the right of name box, aligned with white concrete block
+        // Draw block preview to the right of name box
         int color = parseHexColor(hexBox.getValue());
         int previewSize = 20; // Match input box height
         
-        // Position to the right of name box, aligned with the end of white concrete block
-        int nameBoxEndX = hexX + 80 + 15 + 140; // End of name box
-        int whiteConcreteX = gridStartX + 5 * (BLOCK_SIZE + BLOCK_PADDING); // 6th block (white concrete) position
-        int whiteConcreteEndX = whiteConcreteX + BLOCK_SIZE; // End of white concrete block
-        
-        int blockPreviewX = nameBoxEndX + 10; // Just to the right of name box with small gap
+        // Position further to the right of name box
+        int nameBoxEndX = hexX + 90 + 15 + 140; // End of name box (updated for 90px hex box)
+        int blockPreviewX = nameBoxEndX + 25; // Further to the right with larger gap
         int blockPreviewY = 32; // Align with input boxes (30 + small offset)
         
         // Save the current pose
@@ -589,9 +624,9 @@ public class BlockEditorScreen extends Screen {
         
         // Check hex box click
         if (hexBox != null) {
-            int hexX = centerX - (blockGridWidth / 2) + 10; // Match the offset
+            int hexX = centerX - (blockGridWidth / 2); // Match the position
             int hexY = 30;
-            int hexWidth = 80;
+            int hexWidth = 90; // Updated width
             int hexHeight = 20;
             
             if (mouseX >= hexX && mouseX < hexX + hexWidth && mouseY >= hexY && mouseY < hexY + hexHeight) {
@@ -601,7 +636,7 @@ public class BlockEditorScreen extends Screen {
         
         // Check name box click - select all text when clicked (if it has placeholder text)
         if (nameBox != null) {
-            int nameX = centerX - (blockGridWidth / 2) + 10 + 80 + 15; // Calculate nameBox X position with hex offset
+            int nameX = centerX - (blockGridWidth / 2) + 90 + 15; // Calculate nameBox X position (updated for 90px hex box)
             int nameY = 30;
             int nameWidth = 140;
             int nameHeight = 20;
