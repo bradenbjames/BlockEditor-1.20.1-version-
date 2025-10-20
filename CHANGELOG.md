@@ -2,6 +2,14 @@
 
 ## Version 1.0.1 - UI Overhaul & Enhancement Update
 
+### 📸 **Screenshots**
+
+![Block Editor Interface - 3 Column Layout](images/image-1760931259480.png)
+*The enhanced Block Editor interface featuring the new 3-column compact history layout with rounded corners, proper spacing, and alternating backgrounds.*
+
+![Block Editor Interface - Responsive Design](images/image-1760931288528.png)
+*Demonstrating the responsive design that adapts to different screen sizes while maintaining functionality and visual appeal.*
+
 ### 🎨 **Major UI Improvements**
 
 #### **History Panel Redesign**
