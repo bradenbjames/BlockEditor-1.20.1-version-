@@ -32,6 +32,23 @@ What sets BlockEditor apart from other block mods is its **massive variety** of 
 - **Practical Storage**: 180 persistent user slots for your most-used color combinations
 - **Texture Variety**: Same color looks completely different on wool vs stone vs concrete
 
+### 🏆 **Competitive Advantage: Real Blocks vs Visual Effects**
+
+**Unlike other color mods (RGBBlocks, etc.) that only create visual overlays, BlockEditor creates ACTUAL registered blocks:**
+
+✅ **Full Minecraft Integration**
+- Work with `/give`, `/setblock`, `/fill` commands
+- Compatible with WorldEdit: `//set user_wool1`, `//replace stone user_concrete5`
+- Show up in creative inventory with proper names
+- Persistent across world saves and server restarts
+
+❌ **What Other Mods Can't Do**
+- RGBBlocks: Visual-only, breaks on reload, no command support
+- Chisel & Bits: Micro-blocks only, not full-size blocks
+- Color variants mods: Fixed palette, no custom colors
+
+**Result**: Your custom blocks work exactly like vanilla Minecraft blocks in every system, tool, and command!
+
 ### 💡 **Real-World Examples**
 ```
 Crimson Red (#DC143C):
