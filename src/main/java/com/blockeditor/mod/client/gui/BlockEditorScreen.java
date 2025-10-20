@@ -352,7 +352,7 @@ public class BlockEditorScreen extends Screen {
             
             // Draw item background with rounded corners (alternating rows)
             int bgColor = (row % 2 == 0) ? 0x40FFFFFF : 0x20FFFFFF;
-            drawRoundedRect(graphics, itemX, itemY, itemX + individualItemWidth - 1, itemY + itemHeight - 1, bgColor, 2);
+            drawRoundedRect(graphics, itemX, itemY, individualItemWidth, itemHeight, 2, bgColor);
 
             // Draw block icon with color tint
             var pose = graphics.pose();
@@ -862,26 +862,37 @@ public class BlockEditorScreen extends Screen {
         return false;
     }
 
-    // Helper method to draw rounded rectangles
+    // Helper method to draw rounded rectangles (optimized version)
     private void drawRoundedRect(GuiGraphics graphics, int x, int y, int width, int height, int radius, int color) {
-        // Fill main rectangle
-        graphics.fill(x + radius, y, x + width - radius, y + height, color);
-        graphics.fill(x, y + radius, x + width, y + height - radius, color);
+        // Clamp radius to prevent issues with small rectangles
+        radius = Math.min(radius, Math.min(width / 2, height / 2));
         
-        // Draw corner circles
-        for (int dx = 0; dx < radius; dx++) {
-            for (int dy = 0; dy < radius; dy++) {
-                if (dx * dx + dy * dy <= radius * radius) {
-                    // Top-left corner
-                    graphics.fill(x + radius - dx, y + radius - dy, x + radius - dx + 1, y + radius - dy + 1, color);
-                    // Top-right corner  
-                    graphics.fill(x + width - radius + dx, y + radius - dy, x + width - radius + dx + 1, y + radius - dy + 1, color);
-                    // Bottom-left corner
-                    graphics.fill(x + radius - dx, y + height - radius + dy, x + radius - dx + 1, y + height - radius + dy + 1, color);
-                    // Bottom-right corner
-                    graphics.fill(x + width - radius + dx, y + height - radius + dy, x + width - radius + dx + 1, y + height - radius + dy + 1, color);
-                }
-            }
+        if (radius <= 0) {
+            // Just draw a regular rectangle if radius is 0
+            graphics.fill(x, y, x + width, y + height, color);
+            return;
         }
+        
+        // Draw the main rectangular areas (more efficient than nested loops)
+        graphics.fill(x + radius, y, x + width - radius, y + height, color); // Center rectangle
+        graphics.fill(x, y + radius, x + radius, y + height - radius, color); // Left rectangle
+        graphics.fill(x + width - radius, y + radius, x + width, y + height - radius, color); // Right rectangle
+        
+        // Draw simplified rounded corners (just a few pixels for the effect)
+        // Top-left corner
+        graphics.fill(x + 1, y + 1, x + radius - 1, y + 2, color);
+        graphics.fill(x + 1, y + 2, x + 2, y + radius - 1, color);
+        
+        // Top-right corner
+        graphics.fill(x + width - radius + 1, y + 1, x + width - 1, y + 2, color);
+        graphics.fill(x + width - 2, y + 2, x + width - 1, y + radius - 1, color);
+        
+        // Bottom-left corner
+        graphics.fill(x + 1, y + height - 2, x + radius - 1, y + height - 1, color);
+        graphics.fill(x + 1, y + height - radius + 1, x + 2, y + height - 2, color);
+        
+        // Bottom-right corner
+        graphics.fill(x + width - radius + 1, y + height - 2, x + width - 1, y + height - 1, color);
+        graphics.fill(x + width - 2, y + height - radius + 1, x + width - 1, y + height - 2, color);
     }
 }
