@@ -311,27 +311,20 @@ public class BlockEditorScreen extends Screen {
             graphics.fill(boxX + boxWidth + 1, boxY - 1, boxX + boxWidth + 2, boxY + boxHeight + 1, borderColor); // Right
         }
 
-        // Draw block preview same size as grid blocks and aligned with white concrete block
+        // Draw block preview to the right of the name text box, same size as selection grid blocks
         int color = parseHexColor(hexBox.getValue());
-        int previewSize = BLOCK_SIZE; // Same size as blocks in grid (32px)
+        int previewSize = 16; // Same size as blocks in selection grid (16px item size, not scaled)
         
-        // Position to align with white concrete block (6th block in grid)
-        int whiteConcreteX = gridStartX + 5 * (BLOCK_SIZE + BLOCK_PADDING); // 6th position (0-indexed: 5)
-        int blockPreviewX = whiteConcreteX; // Same X position as white concrete
-        
-        // Calculate Y position to center between input boxes and grid
-        int inputBoxesY = 30;
-        int blockGridStartY = 55;
-        int availableSpace = blockGridStartY - (inputBoxesY + 20); // Space between input end and grid start
-        int blockPreviewY = inputBoxesY + 20 + (availableSpace - previewSize) / 2; // Center in available space
+        // Position aligned with the rightmost column of the selection grid (column 7)
+        int blockPreviewX = gridStartX + (7 * (BLOCK_SIZE + BLOCK_PADDING)) + 8; // Column 7 + 8px offset like grid blocks
+        int blockPreviewY = nameBox.getY() + (nameBox.getHeight() - previewSize) / 2; // Vertically centered with name box
         
         // Save the current pose
         var pose = graphics.pose();
         pose.pushPose();
         
-        // Scale and translate to match grid block size exactly
+        // No scaling - render at natural 16px item size like the grid blocks
         pose.translate(blockPreviewX, blockPreviewY, 0);
-        pose.scale(2.0f, 2.0f, 1.0f); // 2x scale to make 16px item render as 32px block
 
         // Apply color tint using RenderSystem
         RenderSystem.setShaderColor(
@@ -891,6 +884,15 @@ public class BlockEditorScreen extends Screen {
         return nameBox != null && isValidBlockName(nameBox.getValue());
     }
 
+    private boolean isDuplicateBlock(Block textureBlock, String hexColor) {
+        for (CreatedBlockInfo info : createdBlocksHistory) {
+            if (info.originalBlock == textureBlock && info.hexColor.equalsIgnoreCase(hexColor)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void createColoredBlock() {
         if (this.minecraft != null && this.minecraft.player != null) {
             // Validate hex color is exactly 6 characters
@@ -913,6 +915,18 @@ public class BlockEditorScreen extends Screen {
                         "§cError: Block name contains illegal characters! Use letters, numbers, spaces, and basic punctuation only.";
                     this.minecraft.player.displayClientMessage(
                         Component.literal(errorMsg),
+                        false
+                    );
+                }
+                return;
+            }
+
+            // Check for duplicate blocks (same texture and hex color)
+            if (isDuplicateBlock(selectedBlock, hexColor)) {
+                if (this.minecraft.player != null) {
+                    String blockName = BuiltInRegistries.BLOCK.getKey(selectedBlock).getPath().replace("_", " ");
+                    this.minecraft.player.displayClientMessage(
+                        Component.literal("§cError: Block already exists! §7(" + blockName + " with color #" + hexColor.toUpperCase() + ")"),
                         false
                     );
                 }
