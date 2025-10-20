@@ -67,12 +67,14 @@ public class BlockEditorScreen extends Screen {
     }
 
     public BlockEditorScreen() {
-        super(Component.literal("Block Editor"));
+        super(Component.literal("Block Editor - Fixed Scroll"));
     }
 
     @Override
     protected void init() {
         super.init();
+        
+
 
         // Get all registered blocks (filter to only allowed blocks)
         allBlocks.clear();
@@ -108,9 +110,10 @@ public class BlockEditorScreen extends Screen {
         hexBox.setHint(Component.literal("FFFFFF"));
         this.addRenderableWidget(hexBox);
 
-        // Buttons - centered together at bottom
+        // Buttons - positioned just above player inventory
         int gridEndY = 55 + (4 * (BLOCK_SIZE + BLOCK_PADDING));
-        int buttonY = gridEndY + 40;
+        // Position buttons just above player inventory (which is typically ~76 pixels from bottom)
+        int buttonY = this.height - 85; // Position buttons just above player inventory
         int buttonSpacing = 10;
         int buttonWidth = 90;
         int totalButtonWidth = (buttonWidth * 2) + buttonSpacing;
@@ -127,10 +130,14 @@ public class BlockEditorScreen extends Screen {
             Component.literal("Cancel"),
             button -> this.onClose()
         ).bounds(buttonStartX + buttonWidth + buttonSpacing, buttonY, buttonWidth, 20).build());
+
+
     }
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+
+        
         // Render background
         graphics.fill(0, 0, this.width, this.height, 0xC0101010);
 
@@ -179,10 +186,6 @@ public class BlockEditorScreen extends Screen {
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
         pose.popPose();
 
-        // Draw selected block name below grid, centered
-        String blockName = BuiltInRegistries.BLOCK.getKey(selectedBlock).getPath().replace("_", " ");
-        graphics.drawCenteredString(this.font, "Selected: " + blockName, this.width / 2, gridEndY + 10, 0xFFFFFFFF);
-
         // Draw history panel on the right side
         renderHistoryPanel(graphics);
 
@@ -191,7 +194,6 @@ public class BlockEditorScreen extends Screen {
     }
 
     private void renderHistoryPanel(GuiGraphics graphics) {
-        System.out.println("renderHistoryPanel: history size = " + createdBlocksHistory.size());
         
         // Determine if we should use condensed mode based on available width
         boolean isCondensed = this.width < 1000; // Use condensed mode for smaller screens
@@ -200,7 +202,7 @@ public class BlockEditorScreen extends Screen {
         int panelWidth = isCondensed ? 60 : 170; // Narrow for condensed, wide for normal
         int panelX = this.width - panelWidth - 10; // 10px margin from right edge
         int panelY = 60;
-        int panelHeight = 300;
+        int panelHeight = this.height - panelY - 20; // Leave only 20px spacing at the bottom
         
         if (createdBlocksHistory.isEmpty()) {
             // Draw empty panel to show it exists
@@ -284,7 +286,7 @@ public class BlockEditorScreen extends Screen {
 
         graphics.disableScissor();
 
-        // Draw scroll indicators
+        // Draw scroll indicators 
         if (totalItems > maxVisibleItems) {
             // Draw scrollbar background
             graphics.fill(panelX + panelWidth - 3, panelY, panelX + panelWidth, panelY + panelHeight, 0xFF666666);
@@ -294,7 +296,7 @@ public class BlockEditorScreen extends Screen {
             int thumbY = panelY + (startIndex * (panelHeight - thumbHeight)) / Math.max(1, totalItems - maxVisibleItems);
             graphics.fill(panelX + panelWidth - 3, thumbY, panelX + panelWidth, thumbY + thumbHeight, 0xFFCCCCCC);
 
-            // Draw scroll hint text
+            // Draw simple scroll indicators
             if (startIndex > 0) {
                 graphics.drawString(this.font, "▲", panelX + panelWidth - 12, panelY - 10, 0xFFFFFF);
             }
@@ -359,6 +361,7 @@ public class BlockEditorScreen extends Screen {
         int panelHeight = 300;
         int itemHeight = isCondensed ? 20 : 24;
         
+        // History panel item clicks
         if (mouseX >= panelX && mouseX <= panelX + panelWidth && 
             mouseY >= panelY && mouseY <= panelY + panelHeight) {
             
@@ -396,32 +399,115 @@ public class BlockEditorScreen extends Screen {
     }
 
     @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        return super.mouseReleased(mouseX, mouseY, button);
+    }
+
+    @Override
+    public void mouseMoved(double mouseX, double mouseY) {
+        // Track mouse position for debugging
+        super.mouseMoved(mouseX, mouseY);
+    }
+
+    @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
-        // Check if mouse is over history panel
-        boolean isCondensed = this.width < 1000;
-        int panelWidth = isCondensed ? 60 : 170;
-        int panelX = this.width - panelWidth - 10;
-        int panelY = 60;
-        int panelHeight = 300;
-        
-        if (mouseX >= panelX - 5 && mouseX <= panelX + panelWidth + 5 && 
-            mouseY >= panelY - 25 && mouseY <= panelY + panelHeight + 5) {
-            // Scroll in history panel
+        // Simple scroll for history panel - right side of screen
+        if (mouseX > this.width * 0.75 && !createdBlocksHistory.isEmpty()) {
+            // Calculate maxScroll using the same logic as render method
+            boolean isCondensed = this.width < 1000;
+            int panelY = 60;
+            int panelHeight = this.height - panelY - 20; // Same as render method
             int itemHeight = isCondensed ? 20 : 24;
-            int maxHistoryScroll = Math.max(0, createdBlocksHistory.size() - (panelHeight / itemHeight));
-            historyScrollOffset = Math.max(0, Math.min(maxHistoryScroll, historyScrollOffset - (int) delta));
-            return true;
-        } else {
+            int maxVisibleItems = panelHeight / itemHeight;
+            int maxScroll = Math.max(0, createdBlocksHistory.size() - maxVisibleItems);
+            
+            if (delta > 0 && historyScrollOffset > 0) {
+                historyScrollOffset--;
+                return true;
+            } else if (delta < 0 && historyScrollOffset < maxScroll) {
+                historyScrollOffset++;
+                return true;
+            }
+        }
+        
+        // Check if mouse is over main block grid area
+        int startX = this.width / 2 - (BLOCKS_PER_ROW * (BLOCK_SIZE + BLOCK_PADDING)) / 2;
+        int startY = 55;
+        int gridWidth = BLOCKS_PER_ROW * (BLOCK_SIZE + BLOCK_PADDING);
+        int gridHeight = 4 * (BLOCK_SIZE + BLOCK_PADDING);
+        
+        if (mouseX >= startX && mouseX <= startX + gridWidth && 
+            mouseY >= startY && mouseY <= startY + gridHeight) {
             // Scroll in main block grid
             int maxScroll = Math.max(0, (filteredBlocks.size() / BLOCKS_PER_ROW) - 4);
-            scrollOffset = Math.max(0, Math.min(maxScroll, scrollOffset - (int) delta));
+            int oldOffset = scrollOffset;
+            
+            if (delta > 0) {
+                scrollOffset = Math.max(0, scrollOffset - 1);
+            } else {
+                scrollOffset = Math.min(maxScroll, scrollOffset + 1);
+            }
+            
+            return scrollOffset != oldOffset;
+        }
+        
+        return super.mouseScrolled(mouseX, mouseY, delta);
+    }
+
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        // Test direct scroll with number keys (not affected by text focus)
+        if (keyCode == 49) { // 1 key
+            scrollHistoryUp();
             return true;
+        } else if (keyCode == 50) { // 2 key  
+            scrollHistoryDown();
+            return true;
+        } else if (keyCode == 32) { // SPACE
+            if (!createdBlocksHistory.isEmpty()) {
+                int maxScroll = Math.max(0, createdBlocksHistory.size() - 5);
+                historyScrollOffset = (historyScrollOffset + 1) % (maxScroll + 1);
+            }
+            return true;
+        }
+        
+        // Add keyboard controls for history scrolling (Arrow keys and Page Up/Down)
+        if (keyCode == 265) { // Up Arrow
+            scrollHistoryUp();
+            return true;
+        } else if (keyCode == 264) { // Down Arrow
+            scrollHistoryDown();
+            return true;
+        } else if (keyCode == 266) { // Page Up
+            scrollHistoryUp();
+            return true;
+        } else if (keyCode == 267) { // Page Down
+            scrollHistoryDown();
+            return true;
+        }
+        
+        return super.keyPressed(keyCode, scanCode, modifiers);
+    }
+
+    private void scrollHistoryUp() {
+        if (historyScrollOffset > 0) {
+            historyScrollOffset--;
+        }
+    }
+
+    private void scrollHistoryDown() {
+        int maxOffset = Math.max(0, createdBlocksHistory.size() - 10);
+        if (historyScrollOffset < maxOffset) {
+            historyScrollOffset++;
         }
     }
 
     @Override
     public void tick() {
         super.tick();
+
+        // Check for scroll input using Minecraft's input system
+        checkScrollInput();
 
         // Validate and clean hex input (only allow hex characters)
         String value = hexBox.getValue().toUpperCase();
@@ -432,6 +518,38 @@ public class BlockEditorScreen extends Screen {
         hexColor = value;
         if (!hexBox.getValue().equals(value)) {
             hexBox.setValue(value);
+        }
+    }
+
+    private void checkScrollInput() {
+        // Use Minecraft's direct input system to detect scroll
+        if (minecraft != null && minecraft.mouseHandler != null) {
+            // Get mouse position
+            double mouseX = minecraft.mouseHandler.xpos() * minecraft.getWindow().getGuiScaledWidth() / minecraft.getWindow().getScreenWidth();
+            double mouseY = minecraft.mouseHandler.ypos() * minecraft.getWindow().getGuiScaledHeight() / minecraft.getWindow().getScreenHeight();
+            
+            // Check if mouse is over history panel
+            boolean isCondensed = this.width < 1000;
+            int panelWidth = isCondensed ? 60 : 170;
+            int panelX = this.width - panelWidth - 10;
+            int panelY = 60;
+            int panelHeight = 300;
+            
+            if (mouseX >= panelX && mouseX <= panelX + panelWidth && 
+                mouseY >= panelY && mouseY <= panelY + panelHeight) {
+                
+                // Check for key-based scrolling as alternative
+                if (org.lwjgl.glfw.GLFW.glfwGetKey(minecraft.getWindow().getWindow(), org.lwjgl.glfw.GLFW.GLFW_KEY_UP) == org.lwjgl.glfw.GLFW.GLFW_PRESS) {
+                    if (System.currentTimeMillis() % 200 < 50) { // Throttle key repeat
+                        scrollHistoryUp();
+                    }
+                }
+                if (org.lwjgl.glfw.GLFW.glfwGetKey(minecraft.getWindow().getWindow(), org.lwjgl.glfw.GLFW.GLFW_KEY_DOWN) == org.lwjgl.glfw.GLFW.GLFW_PRESS) {
+                    if (System.currentTimeMillis() % 200 < 50) { // Throttle key repeat
+                        scrollHistoryDown();
+                    }
+                }
+            }
         }
     }
 
@@ -572,6 +690,34 @@ public class BlockEditorScreen extends Screen {
             System.out.println("Defaulting to STONE texture");
             return ModBlocks.DYNAMIC_BLOCK.get();
         }
+    }
+
+    @Override
+    public boolean charTyped(char codePoint, int modifiers) {
+        // Try catching scroll events through char input
+        if (codePoint == 'w' || codePoint == 'W') {
+            System.out.println("MANUAL SCROLL: UP with W key");
+            scrollHistoryUp();
+            return true;
+        }
+        if (codePoint == 's' || codePoint == 'S') {
+            System.out.println("MANUAL SCROLL: DOWN with S key");
+            scrollHistoryDown();
+            return true;
+        }
+        if (codePoint == ' ') {
+            System.out.println("SPACE TEST: Directly incrementing historyScrollOffset from " + historyScrollOffset);
+            historyScrollOffset = (historyScrollOffset + 1) % Math.max(1, createdBlocksHistory.size());
+            System.out.println("SPACE TEST: historyScrollOffset is now " + historyScrollOffset);
+            return true;
+        }
+        return super.charTyped(codePoint, modifiers);
+    }
+
+    @Override 
+    public void setFocused(net.minecraft.client.gui.components.events.GuiEventListener focused) {
+        System.out.println("FOCUS DEBUG: setFocused called with " + (focused != null ? focused.getClass().getSimpleName() : "null"));
+        super.setFocused(focused);
     }
 
     @Override
