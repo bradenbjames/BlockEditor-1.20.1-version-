@@ -589,7 +589,7 @@ public class BlockEditorScreen extends Screen {
         
         // Check hex box click
         if (hexBox != null) {
-            int hexX = centerX - (blockGridWidth / 2);
+            int hexX = centerX - (blockGridWidth / 2) + 10; // Match the offset
             int hexY = 30;
             int hexWidth = 80;
             int hexHeight = 20;
@@ -601,7 +601,7 @@ public class BlockEditorScreen extends Screen {
         
         // Check name box click - select all text when clicked (if it has placeholder text)
         if (nameBox != null) {
-            int nameX = centerX - (blockGridWidth / 2) + 80 + 15; // Calculate nameBox X position (no search box)
+            int nameX = centerX - (blockGridWidth / 2) + 10 + 80 + 15; // Calculate nameBox X position with hex offset
             int nameY = 30;
             int nameWidth = 140;
             int nameHeight = 20;
