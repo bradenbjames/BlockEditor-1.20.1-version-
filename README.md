@@ -6,7 +6,13 @@
 
 Create and customize blocks with any color and texture in Minecraft!
 
-![Block Editor GUI](docs/images/blockeditor-gui-screenshot.png)
+## 📸 Screenshots
+
+![Block Editor Interface - 3 Column Layout](images/image-1760931259480.png)
+*Enhanced Block Editor interface featuring the new 3-column compact history layout with rounded corners, proper spacing, and alternating backgrounds.*
+
+![Block Editor Interface - Responsive Design](images/image-1760931288528.png)
+*Responsive design that adapts to different screen sizes while maintaining functionality and visual appeal.*
 
 ## ✨ Features
 
