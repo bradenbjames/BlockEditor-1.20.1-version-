@@ -9,6 +9,9 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.NbtIo;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -16,6 +19,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import com.blockeditor.mod.registry.ModBlocks;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -68,6 +73,73 @@ public class BlockEditorScreen extends Screen {
 
     public BlockEditorScreen() {
         super(Component.literal("Block Editor - Fixed Scroll"));
+        loadHistoryFromFile(); // Load history when screen is created
+    }
+    
+    private static void saveHistoryToFile() {
+        try {
+            File configDir = new File("config");
+            if (!configDir.exists()) {
+                configDir.mkdirs();
+            }
+            
+            File historyFile = new File(configDir, "blockeditor_history.dat");
+            CompoundTag rootTag = new CompoundTag();
+            ListTag historyList = new ListTag();
+            
+            for (CreatedBlockInfo info : createdBlocksHistory) {
+                CompoundTag blockTag = new CompoundTag();
+                ResourceLocation blockId = BuiltInRegistries.BLOCK.getKey(info.originalBlock);
+                blockTag.putString("block", blockId.toString());
+                blockTag.putString("hexColor", info.hexColor);
+                blockTag.putInt("color", info.color);
+                blockTag.putLong("timestamp", info.timestamp);
+                historyList.add(blockTag);
+            }
+            
+            rootTag.put("history", historyList);
+            NbtIo.write(rootTag, historyFile);
+        } catch (IOException e) {
+            System.err.println("Failed to save block history: " + e.getMessage());
+        }
+    }
+    
+    private static void loadHistoryFromFile() {
+        try {
+            File historyFile = new File("config/blockeditor_history.dat");
+            if (!historyFile.exists()) {
+                return; // No history file exists yet
+            }
+            
+            CompoundTag rootTag = NbtIo.read(historyFile);
+            if (rootTag == null || !rootTag.contains("history")) {
+                return;
+            }
+            
+            ListTag historyList = rootTag.getList("history", Tag.TAG_COMPOUND);
+            createdBlocksHistory.clear();
+            
+            for (int i = 0; i < historyList.size(); i++) {
+                CompoundTag blockTag = historyList.getCompound(i);
+                
+                String blockIdStr = blockTag.getString("block");
+                ResourceLocation blockId = new ResourceLocation(blockIdStr);
+                Block block = BuiltInRegistries.BLOCK.get(blockId);
+                
+                if (block != null && block != Blocks.AIR) {
+                    String hexColor = blockTag.getString("hexColor");
+                    int color = blockTag.getInt("color");
+                    
+                    CreatedBlockInfo info = new CreatedBlockInfo(block, hexColor, color);
+                    if (blockTag.contains("timestamp")) {
+                        info.timestamp = blockTag.getLong("timestamp");
+                    }
+                    createdBlocksHistory.add(info);
+                }
+            }
+        } catch (IOException e) {
+            System.err.println("Failed to load block history: " + e.getMessage());
+        }
     }
 
     @Override
@@ -607,9 +679,12 @@ public class BlockEditorScreen extends Screen {
             // Add to history (client-side only for display)
             int color = parseHexColor(hexColor);
             createdBlocksHistory.add(0, new CreatedBlockInfo(selectedBlock, hexColor.toUpperCase(), color));
-            if (createdBlocksHistory.size() > 10) {
-                createdBlocksHistory.remove(10);
+            if (createdBlocksHistory.size() > 500) {
+                createdBlocksHistory.remove(500);
             }
+            
+            // Save history to file
+            saveHistoryToFile();
 
             // Show success message
             String blockName = mimicBlockId.getPath().replace("_", " ");
