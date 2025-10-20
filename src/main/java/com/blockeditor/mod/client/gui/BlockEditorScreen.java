@@ -273,14 +273,18 @@ public class BlockEditorScreen extends Screen {
         int gridEndX = centerX + (blockGridWidth / 2);
         
         // Determine if we should use single column (when panel would overlap with block grid)
-        int panelWidth = 120; // Narrower for 2-column layout (was 140)
-        int singleColumnWidth = 65; // Narrower for 1-column layout (was 75)
+        int panelWidth = 160; // Wider for 2-column layout (optimized for 1920x1080)
+        int singleColumnWidth = 85; // Wider for 1-column layout 
+        int iconOnlyWidth = 25; // Ultra-narrow for icon-only mode
         int panelMargin = 10;
         
         // Check if 2-column panel would overlap with block grid (need 20px buffer)
         boolean useSingleColumn = (this.width - panelWidth - panelMargin) < (gridEndX + 20);
         
-        int finalPanelWidth = useSingleColumn ? singleColumnWidth : panelWidth;
+        // Check if even single column with text would overlap - then hide text (need 20px buffer)
+        boolean hideHexText = useSingleColumn && (this.width - singleColumnWidth - panelMargin) < (gridEndX + 20);
+        
+        int finalPanelWidth = hideHexText ? iconOnlyWidth : (useSingleColumn ? singleColumnWidth : panelWidth);
         int panelX = this.width - finalPanelWidth - panelMargin;
         int panelY = 60;
         int panelHeight = this.height - panelY - 20; // Leave only 20px spacing at the bottom
@@ -291,7 +295,14 @@ public class BlockEditorScreen extends Screen {
             // Draw title bar
             graphics.fill(panelX - 5, panelY - 25, panelX + finalPanelWidth + 5, panelY - 5, 0xFF333333);
             
-            graphics.drawCenteredString(this.font, "§eRecent", panelX + finalPanelWidth / 2, panelY - 18, 0xFFFFFF);
+            // Draw scaled title
+            var titlePose = graphics.pose();
+            titlePose.pushPose();
+            titlePose.translate(panelX + finalPanelWidth / 2, panelY - 18, 0);
+            titlePose.scale(0.7f, 0.7f, 1.0f);
+            graphics.drawCenteredString(this.font, "§eRecent Blocks", 0, 0, 0xFFFFFF);
+            titlePose.popPose();
+            
             graphics.drawCenteredString(this.font, "§7No blocks yet", panelX + finalPanelWidth / 2, panelY + 20, 0xAAAAAA);
             return;
         }
@@ -308,7 +319,14 @@ public class BlockEditorScreen extends Screen {
 
         // Draw title bar
         graphics.fill(panelX - 5, panelY - 25, panelX + finalPanelWidth + 5, panelY - 5, 0xFF333333);
-        graphics.drawCenteredString(this.font, "§eRecent", panelX + finalPanelWidth / 2, panelY - 18, 0xFFFFFF);
+        
+        // Draw scaled title
+        var titlePose = graphics.pose();
+        titlePose.pushPose();
+        titlePose.translate(panelX + finalPanelWidth / 2, panelY - 18, 0);
+        titlePose.scale(0.7f, 0.7f, 1.0f);
+        graphics.drawCenteredString(this.font, "§eRecent Blocks", 0, 0, 0xFFFFFF);
+        titlePose.popPose();
 
         // Calculate visible range
         int startIndex = Math.max(0, Math.min(historyScrollOffset, createdBlocksHistory.size() - maxVisibleItems));
@@ -361,18 +379,20 @@ public class BlockEditorScreen extends Screen {
             RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
             pose.popPose();
 
-            // Draw small hex color text inline to the right of the block
-            String hexText = "#" + info.hexColor;
-            int textX = itemX + 18; // Right of the 16px block icon
-            int textY = itemY + 6; // Vertically centered with block
-            
-            // Scale down the text even more
-            pose = graphics.pose();
-            pose.pushPose();
-            pose.translate(textX, textY, 0);
-            pose.scale(0.5f, 0.5f, 1.0f); // Make text 50% of normal size (was 60%)
-            graphics.drawString(this.font, hexText, 0, 0, 0xAAAAAA);
-            pose.popPose();
+            // Draw small hex color text inline to the right of the block (only if not hiding text)
+            if (!hideHexText) {
+                String hexText = "#" + info.hexColor;
+                int textX = itemX + 18; // Right of the 16px block icon
+                int textY = itemY + 6; // Vertically centered with block
+                
+                // Scale down the text even more
+                pose = graphics.pose();
+                pose.pushPose();
+                pose.translate(textX, textY, 0);
+                pose.scale(0.5f, 0.5f, 1.0f); // Make text 50% of normal size (was 60%)
+                graphics.drawString(this.font, hexText, 0, 0, 0xAAAAAA);
+                pose.popPose();
+            }
         }
 
         graphics.disableScissor();
