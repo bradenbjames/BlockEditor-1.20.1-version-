@@ -6,14 +6,6 @@
 
 Create and customize blocks with any color and texture in Minecraft!
 
-## 📸 Screenshots
-
-![Block Editor Interface - 3 Column Layout](images/image-1760931259480.png)
-*Enhanced Block Editor interface featuring the new 3-column compact history layout with rounded corners, proper spacing, and alternating backgrounds.*
-
-![Block Editor Interface - Responsive Design](images/image-1760931288528.png)
-*Responsive design that adapts to different screen sizes while maintaining functionality and visual appeal.*
-
 ## ✨ Features
 
 - 🎨 **Custom Block Creation**: Intuitive GUI-based block editor with color picker
@@ -57,7 +49,15 @@ Ocean Blue (#006994):
 
 **Result**: Whether you're building pixel art, modern architecture, medieval castles, or abstract sculptures, BlockEditor has the exact color-texture combination you need.
 
-## 🚀 Installation
+## � Screenshots
+
+![Block Editor Interface - 3 Column Layout](images/image-1760931259480.png)
+*Enhanced Block Editor interface featuring the new 3-column compact history layout with rounded corners, proper spacing, and alternating backgrounds.*
+
+![Block Editor Interface - Responsive Design](images/image-1760931288528.png)
+*Responsive design that adapts to different screen sizes while maintaining functionality and visual appeal.*
+
+## �🚀 Installation
 
 1. **Download** the latest release from [Releases](../../releases)
 2. **Install** Minecraft Forge 47.4.0+ for Minecraft 1.20.1
