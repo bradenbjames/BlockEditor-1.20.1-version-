@@ -13,7 +13,7 @@ public class ModKeyMappings {
         "key." + BlockEditorMod.MOD_ID + ".open_editor",
         KeyConflictContext.IN_GAME,
         InputConstants.Type.KEYSYM,
-        GLFW.GLFW_KEY_B,
+        GLFW.GLFW_KEY_G,
         CATEGORY
     );
 }

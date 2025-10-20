@@ -41,72 +41,161 @@ public class ModBlocks {
     public static final RegistryObject<Block> DYNAMIC_BLOCK_COBBLESTONE = BLOCKS.register("dynamic_block_cobblestone",
         () -> new DynamicBlock());
 
+    public static final RegistryObject<Block> DYNAMIC_BLOCK_SMOOTH_STONE = BLOCKS.register("dynamic_block_smooth_stone",
+        () -> new DynamicBlock());
+
     // User-created block variants for WorldEdit autocomplete (numbered system)
-    // Wool blocks (up to 10 custom wool blocks)
-    public static final RegistryObject<Block> USER_WOOL_1 = BLOCKS.register("user_wool1",
-        () -> new UserBlock("wool"));
-    public static final RegistryObject<Block> USER_WOOL_2 = BLOCKS.register("user_wool2",
-        () -> new UserBlock("wool"));
-    public static final RegistryObject<Block> USER_WOOL_3 = BLOCKS.register("user_wool3",
-        () -> new UserBlock("wool"));
-    public static final RegistryObject<Block> USER_WOOL_4 = BLOCKS.register("user_wool4",
-        () -> new UserBlock("wool"));
-    public static final RegistryObject<Block> USER_WOOL_5 = BLOCKS.register("user_wool5",
-        () -> new UserBlock("wool"));
+    // Wool blocks (up to 20 custom wool blocks)
+    public static final RegistryObject<Block> USER_WOOL_1 = BLOCKS.register("u_wool1", () -> new UserBlock("wool"));
+    public static final RegistryObject<Block> USER_WOOL_2 = BLOCKS.register("u_wool2", () -> new UserBlock("wool"));
+    public static final RegistryObject<Block> USER_WOOL_3 = BLOCKS.register("u_wool3", () -> new UserBlock("wool"));
+    public static final RegistryObject<Block> USER_WOOL_4 = BLOCKS.register("u_wool4", () -> new UserBlock("wool"));
+    public static final RegistryObject<Block> USER_WOOL_5 = BLOCKS.register("u_wool5", () -> new UserBlock("wool"));
+    public static final RegistryObject<Block> USER_WOOL_6 = BLOCKS.register("u_wool6", () -> new UserBlock("wool"));
+    public static final RegistryObject<Block> USER_WOOL_7 = BLOCKS.register("u_wool7", () -> new UserBlock("wool"));
+    public static final RegistryObject<Block> USER_WOOL_8 = BLOCKS.register("u_wool8", () -> new UserBlock("wool"));
+    public static final RegistryObject<Block> USER_WOOL_9 = BLOCKS.register("u_wool9", () -> new UserBlock("wool"));
+    public static final RegistryObject<Block> USER_WOOL_10 = BLOCKS.register("u_wool10", () -> new UserBlock("wool"));
+    public static final RegistryObject<Block> USER_WOOL_11 = BLOCKS.register("u_wool11", () -> new UserBlock("wool"));
+    public static final RegistryObject<Block> USER_WOOL_12 = BLOCKS.register("u_wool12", () -> new UserBlock("wool"));
+    public static final RegistryObject<Block> USER_WOOL_13 = BLOCKS.register("u_wool13", () -> new UserBlock("wool"));
+    public static final RegistryObject<Block> USER_WOOL_14 = BLOCKS.register("u_wool14", () -> new UserBlock("wool"));
+    public static final RegistryObject<Block> USER_WOOL_15 = BLOCKS.register("u_wool15", () -> new UserBlock("wool"));
+    public static final RegistryObject<Block> USER_WOOL_16 = BLOCKS.register("u_wool16", () -> new UserBlock("wool"));
+    public static final RegistryObject<Block> USER_WOOL_17 = BLOCKS.register("u_wool17", () -> new UserBlock("wool"));
+    public static final RegistryObject<Block> USER_WOOL_18 = BLOCKS.register("u_wool18", () -> new UserBlock("wool"));
+    public static final RegistryObject<Block> USER_WOOL_19 = BLOCKS.register("u_wool19", () -> new UserBlock("wool"));
+    public static final RegistryObject<Block> USER_WOOL_20 = BLOCKS.register("u_wool20", () -> new UserBlock("wool"));
     
-    // Stone blocks (up to 10 custom stone blocks)
-    public static final RegistryObject<Block> USER_STONE_1 = BLOCKS.register("user_stone1",
-        () -> new UserBlock("stone"));
-    public static final RegistryObject<Block> USER_STONE_2 = BLOCKS.register("user_stone2",
-        () -> new UserBlock("stone"));
-    public static final RegistryObject<Block> USER_STONE_3 = BLOCKS.register("user_stone3",
-        () -> new UserBlock("stone"));
-    public static final RegistryObject<Block> USER_STONE_4 = BLOCKS.register("user_stone4",
-        () -> new UserBlock("stone"));
-    public static final RegistryObject<Block> USER_STONE_5 = BLOCKS.register("user_stone5",
-        () -> new UserBlock("stone"));
+    // Stone blocks (up to 20 custom stone blocks)
+    public static final RegistryObject<Block> USER_STONE_1 = BLOCKS.register("u_stone1", () -> new UserBlock("stone"));
+    public static final RegistryObject<Block> USER_STONE_2 = BLOCKS.register("u_stone2", () -> new UserBlock("stone"));
+    public static final RegistryObject<Block> USER_STONE_3 = BLOCKS.register("u_stone3", () -> new UserBlock("stone"));
+    public static final RegistryObject<Block> USER_STONE_4 = BLOCKS.register("u_stone4", () -> new UserBlock("stone"));
+    public static final RegistryObject<Block> USER_STONE_5 = BLOCKS.register("u_stone5", () -> new UserBlock("stone"));
+    public static final RegistryObject<Block> USER_STONE_6 = BLOCKS.register("u_stone6", () -> new UserBlock("stone"));
+    public static final RegistryObject<Block> USER_STONE_7 = BLOCKS.register("u_stone7", () -> new UserBlock("stone"));
+    public static final RegistryObject<Block> USER_STONE_8 = BLOCKS.register("u_stone8", () -> new UserBlock("stone"));
+    public static final RegistryObject<Block> USER_STONE_9 = BLOCKS.register("u_stone9", () -> new UserBlock("stone"));
+    public static final RegistryObject<Block> USER_STONE_10 = BLOCKS.register("u_stone10", () -> new UserBlock("stone"));
+    public static final RegistryObject<Block> USER_STONE_11 = BLOCKS.register("u_stone11", () -> new UserBlock("stone"));
+    public static final RegistryObject<Block> USER_STONE_12 = BLOCKS.register("u_stone12", () -> new UserBlock("stone"));
+    public static final RegistryObject<Block> USER_STONE_13 = BLOCKS.register("u_stone13", () -> new UserBlock("stone"));
+    public static final RegistryObject<Block> USER_STONE_14 = BLOCKS.register("u_stone14", () -> new UserBlock("stone"));
+    public static final RegistryObject<Block> USER_STONE_15 = BLOCKS.register("u_stone15", () -> new UserBlock("stone"));
+    public static final RegistryObject<Block> USER_STONE_16 = BLOCKS.register("u_stone16", () -> new UserBlock("stone"));
+    public static final RegistryObject<Block> USER_STONE_17 = BLOCKS.register("u_stone17", () -> new UserBlock("stone"));
+    public static final RegistryObject<Block> USER_STONE_18 = BLOCKS.register("u_stone18", () -> new UserBlock("stone"));
+    public static final RegistryObject<Block> USER_STONE_19 = BLOCKS.register("u_stone19", () -> new UserBlock("stone"));
+    public static final RegistryObject<Block> USER_STONE_20 = BLOCKS.register("u_stone20", () -> new UserBlock("stone"));
     
-    // Concrete blocks (up to 10 custom concrete blocks)
-    public static final RegistryObject<Block> USER_CONCRETE_1 = BLOCKS.register("user_concrete1",
-        () -> new UserBlock("concrete"));
-    public static final RegistryObject<Block> USER_CONCRETE_2 = BLOCKS.register("user_concrete2",
-        () -> new UserBlock("concrete"));
-    public static final RegistryObject<Block> USER_CONCRETE_3 = BLOCKS.register("user_concrete3",
-        () -> new UserBlock("concrete"));
-    public static final RegistryObject<Block> USER_CONCRETE_4 = BLOCKS.register("user_concrete4",
-        () -> new UserBlock("concrete"));
-    public static final RegistryObject<Block> USER_CONCRETE_5 = BLOCKS.register("user_concrete5",
-        () -> new UserBlock("concrete"));
+    // Concrete blocks (up to 20 custom concrete blocks)
+    public static final RegistryObject<Block> USER_CONCRETE_1 = BLOCKS.register("u_concrete1", () -> new UserBlock("concrete"));
+    public static final RegistryObject<Block> USER_CONCRETE_2 = BLOCKS.register("u_concrete2", () -> new UserBlock("concrete"));
+    public static final RegistryObject<Block> USER_CONCRETE_3 = BLOCKS.register("u_concrete3", () -> new UserBlock("concrete"));
+    public static final RegistryObject<Block> USER_CONCRETE_4 = BLOCKS.register("u_concrete4", () -> new UserBlock("concrete"));
+    public static final RegistryObject<Block> USER_CONCRETE_5 = BLOCKS.register("u_concrete5", () -> new UserBlock("concrete"));
+    public static final RegistryObject<Block> USER_CONCRETE_6 = BLOCKS.register("u_concrete6", () -> new UserBlock("concrete"));
+    public static final RegistryObject<Block> USER_CONCRETE_7 = BLOCKS.register("u_concrete7", () -> new UserBlock("concrete"));
+    public static final RegistryObject<Block> USER_CONCRETE_8 = BLOCKS.register("u_concrete8", () -> new UserBlock("concrete"));
+    public static final RegistryObject<Block> USER_CONCRETE_9 = BLOCKS.register("u_concrete9", () -> new UserBlock("concrete"));
+    public static final RegistryObject<Block> USER_CONCRETE_10 = BLOCKS.register("u_concrete10", () -> new UserBlock("concrete"));
+    public static final RegistryObject<Block> USER_CONCRETE_11 = BLOCKS.register("u_concrete11", () -> new UserBlock("concrete"));
+    public static final RegistryObject<Block> USER_CONCRETE_12 = BLOCKS.register("u_concrete12", () -> new UserBlock("concrete"));
+    public static final RegistryObject<Block> USER_CONCRETE_13 = BLOCKS.register("u_concrete13", () -> new UserBlock("concrete"));
+    public static final RegistryObject<Block> USER_CONCRETE_14 = BLOCKS.register("u_concrete14", () -> new UserBlock("concrete"));
+    public static final RegistryObject<Block> USER_CONCRETE_15 = BLOCKS.register("u_concrete15", () -> new UserBlock("concrete"));
+    public static final RegistryObject<Block> USER_CONCRETE_16 = BLOCKS.register("u_concrete16", () -> new UserBlock("concrete"));
+    public static final RegistryObject<Block> USER_CONCRETE_17 = BLOCKS.register("u_concrete17", () -> new UserBlock("concrete"));
+    public static final RegistryObject<Block> USER_CONCRETE_18 = BLOCKS.register("u_concrete18", () -> new UserBlock("concrete"));
+    public static final RegistryObject<Block> USER_CONCRETE_19 = BLOCKS.register("u_concrete19", () -> new UserBlock("concrete"));
+    public static final RegistryObject<Block> USER_CONCRETE_20 = BLOCKS.register("u_concrete20", () -> new UserBlock("concrete"));
     
     // Wood blocks (up to 5 custom wood blocks)
-    public static final RegistryObject<Block> USER_WOOD_1 = BLOCKS.register("user_wood1",
-        () -> new UserBlock("wood"));
-    public static final RegistryObject<Block> USER_WOOD_2 = BLOCKS.register("user_wood2",
-        () -> new UserBlock("wood"));
-    public static final RegistryObject<Block> USER_WOOD_3 = BLOCKS.register("user_wood3",
-        () -> new UserBlock("wood"));
+    public static final RegistryObject<Block> USER_WOOD_1 = BLOCKS.register("u_wood1", () -> new UserBlock("wood"));
+    public static final RegistryObject<Block> USER_WOOD_2 = BLOCKS.register("u_wood2", () -> new UserBlock("wood"));
+    public static final RegistryObject<Block> USER_WOOD_3 = BLOCKS.register("u_wood3", () -> new UserBlock("wood"));
+    public static final RegistryObject<Block> USER_WOOD_4 = BLOCKS.register("u_wood4", () -> new UserBlock("wood"));
+    public static final RegistryObject<Block> USER_WOOD_5 = BLOCKS.register("u_wood5", () -> new UserBlock("wood"));
+    public static final RegistryObject<Block> USER_WOOD_6 = BLOCKS.register("u_wood6", () -> new UserBlock("wood"));
+    public static final RegistryObject<Block> USER_WOOD_7 = BLOCKS.register("u_wood7", () -> new UserBlock("wood"));
+    public static final RegistryObject<Block> USER_WOOD_8 = BLOCKS.register("u_wood8", () -> new UserBlock("wood"));
+    public static final RegistryObject<Block> USER_WOOD_9 = BLOCKS.register("u_wood9", () -> new UserBlock("wood"));
+    public static final RegistryObject<Block> USER_WOOD_10 = BLOCKS.register("u_wood10", () -> new UserBlock("wood"));
+    public static final RegistryObject<Block> USER_WOOD_11 = BLOCKS.register("u_wood11", () -> new UserBlock("wood"));
+    public static final RegistryObject<Block> USER_WOOD_12 = BLOCKS.register("u_wood12", () -> new UserBlock("wood"));
+    public static final RegistryObject<Block> USER_WOOD_13 = BLOCKS.register("u_wood13", () -> new UserBlock("wood"));
+    public static final RegistryObject<Block> USER_WOOD_14 = BLOCKS.register("u_wood14", () -> new UserBlock("wood"));
+    public static final RegistryObject<Block> USER_WOOD_15 = BLOCKS.register("u_wood15", () -> new UserBlock("wood"));
+    public static final RegistryObject<Block> USER_WOOD_16 = BLOCKS.register("u_wood16", () -> new UserBlock("wood"));
+    public static final RegistryObject<Block> USER_WOOD_17 = BLOCKS.register("u_wood17", () -> new UserBlock("wood"));
+    public static final RegistryObject<Block> USER_WOOD_18 = BLOCKS.register("u_wood18", () -> new UserBlock("wood"));
+    public static final RegistryObject<Block> USER_WOOD_19 = BLOCKS.register("u_wood19", () -> new UserBlock("wood"));
+    public static final RegistryObject<Block> USER_WOOD_20 = BLOCKS.register("u_wood20", () -> new UserBlock("wood"));
     
-    // Dirt blocks (up to 5 custom dirt blocks)
-    public static final RegistryObject<Block> USER_DIRT_1 = BLOCKS.register("user_dirt1",
-        () -> new UserBlock("dirt"));
-    public static final RegistryObject<Block> USER_DIRT_2 = BLOCKS.register("user_dirt2",
-        () -> new UserBlock("dirt"));
-    public static final RegistryObject<Block> USER_DIRT_3 = BLOCKS.register("user_dirt3",
-        () -> new UserBlock("dirt"));
+    // Dirt blocks (up to 20 custom dirt blocks)
+    public static final RegistryObject<Block> USER_DIRT_1 = BLOCKS.register("u_dirt1", () -> new UserBlock("dirt"));
+    public static final RegistryObject<Block> USER_DIRT_2 = BLOCKS.register("u_dirt2", () -> new UserBlock("dirt"));
+    public static final RegistryObject<Block> USER_DIRT_3 = BLOCKS.register("u_dirt3", () -> new UserBlock("dirt"));
+    public static final RegistryObject<Block> USER_DIRT_4 = BLOCKS.register("u_dirt4", () -> new UserBlock("dirt"));
+    public static final RegistryObject<Block> USER_DIRT_5 = BLOCKS.register("u_dirt5", () -> new UserBlock("dirt"));
+    public static final RegistryObject<Block> USER_DIRT_6 = BLOCKS.register("u_dirt6", () -> new UserBlock("dirt"));
+    public static final RegistryObject<Block> USER_DIRT_7 = BLOCKS.register("u_dirt7", () -> new UserBlock("dirt"));
+    public static final RegistryObject<Block> USER_DIRT_8 = BLOCKS.register("u_dirt8", () -> new UserBlock("dirt"));
+    public static final RegistryObject<Block> USER_DIRT_9 = BLOCKS.register("u_dirt9", () -> new UserBlock("dirt"));
+    public static final RegistryObject<Block> USER_DIRT_10 = BLOCKS.register("u_dirt10", () -> new UserBlock("dirt"));
+    public static final RegistryObject<Block> USER_DIRT_11 = BLOCKS.register("u_dirt11", () -> new UserBlock("dirt"));
+    public static final RegistryObject<Block> USER_DIRT_12 = BLOCKS.register("u_dirt12", () -> new UserBlock("dirt"));
+    public static final RegistryObject<Block> USER_DIRT_13 = BLOCKS.register("u_dirt13", () -> new UserBlock("dirt"));
+    public static final RegistryObject<Block> USER_DIRT_14 = BLOCKS.register("u_dirt14", () -> new UserBlock("dirt"));
+    public static final RegistryObject<Block> USER_DIRT_15 = BLOCKS.register("u_dirt15", () -> new UserBlock("dirt"));
+    public static final RegistryObject<Block> USER_DIRT_16 = BLOCKS.register("u_dirt16", () -> new UserBlock("dirt"));
+    public static final RegistryObject<Block> USER_DIRT_17 = BLOCKS.register("u_dirt17", () -> new UserBlock("dirt"));
+    public static final RegistryObject<Block> USER_DIRT_18 = BLOCKS.register("u_dirt18", () -> new UserBlock("dirt"));
+    public static final RegistryObject<Block> USER_DIRT_19 = BLOCKS.register("u_dirt19", () -> new UserBlock("dirt"));
+    public static final RegistryObject<Block> USER_DIRT_20 = BLOCKS.register("u_dirt20", () -> new UserBlock("dirt"));
     
-    // Sand blocks (up to 5 custom sand blocks)
-    public static final RegistryObject<Block> USER_SAND_1 = BLOCKS.register("user_sand1",
-        () -> new UserBlock("sand"));
-    public static final RegistryObject<Block> USER_SAND_2 = BLOCKS.register("user_sand2",
-        () -> new UserBlock("sand"));
-    public static final RegistryObject<Block> USER_SAND_3 = BLOCKS.register("user_sand3",
-        () -> new UserBlock("sand"));
+    // Sand blocks (up to 20 custom sand blocks)
+    public static final RegistryObject<Block> USER_SAND_1 = BLOCKS.register("u_sand1", () -> new UserBlock("sand"));
+    public static final RegistryObject<Block> USER_SAND_2 = BLOCKS.register("u_sand2", () -> new UserBlock("sand"));
+    public static final RegistryObject<Block> USER_SAND_3 = BLOCKS.register("u_sand3", () -> new UserBlock("sand"));
+    public static final RegistryObject<Block> USER_SAND_4 = BLOCKS.register("u_sand4", () -> new UserBlock("sand"));
+    public static final RegistryObject<Block> USER_SAND_5 = BLOCKS.register("u_sand5", () -> new UserBlock("sand"));
+    public static final RegistryObject<Block> USER_SAND_6 = BLOCKS.register("u_sand6", () -> new UserBlock("sand"));
+    public static final RegistryObject<Block> USER_SAND_7 = BLOCKS.register("u_sand7", () -> new UserBlock("sand"));
+    public static final RegistryObject<Block> USER_SAND_8 = BLOCKS.register("u_sand8", () -> new UserBlock("sand"));
+    public static final RegistryObject<Block> USER_SAND_9 = BLOCKS.register("u_sand9", () -> new UserBlock("sand"));
+    public static final RegistryObject<Block> USER_SAND_10 = BLOCKS.register("u_sand10", () -> new UserBlock("sand"));
+    public static final RegistryObject<Block> USER_SAND_11 = BLOCKS.register("u_sand11", () -> new UserBlock("sand"));
+    public static final RegistryObject<Block> USER_SAND_12 = BLOCKS.register("u_sand12", () -> new UserBlock("sand"));
+    public static final RegistryObject<Block> USER_SAND_13 = BLOCKS.register("u_sand13", () -> new UserBlock("sand"));
+    public static final RegistryObject<Block> USER_SAND_14 = BLOCKS.register("u_sand14", () -> new UserBlock("sand"));
+    public static final RegistryObject<Block> USER_SAND_15 = BLOCKS.register("u_sand15", () -> new UserBlock("sand"));
+    public static final RegistryObject<Block> USER_SAND_16 = BLOCKS.register("u_sand16", () -> new UserBlock("sand"));
+    public static final RegistryObject<Block> USER_SAND_17 = BLOCKS.register("u_sand17", () -> new UserBlock("sand"));
+    public static final RegistryObject<Block> USER_SAND_18 = BLOCKS.register("u_sand18", () -> new UserBlock("sand"));
+    public static final RegistryObject<Block> USER_SAND_19 = BLOCKS.register("u_sand19", () -> new UserBlock("sand"));
+    public static final RegistryObject<Block> USER_SAND_20 = BLOCKS.register("u_sand20", () -> new UserBlock("sand"));
     
-    // Deepslate blocks (up to 3 custom deepslate blocks)
-    public static final RegistryObject<Block> USER_DEEPSLATE_1 = BLOCKS.register("user_deepslate1",
-        () -> new UserBlock("deepslate"));
-    public static final RegistryObject<Block> USER_DEEPSLATE_2 = BLOCKS.register("user_deepslate2",
-        () -> new UserBlock("deepslate"));
-    public static final RegistryObject<Block> USER_DEEPSLATE_3 = BLOCKS.register("user_deepslate3",
-        () -> new UserBlock("deepslate"));
+    // Deepslate blocks (up to 20 custom deepslate blocks)
+    public static final RegistryObject<Block> USER_DEEPSLATE_1 = BLOCKS.register("u_deepslate1", () -> new UserBlock("deepslate"));
+    public static final RegistryObject<Block> USER_DEEPSLATE_2 = BLOCKS.register("u_deepslate2", () -> new UserBlock("deepslate"));
+    public static final RegistryObject<Block> USER_DEEPSLATE_3 = BLOCKS.register("u_deepslate3", () -> new UserBlock("deepslate"));
+    public static final RegistryObject<Block> USER_DEEPSLATE_4 = BLOCKS.register("u_deepslate4", () -> new UserBlock("deepslate"));
+    public static final RegistryObject<Block> USER_DEEPSLATE_5 = BLOCKS.register("u_deepslate5", () -> new UserBlock("deepslate"));
+    public static final RegistryObject<Block> USER_DEEPSLATE_6 = BLOCKS.register("u_deepslate6", () -> new UserBlock("deepslate"));
+    public static final RegistryObject<Block> USER_DEEPSLATE_7 = BLOCKS.register("u_deepslate7", () -> new UserBlock("deepslate"));
+    public static final RegistryObject<Block> USER_DEEPSLATE_8 = BLOCKS.register("u_deepslate8", () -> new UserBlock("deepslate"));
+    public static final RegistryObject<Block> USER_DEEPSLATE_9 = BLOCKS.register("u_deepslate9", () -> new UserBlock("deepslate"));
+    public static final RegistryObject<Block> USER_DEEPSLATE_10 = BLOCKS.register("u_deepslate10", () -> new UserBlock("deepslate"));
+    public static final RegistryObject<Block> USER_DEEPSLATE_11 = BLOCKS.register("u_deepslate11", () -> new UserBlock("deepslate"));
+    public static final RegistryObject<Block> USER_DEEPSLATE_12 = BLOCKS.register("u_deepslate12", () -> new UserBlock("deepslate"));
+    public static final RegistryObject<Block> USER_DEEPSLATE_13 = BLOCKS.register("u_deepslate13", () -> new UserBlock("deepslate"));
+    public static final RegistryObject<Block> USER_DEEPSLATE_14 = BLOCKS.register("u_deepslate14", () -> new UserBlock("deepslate"));
+    public static final RegistryObject<Block> USER_DEEPSLATE_15 = BLOCKS.register("u_deepslate15", () -> new UserBlock("deepslate"));
+    public static final RegistryObject<Block> USER_DEEPSLATE_16 = BLOCKS.register("u_deepslate16", () -> new UserBlock("deepslate"));
+    public static final RegistryObject<Block> USER_DEEPSLATE_17 = BLOCKS.register("u_deepslate17", () -> new UserBlock("deepslate"));
+    public static final RegistryObject<Block> USER_DEEPSLATE_18 = BLOCKS.register("u_deepslate18", () -> new UserBlock("deepslate"));
+    public static final RegistryObject<Block> USER_DEEPSLATE_19 = BLOCKS.register("u_deepslate19", () -> new UserBlock("deepslate"));
+    public static final RegistryObject<Block> USER_DEEPSLATE_20 = BLOCKS.register("u_deepslate20", () -> new UserBlock("deepslate"));
 }

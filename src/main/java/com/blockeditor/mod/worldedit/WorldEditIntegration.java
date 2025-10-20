@@ -55,9 +55,9 @@ public class WorldEditIntegration {
                 String blockName = userBlock.getBlockType(); // e.g., "wool", "stone", etc.
                 String blockId = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(block).getPath();
                 
-                // Parse identifier (e.g., "wool1" from "user_wool1")
-                if (blockId.startsWith("user_")) {
-                    String identifier = blockId.substring(5); // Remove "user_" prefix
+                // Parse identifier (e.g., "wool1" from "u_wool1")
+                if (blockId.startsWith("u_")) {
+                    String identifier = blockId.substring(2); // Remove "u_" prefix
                     
                     UserBlockRegistry.UserBlockData data = registry.getUserBlockData(identifier);
                     if (data != null) {

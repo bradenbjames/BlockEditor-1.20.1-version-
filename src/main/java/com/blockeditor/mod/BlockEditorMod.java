@@ -12,7 +12,7 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 @Mod(BlockEditorMod.MOD_ID)
 public class BlockEditorMod {
-    public static final String MOD_ID = "blockeditor";
+    public static final String MOD_ID = "be";
 
     public BlockEditorMod() {
         System.out.println("BLOCKEDITOR MOD CONSTRUCTOR CALLED!");

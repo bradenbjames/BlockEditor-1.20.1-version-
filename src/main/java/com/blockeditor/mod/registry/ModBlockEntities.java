@@ -24,7 +24,9 @@ public class ModBlockEntities {
                 ModBlocks.DYNAMIC_BLOCK_CONCRETE.get(),
                 ModBlocks.DYNAMIC_BLOCK_DEEPSLATE.get(),
                 ModBlocks.DYNAMIC_BLOCK_WOOD.get(),
-                ModBlocks.DYNAMIC_BLOCK_STONE.get()
+                ModBlocks.DYNAMIC_BLOCK_STONE.get(),
+                ModBlocks.DYNAMIC_BLOCK_COBBLESTONE.get(),
+                ModBlocks.DYNAMIC_BLOCK_SMOOTH_STONE.get()
             ).build(null);
         });
 }

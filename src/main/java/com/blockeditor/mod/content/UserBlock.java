@@ -67,12 +67,12 @@ public class UserBlock extends DynamicBlock {
                 
                 // Extract the number from this block's registry name
                 ResourceLocation blockId = BuiltInRegistries.BLOCK.getKey(this);
-                String blockName = blockId.getPath(); // e.g., "user_wool1"
+                String blockName = blockId.getPath(); // e.g., "u_wool1"
                 LOGGER.info("UserBlock: Block registry name: {}", blockName);
                 
-                // Parse the identifier (e.g., "wool1" from "user_wool1")
-                if (blockName.startsWith("user_")) {
-                    String identifier = blockName.substring(5); // Remove "user_" prefix
+                // Parse the identifier (e.g., "wool1" from "u_wool1")
+                if (blockName.startsWith("u_")) {
+                    String identifier = blockName.substring(2); // Remove "u_" prefix
                     LOGGER.info("UserBlock: Looking up registry data for identifier: {}", identifier);
                     UserBlockRegistry.UserBlockData data = registry.getUserBlockData(identifier);
                     
@@ -87,7 +87,7 @@ public class UserBlock extends DynamicBlock {
                         applyDefaults(blockEntity);
                     }
                 } else {
-                    LOGGER.warn("UserBlock: Block name doesn't start with 'user_': {}", blockName);
+                    LOGGER.warn("UserBlock: Block name doesn't start with 'u_': {}", blockName);
                     applyDefaults(blockEntity);
                 }
             } else {

@@ -1,0 +1,6 @@
+{
+  "parent": "be:block/tinted_cube_all",
+  "textures": {
+    "all": "minecraft:block/birch_planks"
+  }
+}

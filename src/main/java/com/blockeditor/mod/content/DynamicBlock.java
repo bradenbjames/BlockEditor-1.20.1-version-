@@ -115,7 +115,7 @@ public class DynamicBlock extends Block implements EntityBlock {
                         
                         int assignedNumber = registry.assignUserBlock(userBlockType, blockEntity.getColor(), mimicBlock);
                         if (assignedNumber > 0) {
-                            String userBlockCommand = String.format("//set blockeditor:user_%s%d{Color:\"%s\"}", 
+                            String userBlockCommand = String.format("//set be:u_%s%d{Color:\"%s\"}", 
                                 userBlockType, assignedNumber, colorHex);
                             player.displayClientMessage(net.minecraft.network.chat.Component.literal(
                                 "§6User Block Assigned: §7" + userBlockCommand), false);

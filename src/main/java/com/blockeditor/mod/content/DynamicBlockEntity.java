@@ -185,12 +185,12 @@ public class DynamicBlockEntity extends BlockEntity {
             // Extract the identifier from the block name
             net.minecraft.resources.ResourceLocation blockId = 
                 net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(userBlock);
-            String blockName = blockId.getPath(); // e.g., "user_dirt1"
+            String blockName = blockId.getPath(); // e.g., "u_dirt1"
             
             LOGGER.info("DynamicBlockEntity: Auto-applying data for block: {} at {}", blockName, getBlockPos());
             
-            if (blockName.startsWith("user_")) {
-                String identifier = blockName.substring(5); // Remove "user_" prefix
+            if (blockName.startsWith("u_")) {
+                String identifier = blockName.substring(2); // Remove "u_" prefix
                 LOGGER.info("DynamicBlockEntity: Looking up identifier: {}", identifier);
                 
                 com.blockeditor.mod.registry.UserBlockRegistry.UserBlockData data = 
@@ -213,7 +213,7 @@ public class DynamicBlockEntity extends BlockEntity {
                     LOGGER.warn("DynamicBlockEntity: No registry data found for identifier: {} - You may need to create and register a custom block first", identifier);
                 }
             } else {
-                LOGGER.warn("DynamicBlockEntity: Block name doesn't start with 'user_': {}", blockName);
+                LOGGER.warn("DynamicBlockEntity: Block name doesn't start with 'u_': {}", blockName);
             }
         }
     }
