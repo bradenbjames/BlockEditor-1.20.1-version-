@@ -72,7 +72,7 @@ public class BlockEditorScreen extends Screen {
     }
 
     public BlockEditorScreen() {
-        super(Component.literal("Block Editor - Fixed Scroll"));
+        super(Component.literal("Block Editor"));
         loadHistoryFromFile(); // Load history when screen is created
     }
     
@@ -259,13 +259,13 @@ public class BlockEditorScreen extends Screen {
         pose.popPose();
 
         // Draw history panel on the right side
-        renderHistoryPanel(graphics);
+        renderHistoryPanel(graphics, mouseX, mouseY);
 
         // Render all widgets (buttons and text boxes) - THIS IS CRITICAL
         super.render(graphics, mouseX, mouseY, partialTick);
     }
 
-    private void renderHistoryPanel(GuiGraphics graphics) {
+    private void renderHistoryPanel(GuiGraphics graphics, int mouseX, int mouseY) {
         
         // Calculate main block grid dimensions to check for overlap
         int centerX = this.width / 2;
@@ -285,7 +285,9 @@ public class BlockEditorScreen extends Screen {
         // Only hide text if we're really cramped (less than 25px per item)
         boolean hideHexText = (availableWidth / actualColumns) < 25;
         
-        int finalPanelWidth = actualColumns * (hideHexText ? 20 : itemWidth);
+        int spacing = 2; // Small gap between boxes
+        int individualItemWidth = hideHexText ? 20 : itemWidth;
+        int finalPanelWidth = actualColumns * (individualItemWidth + spacing) - spacing + 8; // Include spacing and padding
         int panelX = this.width - finalPanelWidth - panelMargin;
         int panelY = 60;
         int panelHeight = this.height - panelY - 20; // Leave only 20px spacing at the bottom
@@ -344,15 +346,23 @@ public class BlockEditorScreen extends Screen {
             int row = relativeIndex / blocksPerRow;
             int col = relativeIndex % blocksPerRow;
             
-            int itemY = panelY + (row * itemHeight);
+            int itemY = panelY + (row * (itemHeight + spacing));
             
-            // Calculate compact item positioning
-            int individualItemWidth = hideHexText ? 20 : itemWidth;
-            int itemX = panelX + 2 + (col * individualItemWidth);
+            // Calculate compact item positioning with spacing
+            int itemX = panelX + 4 + (col * (individualItemWidth + spacing));
             
-            // Draw item background with rounded corners (alternating rows)
-            int bgColor = (row % 2 == 0) ? 0x40FFFFFF : 0x20FFFFFF;
-            drawRoundedRect(graphics, itemX, itemY, individualItemWidth, itemHeight, 2, bgColor);
+            // Check if mouse is hovering over this item
+            boolean isHovered = mouseX >= itemX && mouseX < itemX + (individualItemWidth - spacing) && 
+                               mouseY >= itemY && mouseY < itemY + (itemHeight - spacing);
+            
+            // Draw item background with rounded corners (alternating rows + hover effect)
+            int bgColor;
+            if (isHovered) {
+                bgColor = 0x80CCCCCC; // Light gray hover effect
+            } else {
+                bgColor = (row % 2 == 0) ? 0x40FFFFFF : 0x20FFFFFF; // Normal alternating colors
+            }
+            drawRoundedRect(graphics, itemX, itemY, individualItemWidth - spacing, itemHeight - spacing, 3, bgColor);
 
             // Draw block icon with color tint
             var pose = graphics.pose();
@@ -467,7 +477,9 @@ public class BlockEditorScreen extends Screen {
         int actualColumns = Math.min(maxColumns, Math.max(1, availableWidth / itemWidth));
         boolean hideHexText = (availableWidth / actualColumns) < 25;
         
-        int finalPanelWidth = actualColumns * (hideHexText ? 20 : itemWidth);
+        int spacing = 2; // Small gap between boxes
+        int individualItemWidth = hideHexText ? 20 : itemWidth;
+        int finalPanelWidth = actualColumns * (individualItemWidth + spacing) - spacing + 8; // Include spacing and padding
         int panelX = this.width - finalPanelWidth - panelMargin;
         int panelY = 60;
         int panelHeight = this.height - panelY - 20;
@@ -484,11 +496,10 @@ public class BlockEditorScreen extends Screen {
             int startIndex = Math.max(0, Math.min(historyScrollOffset, createdBlocksHistory.size() - maxVisibleItems));
             
             int relativeY = (int) (mouseY - panelY);
-            int row = relativeY / itemHeight;
+            int row = relativeY / (itemHeight + spacing);
             
-            // Calculate column based on compact layout
-            int individualItemWidth = hideHexText ? 20 : itemWidth;
-            int col = (int) ((mouseX - (panelX + 2)) / individualItemWidth);
+            // Calculate column based on compact layout with spacing
+            int col = (int) ((mouseX - (panelX + 4)) / (individualItemWidth + spacing));
             
             int clickedIndex = startIndex + (row * blocksPerRow) + col;
             
@@ -497,6 +508,7 @@ public class BlockEditorScreen extends Screen {
                 selectedBlock = info.originalBlock;
                 hexColor = info.hexColor;
                 hexBox.setValue(hexColor);
+                System.out.println("HISTORY CLICK: Selected block " + info.originalBlock + " with color " + info.hexColor);
                 return true;
             }
         }
@@ -862,7 +874,7 @@ public class BlockEditorScreen extends Screen {
         return false;
     }
 
-    // Helper method to draw rounded rectangles (optimized version)
+    // Helper method to draw rounded rectangles (optimized version with enhanced corners)
     private void drawRoundedRect(GuiGraphics graphics, int x, int y, int width, int height, int radius, int color) {
         // Clamp radius to prevent issues with small rectangles
         radius = Math.min(radius, Math.min(width / 2, height / 2));
@@ -878,21 +890,33 @@ public class BlockEditorScreen extends Screen {
         graphics.fill(x, y + radius, x + radius, y + height - radius, color); // Left rectangle
         graphics.fill(x + width - radius, y + radius, x + width, y + height - radius, color); // Right rectangle
         
-        // Draw simplified rounded corners (just a few pixels for the effect)
+        // Draw enhanced rounded corners (slightly more pixels for better rounding)
         // Top-left corner
-        graphics.fill(x + 1, y + 1, x + radius - 1, y + 2, color);
-        graphics.fill(x + 1, y + 2, x + 2, y + radius - 1, color);
+        graphics.fill(x + 1, y + 1, x + radius, y + 2, color);
+        graphics.fill(x + 1, y + 2, x + 3, y + radius, color);
+        if (radius >= 3) {
+            graphics.fill(x + 2, y + 1, x + 3, y + 2, color);
+        }
         
         // Top-right corner
-        graphics.fill(x + width - radius + 1, y + 1, x + width - 1, y + 2, color);
-        graphics.fill(x + width - 2, y + 2, x + width - 1, y + radius - 1, color);
+        graphics.fill(x + width - radius, y + 1, x + width - 1, y + 2, color);
+        graphics.fill(x + width - 3, y + 2, x + width - 1, y + radius, color);
+        if (radius >= 3) {
+            graphics.fill(x + width - 3, y + 1, x + width - 2, y + 2, color);
+        }
         
         // Bottom-left corner
-        graphics.fill(x + 1, y + height - 2, x + radius - 1, y + height - 1, color);
-        graphics.fill(x + 1, y + height - radius + 1, x + 2, y + height - 2, color);
+        graphics.fill(x + 1, y + height - 2, x + radius, y + height - 1, color);
+        graphics.fill(x + 1, y + height - radius, x + 3, y + height - 2, color);
+        if (radius >= 3) {
+            graphics.fill(x + 2, y + height - 2, x + 3, y + height - 1, color);
+        }
         
         // Bottom-right corner
-        graphics.fill(x + width - radius + 1, y + height - 2, x + width - 1, y + height - 1, color);
-        graphics.fill(x + width - 2, y + height - radius + 1, x + width - 1, y + height - 2, color);
+        graphics.fill(x + width - radius, y + height - 2, x + width - 1, y + height - 1, color);
+        graphics.fill(x + width - 3, y + height - radius, x + width - 1, y + height - 2, color);
+        if (radius >= 3) {
+            graphics.fill(x + width - 3, y + height - 2, x + width - 2, y + height - 1, color);
+        }
     }
 }
