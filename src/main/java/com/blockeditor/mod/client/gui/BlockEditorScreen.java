@@ -292,19 +292,17 @@ public class BlockEditorScreen extends Screen {
         int centerX = this.width / 2;
         int blockGridWidth = BLOCKS_PER_ROW * (BLOCK_SIZE + BLOCK_PADDING);
         int gridStartX = centerX - (blockGridWidth / 2);
-        int hexX = gridStartX + 10; // Offset to align # with block grid
         int gridEndY = 55 + (4 * (BLOCK_SIZE + BLOCK_PADDING));
 
         // # symbol is now integrated into the hex input box
         
-        // Draw red border around name box if invalid (no external label needed)
+        // Draw red border around name box if invalid (use actual nameBox position)
         if (nameBox != null && !isNameBoxValid()) {
             int borderColor = 0xFFFF4444; // Bright red
-            int nameX = hexX + 90 + 15; // Match the new nameBox position (updated for 90px hex box)
-            int boxX = nameX;
-            int boxY = 30;
-            int boxWidth = 140; // Updated width to match nameBox
-            int boxHeight = 20;
+            int boxX = nameBox.getX();
+            int boxY = nameBox.getY(); 
+            int boxWidth = nameBox.getWidth();
+            int boxHeight = nameBox.getHeight();
             
             // Draw red border (2 pixels thick)
             graphics.fill(boxX - 2, boxY - 2, boxX + boxWidth + 2, boxY - 1, borderColor); // Top
@@ -313,21 +311,27 @@ public class BlockEditorScreen extends Screen {
             graphics.fill(boxX + boxWidth + 1, boxY - 1, boxX + boxWidth + 2, boxY + boxHeight + 1, borderColor); // Right
         }
 
-        // Draw block preview to the right of name box
+        // Draw block preview same size as grid blocks and aligned with white concrete block
         int color = parseHexColor(hexBox.getValue());
-        int previewSize = 20; // Match input box height
+        int previewSize = BLOCK_SIZE; // Same size as blocks in grid (32px)
         
-        // Position further to the right of name box
-        int nameBoxEndX = hexX + 90 + 15 + 140; // End of name box (updated for 90px hex box)
-        int blockPreviewX = nameBoxEndX + 25; // Further to the right with larger gap
-        int blockPreviewY = 32; // Align with input boxes (30 + small offset)
+        // Position to align with white concrete block (6th block in grid)
+        int whiteConcreteX = gridStartX + 5 * (BLOCK_SIZE + BLOCK_PADDING); // 6th position (0-indexed: 5)
+        int blockPreviewX = whiteConcreteX; // Same X position as white concrete
+        
+        // Calculate Y position to center between input boxes and grid
+        int inputBoxesY = 30;
+        int blockGridStartY = 55;
+        int availableSpace = blockGridStartY - (inputBoxesY + 20); // Space between input end and grid start
+        int blockPreviewY = inputBoxesY + 20 + (availableSpace - previewSize) / 2; // Center in available space
         
         // Save the current pose
         var pose = graphics.pose();
         pose.pushPose();
         
-        // Scale and translate for proper sizing
+        // Scale and translate to match grid block size exactly
         pose.translate(blockPreviewX, blockPreviewY, 0);
+        pose.scale(2.0f, 2.0f, 1.0f); // 2x scale to make 16px item render as 32px block
 
         // Apply color tint using RenderSystem
         RenderSystem.setShaderColor(
