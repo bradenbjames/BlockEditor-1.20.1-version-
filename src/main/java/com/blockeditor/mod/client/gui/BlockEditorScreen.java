@@ -234,7 +234,7 @@ public class BlockEditorScreen extends Screen {
         int color = parseHexColor(hexBox.getValue());
         int previewSize = 20; // Match hex input box height
         int blockPreviewX = hexX + 90;
-        int blockPreviewY = 30; // Align with hex input box Y position (same as hexBox Y)
+        int blockPreviewY = 32; // Center vertically with hex input box (30 + (20-16)/2)
         
         // Save the current pose
         var pose = graphics.pose();
@@ -267,62 +267,80 @@ public class BlockEditorScreen extends Screen {
 
     private void renderHistoryPanel(GuiGraphics graphics) {
         
-        // Determine if we should use condensed mode based on available width
-        boolean isCondensed = this.width < 1000; // Use condensed mode for smaller screens
+        // Calculate main block grid dimensions to check for overlap
+        int centerX = this.width / 2;
+        int blockGridWidth = BLOCKS_PER_ROW * (BLOCK_SIZE + BLOCK_PADDING);
+        int gridEndX = centerX + (blockGridWidth / 2);
         
-        // Calculate panel dimensions based on mode
-        int panelWidth = isCondensed ? 60 : 170; // Narrow for condensed, wide for normal
-        int panelX = this.width - panelWidth - 10; // 10px margin from right edge
+        // Determine if we should use single column (when panel would overlap with block grid)
+        int panelWidth = 140; // Width for 2-column layout
+        int singleColumnWidth = 75; // Width for 1-column layout
+        int panelMargin = 10;
+        
+        // Check if 2-column panel would overlap with block grid (need 20px buffer)
+        boolean useSingleColumn = (this.width - panelWidth - panelMargin) < (gridEndX + 20);
+        
+        int finalPanelWidth = useSingleColumn ? singleColumnWidth : panelWidth;
+        int panelX = this.width - finalPanelWidth - panelMargin;
         int panelY = 60;
         int panelHeight = this.height - panelY - 20; // Leave only 20px spacing at the bottom
         
         if (createdBlocksHistory.isEmpty()) {
             // Draw empty panel to show it exists
-            graphics.fill(panelX - 5, panelY - 25, panelX + panelWidth + 5, panelY + 75, 0xE0000000);
+            graphics.fill(panelX - 5, panelY - 25, panelX + finalPanelWidth + 5, panelY + 75, 0xE0000000);
             // Draw title bar
-            graphics.fill(panelX - 5, panelY - 25, panelX + panelWidth + 5, panelY - 5, 0xFF333333);
+            graphics.fill(panelX - 5, panelY - 25, panelX + finalPanelWidth + 5, panelY - 5, 0xFF333333);
             
-            if (!isCondensed) {
-                graphics.drawCenteredString(this.font, "§eRecent Blocks", panelX + panelWidth / 2, panelY - 18, 0xFFFFFF);
-                graphics.drawCenteredString(this.font, "§7No blocks created yet", panelX + panelWidth / 2, panelY + 20, 0xAAAAAA);
-            } else {
-                graphics.drawCenteredString(this.font, "§eRecent", panelX + panelWidth / 2, panelY - 18, 0xFFFFFF);
-                graphics.drawCenteredString(this.font, "§7None", panelX + panelWidth / 2, panelY + 20, 0xAAAAAA);
-            }
+            graphics.drawCenteredString(this.font, "§eRecent", panelX + finalPanelWidth / 2, panelY - 18, 0xFFFFFF);
+            graphics.drawCenteredString(this.font, "§7No blocks yet", panelX + finalPanelWidth / 2, panelY + 20, 0xAAAAAA);
             return;
         }
 
-        // Calculate layout based on mode
-        int itemHeight = isCondensed ? 20 : 24; // Smaller items in condensed mode
-        int maxVisibleItems = panelHeight / itemHeight;
-        int totalItems = createdBlocksHistory.size();
+        // Calculate layout based on column mode
+        int itemHeight = 20; // Height for each row
+        int blocksPerRow = useSingleColumn ? 1 : 2;
+        int totalRows = (int) Math.ceil((double) createdBlocksHistory.size() / blocksPerRow);
+        int maxVisibleRows = panelHeight / itemHeight;
+        int maxVisibleItems = maxVisibleRows * blocksPerRow;
 
         // Draw panel background
-        graphics.fill(panelX - 5, panelY - 25, panelX + panelWidth + 5, panelY + panelHeight + 5, 0xE0000000);
+        graphics.fill(panelX - 5, panelY - 25, panelX + finalPanelWidth + 5, panelY + panelHeight + 5, 0xE0000000);
 
         // Draw title bar
-        graphics.fill(panelX - 5, panelY - 25, panelX + panelWidth + 5, panelY - 5, 0xFF333333);
-        if (isCondensed) {
-            graphics.drawCenteredString(this.font, "§eRecent", panelX + panelWidth / 2, panelY - 18, 0xFFFFFF);
-        } else {
-            graphics.drawCenteredString(this.font, "§eRecent Blocks", panelX + panelWidth / 2, panelY - 18, 0xFFFFFF);
-        }
+        graphics.fill(panelX - 5, panelY - 25, panelX + finalPanelWidth + 5, panelY - 5, 0xFF333333);
+        graphics.drawCenteredString(this.font, "§eRecent", panelX + finalPanelWidth / 2, panelY - 18, 0xFFFFFF);
 
         // Calculate visible range
-        int startIndex = Math.max(0, Math.min(historyScrollOffset, totalItems - maxVisibleItems));
-        int endIndex = Math.min(totalItems, startIndex + maxVisibleItems);
+        int startIndex = Math.max(0, Math.min(historyScrollOffset, createdBlocksHistory.size() - maxVisibleItems));
+        int endIndex = Math.min(createdBlocksHistory.size(), startIndex + maxVisibleItems);
 
         // Enable scissoring for scrolling
-        graphics.enableScissor(panelX - 5, panelY, panelX + panelWidth + 5, panelY + panelHeight);
+        graphics.enableScissor(panelX - 5, panelY, panelX + finalPanelWidth + 5, panelY + panelHeight);
 
-        // Draw each visible created block in history
+        // Draw blocks in grid (1 or 2 columns based on space)
         for (int i = startIndex; i < endIndex; i++) {
             CreatedBlockInfo info = createdBlocksHistory.get(i);
-            int itemY = panelY + ((i - startIndex) * itemHeight);
+            
+            int relativeIndex = i - startIndex;
+            int row = relativeIndex / blocksPerRow;
+            int col = relativeIndex % blocksPerRow;
+            
+            int itemY = panelY + (row * itemHeight);
+            int itemX, itemWidth;
+            
+            if (useSingleColumn) {
+                // Single column: use full width
+                itemX = panelX + 2;
+                itemWidth = finalPanelWidth - 4;
+            } else {
+                // Two columns: split width
+                itemX = panelX + 2 + (col * (finalPanelWidth - 4) / blocksPerRow);
+                itemWidth = (finalPanelWidth - 4) / blocksPerRow;
+            }
 
-            // Draw item background (alternating colors)
-            int bgColor = (i % 2 == 0) ? 0x40FFFFFF : 0x20FFFFFF;
-            graphics.fill(panelX, itemY, panelX + panelWidth, itemY + itemHeight - 1, bgColor);
+            // Draw item background (alternating rows)
+            int bgColor = (row % 2 == 0) ? 0x40FFFFFF : 0x20FFFFFF;
+            graphics.fill(itemX, itemY, itemX + itemWidth - 1, itemY + itemHeight - 1, bgColor);
 
             // Draw block icon with color tint
             var pose = graphics.pose();
@@ -335,46 +353,40 @@ public class BlockEditorScreen extends Screen {
                 1.0f
             );
 
-            if (isCondensed) {
-                // Condensed mode: center the block icon in the narrow panel
-                graphics.renderItem(info.originalBlock.asItem().getDefaultInstance(), panelX + (panelWidth - 16) / 2, itemY + 2);
-            } else {
-                // Normal mode: block on left, text on right
-                graphics.renderItem(info.originalBlock.asItem().getDefaultInstance(), panelX + 2, itemY + 4);
-            }
+            // Position block icon
+            int blockX = itemX + 1;
+            int blockY = itemY + 2;
+            graphics.renderItem(info.originalBlock.asItem().getDefaultInstance(), blockX, blockY);
 
             RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
             pose.popPose();
 
-            // Draw block name only in normal mode (not condensed)
-            if (!isCondensed) {
-                String displayName = info.blockName;
-                if (font.width(displayName) > panelWidth - 25) {
-                    displayName = font.plainSubstrByWidth(displayName, panelWidth - 25) + "...";
-                }
-                graphics.drawString(this.font, displayName, panelX + 20, itemY + 6, 0xFFFFFF);
-            }
+            // Draw small hex color text inline to the right of the block
+            String hexText = "#" + info.hexColor;
+            int textX = itemX + 18; // Right of the 16px block icon
+            int textY = itemY + 6; // Vertically centered with block
+            
+            // Scale down the text
+            pose = graphics.pose();
+            pose.pushPose();
+            pose.translate(textX, textY, 0);
+            pose.scale(0.6f, 0.6f, 1.0f); // Make text 60% of normal size
+            graphics.drawString(this.font, hexText, 0, 0, 0xAAAAAA);
+            pose.popPose();
         }
 
         graphics.disableScissor();
 
-        // Draw scroll indicators 
-        if (totalItems > maxVisibleItems) {
+        // Draw scroll bar
+        if (totalRows > maxVisibleRows) {
             // Draw scrollbar background
-            graphics.fill(panelX + panelWidth - 3, panelY, panelX + panelWidth, panelY + panelHeight, 0xFF666666);
+            graphics.fill(panelX + finalPanelWidth - 3, panelY, panelX + finalPanelWidth, panelY + panelHeight, 0xFF666666);
             
             // Draw scrollbar thumb
-            int thumbHeight = Math.max(10, (maxVisibleItems * panelHeight) / totalItems);
-            int thumbY = panelY + (startIndex * (panelHeight - thumbHeight)) / Math.max(1, totalItems - maxVisibleItems);
-            graphics.fill(panelX + panelWidth - 3, thumbY, panelX + panelWidth, thumbY + thumbHeight, 0xFFCCCCCC);
-
-            // Draw simple scroll indicators
-            if (startIndex > 0) {
-                graphics.drawString(this.font, "▲", panelX + panelWidth - 12, panelY - 10, 0xFFFFFF);
-            }
-            if (endIndex < totalItems) {
-                graphics.drawString(this.font, "▼", panelX + panelWidth - 12, panelY + panelHeight - 5, 0xFFFFFF);
-            }
+            int thumbHeight = Math.max(10, (maxVisibleRows * panelHeight) / totalRows);
+            int scrollRowOffset = historyScrollOffset / blocksPerRow;
+            int thumbY = panelY + (scrollRowOffset * (panelHeight - thumbHeight)) / Math.max(1, totalRows - maxVisibleRows);
+            graphics.fill(panelX + finalPanelWidth - 3, thumbY, panelX + finalPanelWidth, thumbY + thumbHeight, 0xFFCCCCCC);
         }
     }
 
@@ -485,19 +497,27 @@ public class BlockEditorScreen extends Screen {
     public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
         // Simple scroll for history panel - right side of screen
         if (mouseX > this.width * 0.75 && !createdBlocksHistory.isEmpty()) {
-            // Calculate maxScroll using the same logic as render method
-            boolean isCondensed = this.width < 1000;
+            // Calculate scroll parameters with same responsive logic as render method
+            int centerX = this.width / 2;
+            int blockGridWidth = BLOCKS_PER_ROW * (BLOCK_SIZE + BLOCK_PADDING);
+            int gridEndX = centerX + (blockGridWidth / 2);
+            int panelWidth = 140;
+            int panelMargin = 10;
+            boolean useSingleColumn = (this.width - panelWidth - panelMargin) < (gridEndX + 20);
+            
             int panelY = 60;
-            int panelHeight = this.height - panelY - 20; // Same as render method
-            int itemHeight = isCondensed ? 20 : 24;
-            int maxVisibleItems = panelHeight / itemHeight;
+            int panelHeight = this.height - panelY - 20;
+            int itemHeight = 20;
+            int blocksPerRow = useSingleColumn ? 1 : 2;
+            int maxVisibleRows = panelHeight / itemHeight;
+            int maxVisibleItems = maxVisibleRows * blocksPerRow;
             int maxScroll = Math.max(0, createdBlocksHistory.size() - maxVisibleItems);
             
             if (delta > 0 && historyScrollOffset > 0) {
-                historyScrollOffset--;
+                historyScrollOffset = Math.max(0, historyScrollOffset - blocksPerRow); // Scroll by row
                 return true;
             } else if (delta < 0 && historyScrollOffset < maxScroll) {
-                historyScrollOffset++;
+                historyScrollOffset = Math.min(maxScroll, historyScrollOffset + blocksPerRow); // Scroll by row
                 return true;
             }
         }
