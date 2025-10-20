@@ -179,15 +179,15 @@ public class BlockEditorScreen extends Screen {
         int blockGridWidth = BLOCKS_PER_ROW * (BLOCK_SIZE + BLOCK_PADDING);
         int gridStartX = centerX - (blockGridWidth / 2);
 
-        // Search box - align with the left edge of the block grid
-        int searchWidth = 150; // Slightly smaller to fit better
-        searchBox = new EditBox(this.font, gridStartX, 30, searchWidth, 20, Component.literal("Search"));
+        // Search box - hidden from UI but functionality kept
+        int searchWidth = 120; 
+        searchBox = new EditBox(this.font, -1000, -1000, searchWidth, 20, Component.literal("Search")); // Move off-screen
         searchBox.setHint(Component.literal("Search blocks..."));
-        this.addRenderableWidget(searchBox);
-
-        // Hex color input box - positioned after search box
+        // Don't add to renderableWidget - keep functionality but hide UI
+        
+        // Hex color input box - positioned so # aligns with block grid
         int hexY = 30;
-        int hexX = gridStartX + searchWidth + 20; // After search box + gap
+        int hexX = gridStartX + 10; // Offset to align # with block grid left edge
 
         hexBox = new EditBox(this.font, hexX, hexY, 80, 20, Component.literal("Hex Color"));
         hexBox.setValue(hexColor);
@@ -195,11 +195,11 @@ public class BlockEditorScreen extends Screen {
         hexBox.setHint(Component.literal("FFFFFF"));
         this.addRenderableWidget(hexBox);
 
-        // Custom name input box - positioned after hex box
+        // Custom name input box - positioned after hex box with clear placeholder
         int nameX = hexX + 80 + 15; // After hex box + gap
-        nameBox = new EditBox(this.font, nameX, hexY, 120, 20, Component.literal("Block Name"));
+        nameBox = new EditBox(this.font, nameX, hexY, 140, 20, Component.literal("Block Name"));
         nameBox.setMaxLength(32);
-        nameBox.setHint(Component.literal("My Custom Block"));
+        nameBox.setHint(Component.literal("Block name (required)"));
         this.addRenderableWidget(nameBox);
 
         // Buttons - positioned just above player inventory
@@ -244,24 +244,19 @@ public class BlockEditorScreen extends Screen {
         int centerX = this.width / 2;
         int blockGridWidth = BLOCKS_PER_ROW * (BLOCK_SIZE + BLOCK_PADDING);
         int gridStartX = centerX - (blockGridWidth / 2);
-        int searchWidth = 150;
-        int hexX = gridStartX + searchWidth + 20;
+        int hexX = gridStartX + 10; // Offset to align # with block grid
         int gridEndY = 55 + (4 * (BLOCK_SIZE + BLOCK_PADDING));
 
-        // Draw "#" label before hex input box
-        graphics.drawString(this.font, "#", hexX - 10, 34, 0xFFFFFF);
+        // Draw "#" label before hex input box - now aligned with block grid
+        graphics.drawString(this.font, "#", gridStartX, 34, 0xFFFFFF);
         
-        // Draw "Name:" label before name input box (red if invalid)
-        int nameX = hexX + 80 + 15;
-        int nameLabelColor = (nameBox != null && !isNameBoxValid()) ? 0xFFFF4444 : 0xFFFFFF;
-        graphics.drawString(this.font, "Name:", nameX - 35, 34, nameLabelColor);
-        
-        // Draw red border around name box if invalid
+        // Draw red border around name box if invalid (no external label needed)
         if (nameBox != null && !isNameBoxValid()) {
             int borderColor = 0xFFFF4444; // Bright red
+            int nameX = hexX + 80 + 15; // Match the new nameBox position (updated gap)
             int boxX = nameX;
             int boxY = 30;
-            int boxWidth = 120;
+            int boxWidth = 140; // Updated width to match nameBox
             int boxHeight = 20;
             
             // Draw red border (2 pixels thick)
@@ -280,17 +275,23 @@ public class BlockEditorScreen extends Screen {
             graphics.drawString(this.font, errorText, nameX, 52, 0xFFFF4444);
         }
 
-        // Draw block preview aligned with hex input box height
+        // Draw block preview to the right of name box, aligned with white concrete block
         int color = parseHexColor(hexBox.getValue());
-        int previewSize = 20; // Match hex input box height
-        int blockPreviewX = hexX + 90;
-        int blockPreviewY = 32; // Center vertically with hex input box (30 + (20-16)/2)
+        int previewSize = 20; // Match input box height
+        
+        // Position to the right of name box, aligned with the end of white concrete block
+        int nameBoxEndX = hexX + 80 + 15 + 140; // End of name box
+        int whiteConcreteX = gridStartX + 5 * (BLOCK_SIZE + BLOCK_PADDING); // 6th block (white concrete) position
+        int whiteConcreteEndX = whiteConcreteX + BLOCK_SIZE; // End of white concrete block
+        
+        int blockPreviewX = nameBoxEndX + 10; // Just to the right of name box with small gap
+        int blockPreviewY = 32; // Align with input boxes (30 + small offset)
         
         // Save the current pose
         var pose = graphics.pose();
         pose.pushPose();
         
-        // Scale and translate for proper sizing - no background, just the block
+        // Scale and translate for proper sizing
         pose.translate(blockPreviewX, blockPreviewY, 0);
 
         // Apply color tint using RenderSystem
@@ -580,6 +581,54 @@ public class BlockEditorScreen extends Screen {
                     selectedBlock = filteredBlocks.get(index);
                     return true;
                 }
+            }
+        }
+
+        // Check if clicking on text boxes for special handling
+        boolean clickedOnTextBox = false;
+        
+        // Check hex box click
+        if (hexBox != null) {
+            int hexX = centerX - (blockGridWidth / 2);
+            int hexY = 30;
+            int hexWidth = 80;
+            int hexHeight = 20;
+            
+            if (mouseX >= hexX && mouseX < hexX + hexWidth && mouseY >= hexY && mouseY < hexY + hexHeight) {
+                clickedOnTextBox = true;
+            }
+        }
+        
+        // Check name box click - select all text when clicked (if it has placeholder text)
+        if (nameBox != null) {
+            int nameX = centerX - (blockGridWidth / 2) + 80 + 15; // Calculate nameBox X position (no search box)
+            int nameY = 30;
+            int nameWidth = 140;
+            int nameHeight = 20;
+            
+            if (mouseX >= nameX && mouseX < nameX + nameWidth && mouseY >= nameY && mouseY < nameY + nameHeight) {
+                clickedOnTextBox = true;
+                // If nameBox is empty or contains the placeholder-style text, select all when clicked
+                if (nameBox.getValue().trim().isEmpty()) {
+                    // Let the EditBox handle the click first
+                    boolean result = super.mouseClicked(mouseX, mouseY, button);
+                    // Then select all text if it gets focus
+                    if (nameBox.isFocused()) {
+                        nameBox.setHighlightPos(0);
+                        nameBox.setCursorPosition(nameBox.getValue().length());
+                    }
+                    return result;
+                }
+            }
+        }
+        
+        // If clicked outside text boxes, unfocus them
+        if (!clickedOnTextBox) {
+            if (hexBox != null && hexBox.isFocused()) {
+                hexBox.setFocused(false);
+            }
+            if (nameBox != null && nameBox.isFocused()) {
+                nameBox.setFocused(false);
             }
         }
 
