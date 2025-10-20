@@ -881,14 +881,94 @@ public class BlockEditorScreen extends Screen {
     }
     
     private boolean isNameBoxValid() {
-        return nameBox != null && isValidBlockName(nameBox.getValue());
+        return nameBox != null && isValidBlockName(nameBox.getValue()) && !isDuplicateName(nameBox.getValue());
     }
 
     private boolean isDuplicateBlock(Block textureBlock, String hexColor) {
+        // Get the actual block type that would be created for the given texture
+        Block blockType = getBlockTypeForTexture(textureBlock);
+        
         for (CreatedBlockInfo info : createdBlocksHistory) {
-            if (info.originalBlock == textureBlock && info.hexColor.equalsIgnoreCase(hexColor)) {
+            // Get the block type that was used for the history item
+            Block historyBlockType = getBlockTypeForTexture(info.originalBlock);
+            
+            // Check if both the final block type AND hex color match
+            if (historyBlockType == blockType && info.hexColor.equalsIgnoreCase(hexColor)) {
                 return true;
             }
+        }
+        return false;
+    }
+
+    private boolean isDuplicateName(String customName) {
+        if (customName == null || customName.trim().isEmpty()) {
+            return false; // Empty names are handled by other validation
+        }
+        
+        String trimmedName = customName.trim();
+        for (CreatedBlockInfo info : createdBlocksHistory) {
+            if (info.blockName != null && info.blockName.equalsIgnoreCase(trimmedName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void giveExistingBlockToPlayer(Block textureBlock, String hexColor) {
+        if (this.minecraft != null && this.minecraft.player != null) {
+            // Check if inventory is full
+            if (isInventoryFull()) {
+                String blockName = BuiltInRegistries.BLOCK.getKey(textureBlock).getPath().replace("_", " ");
+                this.minecraft.player.displayClientMessage(
+                    Component.literal("§eInventory full! §7Block §f" + blockName + " §7(#" + hexColor.toUpperCase() + ") will be dropped near you."),
+                    false
+                );
+            }
+
+            // Determine which block type to use based on the selected block
+            Block blockToUse = getBlockTypeForTexture(textureBlock);
+            ResourceLocation blockId = BuiltInRegistries.BLOCK.getKey(blockToUse);
+            ResourceLocation mimicBlockId = BuiltInRegistries.BLOCK.getKey(textureBlock);
+
+            // Find the existing block info to get the custom name
+            String existingCustomName = "";
+            Block blockType = getBlockTypeForTexture(textureBlock);
+            for (CreatedBlockInfo info : createdBlocksHistory) {
+                Block historyBlockType = getBlockTypeForTexture(info.originalBlock);
+                if (historyBlockType == blockType && info.hexColor.equalsIgnoreCase(hexColor)) {
+                    existingCustomName = info.blockName;
+                    break;
+                }
+            }
+
+            // Send packet to server to give the existing block
+            ModNetworking.sendToServer(new CreateBlockPacket(
+                hexColor.toUpperCase(),
+                mimicBlockId.toString(),
+                blockId.toString(),
+                existingCustomName
+            ));
+
+            // Show message that we're giving the existing block (only if inventory wasn't full)
+            if (!isInventoryFull()) {
+                String blockName = mimicBlockId.getPath().replace("_", " ");
+                this.minecraft.player.displayClientMessage(
+                    Component.literal("§aGiving existing block: §f" + blockName + " §7(#" + hexColor.toUpperCase() + ")"),
+                    false
+                );
+            }
+        }
+    }
+
+    private boolean isInventoryFull() {
+        if (this.minecraft != null && this.minecraft.player != null) {
+            // Check if player has any empty slots in their main inventory (slots 0-35)
+            for (int i = 0; i < this.minecraft.player.getInventory().getContainerSize(); i++) {
+                if (this.minecraft.player.getInventory().getItem(i).isEmpty()) {
+                    return false; // Found an empty slot
+                }
+            }
+            return true; // No empty slots found
         }
         return false;
     }
@@ -921,16 +1001,33 @@ public class BlockEditorScreen extends Screen {
                 return;
             }
 
-            // Check for duplicate blocks (same texture and hex color)
-            if (isDuplicateBlock(selectedBlock, hexColor)) {
+            // Check for duplicate custom names
+            String customNameCheck = nameBox.getValue().trim();
+            if (isDuplicateName(customNameCheck)) {
                 if (this.minecraft.player != null) {
-                    String blockName = BuiltInRegistries.BLOCK.getKey(selectedBlock).getPath().replace("_", " ");
                     this.minecraft.player.displayClientMessage(
-                        Component.literal("§cError: Block already exists! §7(" + blockName + " with color #" + hexColor.toUpperCase() + ")"),
+                        Component.literal("§cError: Block name '" + customNameCheck + "' already exists! Please choose a different name."),
                         false
                     );
                 }
                 return;
+            }
+
+            // Check for duplicate blocks (same texture and hex color)
+            if (isDuplicateBlock(selectedBlock, hexColor)) {
+                // Instead of showing error, give the existing block to the player
+                giveExistingBlockToPlayer(selectedBlock, hexColor);
+                this.onClose();
+                return;
+            }
+
+            // Check if inventory is full before creating
+            boolean inventoryWasFull = isInventoryFull();
+            if (inventoryWasFull && this.minecraft.player != null) {
+                this.minecraft.player.displayClientMessage(
+                    Component.literal("§eInventory full! §7Block will be dropped near you."),
+                    false
+                );
             }
 
             // Determine which block type to use based on the selected block
@@ -945,17 +1042,18 @@ public class BlockEditorScreen extends Screen {
             System.out.println("  Color: " + hexColor.toUpperCase());
 
             // Send packet to server to create the item
+            String customName = nameBox.getValue().trim();
             ModNetworking.sendToServer(new CreateBlockPacket(
                 hexColor.toUpperCase(),
                 mimicBlockId.toString(),
-                blockId.toString()
+                blockId.toString(),
+                customName
             ));
 
             System.out.println("BlockEditorScreen: Packet sent!");
 
             // Add to history (client-side only for display)
             int color = parseHexColor(hexColor);
-            String customName = nameBox.getValue();
             createdBlocksHistory.add(0, new CreatedBlockInfo(selectedBlock, hexColor.toUpperCase(), color, customName));
             if (createdBlocksHistory.size() > 500) {
                 createdBlocksHistory.remove(500);
@@ -964,9 +1062,9 @@ public class BlockEditorScreen extends Screen {
             // Save history to file
             saveHistoryToFile();
 
-            // Show success message
+            // Show success message (only if inventory wasn't full)
             String blockName = mimicBlockId.getPath().replace("_", " ");
-            if (this.minecraft.player != null) {
+            if (this.minecraft.player != null && !inventoryWasFull) {
                 this.minecraft.player.displayClientMessage(
                     Component.literal("§aCreated colored block: §f" + blockName + " §7(#" + hexColor.toUpperCase() + ")"),
                     false

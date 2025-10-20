@@ -22,6 +22,12 @@ public class UserBlockRegistry extends SavedData {
     // Maps user block identifier to color and mimic block (e.g., "wool1" -> {color, mimicBlock})
     private final Map<String, UserBlockData> assignedBlocks = new HashMap<>();
     
+    // Maps custom names to internal block identifiers (e.g., "my_block" -> "wool1")
+    private final Map<String, String> customNameMappings = new HashMap<>();
+    
+    // Maps internal block identifiers back to custom names (e.g., "wool1" -> "my_block")
+    private final Map<String, String> reverseCustomNameMappings = new HashMap<>();
+    
     public UserBlockRegistry() {
         // Initialize with 1 as the first available number for each type
         nextAvailableNumbers.put("wool", 1);
@@ -51,6 +57,42 @@ public class UserBlockRegistry extends SavedData {
         
         setDirty(); // Mark for saving
         return assignedNumber;
+    }
+    
+    /**
+     * Assigns a new user block with a custom name
+     */
+    public String assignUserBlockWithCustomName(String blockType, int color, String mimicBlock, String customName) {
+        // Check if custom name is already taken
+        if (customNameMappings.containsKey(customName)) {
+            return null; // Custom name already exists
+        }
+        
+        int assignedNumber = assignUserBlock(blockType, color, mimicBlock);
+        if (assignedNumber == -1) {
+            return null; // No more slots available
+        }
+        
+        String internalIdentifier = blockType + assignedNumber;
+        customNameMappings.put(customName, internalIdentifier);
+        reverseCustomNameMappings.put(internalIdentifier, customName);
+        
+        setDirty(); // Mark for saving
+        return internalIdentifier;
+    }
+    
+    /**
+     * Gets the internal identifier for a custom name
+     */
+    public String getInternalIdentifier(String customName) {
+        return customNameMappings.get(customName);
+    }
+    
+    /**
+     * Gets the custom name for an internal identifier
+     */
+    public String getCustomName(String internalIdentifier) {
+        return reverseCustomNameMappings.get(internalIdentifier);
     }
     
     /**
@@ -96,6 +138,13 @@ public class UserBlockRegistry extends SavedData {
         }
         tag.put("assignedBlocks", assignedList);
         
+        // Save custom name mappings
+        CompoundTag customNames = new CompoundTag();
+        for (Map.Entry<String, String> entry : customNameMappings.entrySet()) {
+            customNames.putString(entry.getKey(), entry.getValue());
+        }
+        tag.put("customNames", customNames);
+        
         return tag;
     }
     
@@ -119,6 +168,16 @@ public class UserBlockRegistry extends SavedData {
                 int color = blockTag.getInt("color");
                 String mimicBlock = blockTag.getString("mimicBlock");
                 registry.assignedBlocks.put(identifier, new UserBlockData(color, mimicBlock));
+            }
+        }
+        
+        // Load custom name mappings
+        if (tag.contains("customNames")) {
+            CompoundTag customNames = tag.getCompound("customNames");
+            for (String customName : customNames.getAllKeys()) {
+                String internalId = customNames.getString(customName);
+                registry.customNameMappings.put(customName, internalId);
+                registry.reverseCustomNameMappings.put(internalId, customName);
             }
         }
         
