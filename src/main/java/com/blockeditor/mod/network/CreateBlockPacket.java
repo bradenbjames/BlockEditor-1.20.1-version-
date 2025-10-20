@@ -102,12 +102,35 @@ public class CreateBlockPacket {
 
             System.out.println("Adding item to player inventory...");
 
-            // Add to player inventory or drop
-            if (!player.getInventory().add(coloredBlock)) {
-                System.out.println("Inventory full, dropping item");
-                player.drop(coloredBlock, false);
+            // Try to add to the current selected slot first, then hotbar, then inventory
+            boolean itemPlaced = false;
+            
+            // Get the currently selected hotbar slot
+            int selectedSlot = player.getInventory().selected;
+            
+            // If the selected slot is empty, place it there
+            if (player.getInventory().getItem(selectedSlot).isEmpty()) {
+                player.getInventory().setItem(selectedSlot, coloredBlock);
+                itemPlaced = true;
+                System.out.println("Item placed in selected hotbar slot: " + selectedSlot);
             } else {
-                System.out.println("Item added to inventory successfully!");
+                // Try to add to inventory normally
+                if (player.getInventory().add(coloredBlock)) {
+                    itemPlaced = true;
+                    System.out.println("Item added to inventory successfully!");
+                } else {
+                    // If inventory is full, drop the item
+                    player.drop(coloredBlock, false);
+                    System.out.println("Inventory full, dropping item");
+                }
+            }
+            
+            // Send a more prominent notification
+            if (itemPlaced) {
+                player.displayClientMessage(
+                    net.minecraft.network.chat.Component.literal("§a§lBlock Created! §r§7Check your hotbar or inventory"), 
+                    true // Show as action bar message
+                );
             }
         });
 

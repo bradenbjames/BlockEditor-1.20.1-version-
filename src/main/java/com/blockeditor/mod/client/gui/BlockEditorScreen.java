@@ -272,19 +272,20 @@ public class BlockEditorScreen extends Screen {
         int blockGridWidth = BLOCKS_PER_ROW * (BLOCK_SIZE + BLOCK_PADDING);
         int gridEndX = centerX + (blockGridWidth / 2);
         
-        // Determine if we should use single column (when panel would overlap with block grid)
-        int panelWidth = 160; // Wider for 2-column layout (optimized for 1920x1080)
-        int singleColumnWidth = 85; // Wider for 1-column layout 
-        int iconOnlyWidth = 25; // Ultra-narrow for icon-only mode
+        // Calculate compact panel dimensions for 3-column layout
+        // Each item needs: 16px (block) + 2px (padding) + ~24px (hex text) = ~42px per item
+        int itemWidth = 42; // Compact width per item
+        int maxColumns = 3; // Always try for 3 columns
         int panelMargin = 10;
         
-        // Check if 2-column panel would overlap with block grid (need 20px buffer)
-        boolean useSingleColumn = (this.width - panelWidth - panelMargin) < (gridEndX + 20);
+        // Calculate how many columns can actually fit based on available space
+        int availableWidth = this.width - gridEndX - panelMargin - 20; // 20px buffer
+        int actualColumns = Math.min(maxColumns, Math.max(1, availableWidth / itemWidth));
         
-        // Check if even single column with text would overlap - then hide text (need 20px buffer)
-        boolean hideHexText = useSingleColumn && (this.width - singleColumnWidth - panelMargin) < (gridEndX + 20);
+        // Only hide text if we're really cramped (less than 25px per item)
+        boolean hideHexText = (availableWidth / actualColumns) < 25;
         
-        int finalPanelWidth = hideHexText ? iconOnlyWidth : (useSingleColumn ? singleColumnWidth : panelWidth);
+        int finalPanelWidth = actualColumns * (hideHexText ? 20 : itemWidth);
         int panelX = this.width - finalPanelWidth - panelMargin;
         int panelY = 60;
         int panelHeight = this.height - panelY - 20; // Leave only 20px spacing at the bottom
@@ -307,9 +308,9 @@ public class BlockEditorScreen extends Screen {
             return;
         }
 
-        // Calculate layout based on column mode
+        // Calculate layout based on dynamic column count
         int itemHeight = 20; // Height for each row
-        int blocksPerRow = useSingleColumn ? 1 : 2;
+        int blocksPerRow = actualColumns;
         int totalRows = (int) Math.ceil((double) createdBlocksHistory.size() / blocksPerRow);
         int maxVisibleRows = panelHeight / itemHeight;
         int maxVisibleItems = maxVisibleRows * blocksPerRow;
@@ -344,21 +345,14 @@ public class BlockEditorScreen extends Screen {
             int col = relativeIndex % blocksPerRow;
             
             int itemY = panelY + (row * itemHeight);
-            int itemX, itemWidth;
             
-            if (useSingleColumn) {
-                // Single column: use full width
-                itemX = panelX + 2;
-                itemWidth = finalPanelWidth - 4;
-            } else {
-                // Two columns: split width
-                itemX = panelX + 2 + (col * (finalPanelWidth - 4) / blocksPerRow);
-                itemWidth = (finalPanelWidth - 4) / blocksPerRow;
-            }
-
-            // Draw item background (alternating rows)
+            // Calculate compact item positioning
+            int individualItemWidth = hideHexText ? 20 : itemWidth;
+            int itemX = panelX + 2 + (col * individualItemWidth);
+            
+            // Draw item background with rounded corners (alternating rows)
             int bgColor = (row % 2 == 0) ? 0x40FFFFFF : 0x20FFFFFF;
-            graphics.fill(itemX, itemY, itemX + itemWidth - 1, itemY + itemHeight - 1, bgColor);
+            drawRoundedRect(graphics, itemX, itemY, itemX + individualItemWidth - 1, itemY + itemHeight - 1, bgColor, 2);
 
             // Draw block icon with color tint
             var pose = graphics.pose();
@@ -383,7 +377,7 @@ public class BlockEditorScreen extends Screen {
             if (!hideHexText) {
                 String hexText = "#" + info.hexColor;
                 int textX = itemX + 18; // Right of the 16px block icon
-                int textY = itemY + 6; // Vertically centered with block
+                int textY = itemY + (itemHeight / 2) - 3; // Vertically centered in the box
                 
                 // Scale down the text even more
                 pose = graphics.pose();
@@ -400,13 +394,15 @@ public class BlockEditorScreen extends Screen {
         // Draw scroll bar
         if (totalRows > maxVisibleRows) {
             // Draw scrollbar background
-            graphics.fill(panelX + finalPanelWidth - 3, panelY, panelX + finalPanelWidth, panelY + panelHeight, 0xFF666666);
+            int scrollBarX = panelX + finalPanelWidth + 2; // Position outside the panel
+            graphics.fill(scrollBarX, panelY, scrollBarX + 3, panelY + panelHeight, 0xFF666666);
             
             // Draw scrollbar thumb
             int thumbHeight = Math.max(10, (maxVisibleRows * panelHeight) / totalRows);
             int scrollRowOffset = historyScrollOffset / blocksPerRow;
-            int thumbY = panelY + (scrollRowOffset * (panelHeight - thumbHeight)) / Math.max(1, totalRows - maxVisibleRows);
-            graphics.fill(panelX + finalPanelWidth - 3, thumbY, panelX + finalPanelWidth, thumbY + thumbHeight, 0xFFCCCCCC);
+            int maxScrollRows = Math.max(1, totalRows - maxVisibleRows);
+            int thumbY = panelY + (scrollRowOffset * (panelHeight - thumbHeight)) / maxScrollRows;
+            graphics.fill(scrollBarX, thumbY, scrollBarX + 3, thumbY + thumbHeight, 0xFFCCCCCC);
         }
     }
 
@@ -457,20 +453,46 @@ public class BlockEditorScreen extends Screen {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        // Check if clicking in history panel first
-        boolean isCondensed = this.width < 1000;
-        int panelWidth = isCondensed ? 60 : 170;
-        int panelX = this.width - panelWidth - 10;
+        // Check if clicking in history panel first - use same compact logic as rendering
+        int centerX = this.width / 2;
+        int blockGridWidth = BLOCKS_PER_ROW * (BLOCK_SIZE + BLOCK_PADDING);
+        int gridEndX = centerX + (blockGridWidth / 2);
+        
+        // Calculate compact panel dimensions (same as render method)
+        int itemWidth = 42;
+        int maxColumns = 3;
+        int panelMargin = 10;
+        
+        int availableWidth = this.width - gridEndX - panelMargin - 20;
+        int actualColumns = Math.min(maxColumns, Math.max(1, availableWidth / itemWidth));
+        boolean hideHexText = (availableWidth / actualColumns) < 25;
+        
+        int finalPanelWidth = actualColumns * (hideHexText ? 20 : itemWidth);
+        int panelX = this.width - finalPanelWidth - panelMargin;
         int panelY = 60;
-        int panelHeight = 300;
-        int itemHeight = isCondensed ? 20 : 24;
+        int panelHeight = this.height - panelY - 20;
         
         // History panel item clicks
-        if (mouseX >= panelX && mouseX <= panelX + panelWidth && 
+        if (!createdBlocksHistory.isEmpty() && mouseX >= panelX - 5 && mouseX <= panelX + finalPanelWidth + 5 && 
             mouseY >= panelY && mouseY <= panelY + panelHeight) {
             
-            int clickedIndex = (int) ((mouseY - panelY) / itemHeight) + historyScrollOffset;
-            if (clickedIndex >= 0 && clickedIndex < createdBlocksHistory.size()) {
+            int itemHeight = 20;
+            int blocksPerRow = actualColumns;
+            int maxVisibleRows = panelHeight / itemHeight;
+            int maxVisibleItems = maxVisibleRows * blocksPerRow;
+            
+            int startIndex = Math.max(0, Math.min(historyScrollOffset, createdBlocksHistory.size() - maxVisibleItems));
+            
+            int relativeY = (int) (mouseY - panelY);
+            int row = relativeY / itemHeight;
+            
+            // Calculate column based on compact layout
+            int individualItemWidth = hideHexText ? 20 : itemWidth;
+            int col = (int) ((mouseX - (panelX + 2)) / individualItemWidth);
+            
+            int clickedIndex = startIndex + (row * blocksPerRow) + col;
+            
+            if (clickedIndex >= 0 && clickedIndex < createdBlocksHistory.size() && col >= 0 && col < blocksPerRow) {
                 CreatedBlockInfo info = createdBlocksHistory.get(clickedIndex);
                 selectedBlock = info.originalBlock;
                 hexColor = info.hexColor;
@@ -838,5 +860,28 @@ public class BlockEditorScreen extends Screen {
     @Override
     public boolean isPauseScreen() {
         return false;
+    }
+
+    // Helper method to draw rounded rectangles
+    private void drawRoundedRect(GuiGraphics graphics, int x, int y, int width, int height, int radius, int color) {
+        // Fill main rectangle
+        graphics.fill(x + radius, y, x + width - radius, y + height, color);
+        graphics.fill(x, y + radius, x + width, y + height - radius, color);
+        
+        // Draw corner circles
+        for (int dx = 0; dx < radius; dx++) {
+            for (int dy = 0; dy < radius; dy++) {
+                if (dx * dx + dy * dy <= radius * radius) {
+                    // Top-left corner
+                    graphics.fill(x + radius - dx, y + radius - dy, x + radius - dx + 1, y + radius - dy + 1, color);
+                    // Top-right corner  
+                    graphics.fill(x + width - radius + dx, y + radius - dy, x + width - radius + dx + 1, y + radius - dy + 1, color);
+                    // Bottom-left corner
+                    graphics.fill(x + radius - dx, y + height - radius + dy, x + radius - dx + 1, y + height - radius + dy + 1, color);
+                    // Bottom-right corner
+                    graphics.fill(x + width - radius + dx, y + height - radius + dy, x + width - radius + dx + 1, y + height - radius + dy + 1, color);
+                }
+            }
+        }
     }
 }
