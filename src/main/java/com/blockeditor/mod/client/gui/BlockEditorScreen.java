@@ -273,8 +273,8 @@ public class BlockEditorScreen extends Screen {
         int gridEndX = centerX + (blockGridWidth / 2);
         
         // Determine if we should use single column (when panel would overlap with block grid)
-        int panelWidth = 140; // Width for 2-column layout
-        int singleColumnWidth = 75; // Width for 1-column layout
+        int panelWidth = 120; // Narrower for 2-column layout (was 140)
+        int singleColumnWidth = 65; // Narrower for 1-column layout (was 75)
         int panelMargin = 10;
         
         // Check if 2-column panel would overlap with block grid (need 20px buffer)
@@ -366,11 +366,11 @@ public class BlockEditorScreen extends Screen {
             int textX = itemX + 18; // Right of the 16px block icon
             int textY = itemY + 6; // Vertically centered with block
             
-            // Scale down the text
+            // Scale down the text even more
             pose = graphics.pose();
             pose.pushPose();
             pose.translate(textX, textY, 0);
-            pose.scale(0.6f, 0.6f, 1.0f); // Make text 60% of normal size
+            pose.scale(0.5f, 0.5f, 1.0f); // Make text 50% of normal size (was 60%)
             graphics.drawString(this.font, hexText, 0, 0, 0xAAAAAA);
             pose.popPose();
         }
@@ -501,7 +501,7 @@ public class BlockEditorScreen extends Screen {
             int centerX = this.width / 2;
             int blockGridWidth = BLOCKS_PER_ROW * (BLOCK_SIZE + BLOCK_PADDING);
             int gridEndX = centerX + (blockGridWidth / 2);
-            int panelWidth = 140;
+            int panelWidth = 120;
             int panelMargin = 10;
             boolean useSingleColumn = (this.width - panelWidth - panelMargin) < (gridEndX + 20);
             
