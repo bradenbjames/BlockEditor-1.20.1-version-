@@ -33,6 +33,8 @@ public class BlockEditorScreen extends Screen {
 
     private EditBox hexBox;
     private EditBox searchBox;
+    private EditBox nameBox;
+    private Button createButton;
 
     private List<Block> allBlocks = new ArrayList<>();
     private List<Block> filteredBlocks = new ArrayList<>();
@@ -53,20 +55,29 @@ public class BlockEditorScreen extends Screen {
         long timestamp;
 
         CreatedBlockInfo(Block block, String hex, int color) {
+            this(block, hex, color, null);
+        }
+
+        CreatedBlockInfo(Block block, String hex, int color, String customName) {
             this.originalBlock = block;
             this.hexColor = hex;
             this.color = color;
             this.timestamp = System.currentTimeMillis();
             
-            // Generate a readable block name
-            ResourceLocation blockId = BuiltInRegistries.BLOCK.getKey(block);
-            String path = blockId.getPath();
-            if (path.startsWith("dynamic_block_")) {
-                this.blockName = path.substring(14) + " #" + hex; // Remove "dynamic_block_" prefix
-            } else if (path.equals("dynamic_block")) {
-                this.blockName = "stone #" + hex; // Default case
+            if (customName != null && !customName.trim().isEmpty()) {
+                // Use custom name if provided
+                this.blockName = customName.trim();
             } else {
-                this.blockName = path.replace("_", " ") + " #" + hex;
+                // Generate a readable block name
+                ResourceLocation blockId = BuiltInRegistries.BLOCK.getKey(block);
+                String path = blockId.getPath();
+                if (path.startsWith("dynamic_block_")) {
+                    this.blockName = path.substring(14) + " #" + hex; // Remove "dynamic_block_" prefix
+                } else if (path.equals("dynamic_block")) {
+                    this.blockName = "stone #" + hex; // Default case
+                } else {
+                    this.blockName = path.replace("_", " ") + " #" + hex;
+                }
             }
         }
     }
@@ -94,6 +105,7 @@ public class BlockEditorScreen extends Screen {
                 blockTag.putString("hexColor", info.hexColor);
                 blockTag.putInt("color", info.color);
                 blockTag.putLong("timestamp", info.timestamp);
+                blockTag.putString("customName", info.blockName); // Save the custom name
                 historyList.add(blockTag);
             }
             
@@ -129,8 +141,9 @@ public class BlockEditorScreen extends Screen {
                 if (block != null && block != Blocks.AIR) {
                     String hexColor = blockTag.getString("hexColor");
                     int color = blockTag.getInt("color");
+                    String customName = blockTag.contains("customName") ? blockTag.getString("customName") : null;
                     
-                    CreatedBlockInfo info = new CreatedBlockInfo(block, hexColor, color);
+                    CreatedBlockInfo info = new CreatedBlockInfo(block, hexColor, color, customName);
                     if (blockTag.contains("timestamp")) {
                         info.timestamp = blockTag.getLong("timestamp");
                     }
@@ -182,6 +195,13 @@ public class BlockEditorScreen extends Screen {
         hexBox.setHint(Component.literal("FFFFFF"));
         this.addRenderableWidget(hexBox);
 
+        // Custom name input box - positioned after hex box
+        int nameX = hexX + 80 + 15; // After hex box + gap
+        nameBox = new EditBox(this.font, nameX, hexY, 120, 20, Component.literal("Block Name"));
+        nameBox.setMaxLength(32);
+        nameBox.setHint(Component.literal("My Custom Block"));
+        this.addRenderableWidget(nameBox);
+
         // Buttons - positioned just above player inventory
         int gridEndY = 55 + (4 * (BLOCK_SIZE + BLOCK_PADDING));
         // Position buttons just above player inventory (which is typically ~76 pixels from bottom)
@@ -192,10 +212,11 @@ public class BlockEditorScreen extends Screen {
         int buttonStartX = centerX - (totalButtonWidth / 2);
 
         // Create Block button
-        this.addRenderableWidget(Button.builder(
+        createButton = Button.builder(
             Component.literal("Create Block"),
             button -> createColoredBlock()
-        ).bounds(buttonStartX, buttonY, buttonWidth, 20).build());
+        ).bounds(buttonStartX, buttonY, buttonWidth, 20).build();
+        this.addRenderableWidget(createButton);
 
         // Cancel button
         this.addRenderableWidget(Button.builder(
@@ -229,6 +250,35 @@ public class BlockEditorScreen extends Screen {
 
         // Draw "#" label before hex input box
         graphics.drawString(this.font, "#", hexX - 10, 34, 0xFFFFFF);
+        
+        // Draw "Name:" label before name input box (red if invalid)
+        int nameX = hexX + 80 + 15;
+        int nameLabelColor = (nameBox != null && !isNameBoxValid()) ? 0xFFFF4444 : 0xFFFFFF;
+        graphics.drawString(this.font, "Name:", nameX - 35, 34, nameLabelColor);
+        
+        // Draw red border around name box if invalid
+        if (nameBox != null && !isNameBoxValid()) {
+            int borderColor = 0xFFFF4444; // Bright red
+            int boxX = nameX;
+            int boxY = 30;
+            int boxWidth = 120;
+            int boxHeight = 20;
+            
+            // Draw red border (2 pixels thick)
+            graphics.fill(boxX - 2, boxY - 2, boxX + boxWidth + 2, boxY - 1, borderColor); // Top
+            graphics.fill(boxX - 2, boxY + boxHeight + 1, boxX + boxWidth + 2, boxY + boxHeight + 2, borderColor); // Bottom  
+            graphics.fill(boxX - 2, boxY - 1, boxX - 1, boxY + boxHeight + 1, borderColor); // Left
+            graphics.fill(boxX + boxWidth + 1, boxY - 1, boxX + boxWidth + 2, boxY + boxHeight + 1, borderColor); // Right
+            
+            // Draw error message below the name box
+            String errorText;
+            if (nameBox.getValue().trim().isEmpty()) {
+                errorText = "Name required!";
+            } else {
+                errorText = "Invalid characters!";
+            }
+            graphics.drawString(this.font, errorText, nameX, 52, 0xFFFF4444);
+        }
 
         // Draw block preview aligned with hex input box height
         int color = parseHexColor(hexBox.getValue());
@@ -651,6 +701,10 @@ public class BlockEditorScreen extends Screen {
     @Override
     public void tick() {
         super.tick();
+        
+        if (nameBox != null) {
+            nameBox.tick();
+        }
 
         // Check for scroll input using Minecraft's input system
         checkScrollInput();
@@ -664,6 +718,25 @@ public class BlockEditorScreen extends Screen {
         hexColor = value;
         if (!hexBox.getValue().equals(value)) {
             hexBox.setValue(value);
+        }
+        
+        // Real-time validation of name input (filter illegal characters as user types)
+        if (nameBox != null) {
+            String nameValue = nameBox.getValue();
+            // Remove illegal characters in real-time
+            String cleanedName = nameValue.replaceAll("[^a-zA-Z0-9 \\-_'.()]", "");
+            if (cleanedName.length() > 32) {
+                cleanedName = cleanedName.substring(0, 32);
+            }
+            if (!nameValue.equals(cleanedName)) {
+                nameBox.setValue(cleanedName);
+            }
+        }
+        
+        // Update Create Block button state based on validation
+        if (createButton != null) {
+            boolean isValid = hexColor.length() == 6 && isNameBoxValid();
+            createButton.active = isValid;
         }
     }
 
@@ -716,6 +789,20 @@ public class BlockEditorScreen extends Screen {
         }
     }
 
+    private boolean isValidBlockName(String name) {
+        if (name == null || name.trim().isEmpty()) {
+            return false;
+        }
+        
+        // Check for illegal characters (anything that might break Minecraft systems)
+        // Allow letters, numbers, spaces, hyphens, underscores, and basic punctuation
+        return name.matches("^[a-zA-Z0-9 \\-_'.()]+$") && name.trim().length() >= 1 && name.trim().length() <= 32;
+    }
+    
+    private boolean isNameBoxValid() {
+        return nameBox != null && isValidBlockName(nameBox.getValue());
+    }
+
     private void createColoredBlock() {
         if (this.minecraft != null && this.minecraft.player != null) {
             // Validate hex color is exactly 6 characters
@@ -724,6 +811,20 @@ public class BlockEditorScreen extends Screen {
                 if (this.minecraft.player != null) {
                     this.minecraft.player.displayClientMessage(
                         Component.literal("§cError: Hex color must be exactly 6 characters (e.g., FF0000 for red)"),
+                        false
+                    );
+                }
+                return;
+            }
+            
+            // Strict validation: Block name MUST be provided and valid
+            if (!isNameBoxValid()) {
+                if (this.minecraft.player != null) {
+                    String errorMsg = nameBox.getValue().trim().isEmpty() ? 
+                        "§cError: Block name cannot be empty!" : 
+                        "§cError: Block name contains illegal characters! Use letters, numbers, spaces, and basic punctuation only.";
+                    this.minecraft.player.displayClientMessage(
+                        Component.literal(errorMsg),
                         false
                     );
                 }
@@ -752,7 +853,8 @@ public class BlockEditorScreen extends Screen {
 
             // Add to history (client-side only for display)
             int color = parseHexColor(hexColor);
-            createdBlocksHistory.add(0, new CreatedBlockInfo(selectedBlock, hexColor.toUpperCase(), color));
+            String customName = nameBox.getValue();
+            createdBlocksHistory.add(0, new CreatedBlockInfo(selectedBlock, hexColor.toUpperCase(), color, customName));
             if (createdBlocksHistory.size() > 500) {
                 createdBlocksHistory.remove(500);
             }
