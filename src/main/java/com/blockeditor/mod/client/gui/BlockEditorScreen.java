@@ -1307,28 +1307,40 @@ public class BlockEditorScreen extends Screen {
         // Search through player's inventory for a matching block
         var inventory = this.minecraft.player.getInventory();
         
+        // Debug: Log what we're searching for
+        System.out.println("[BlockEditor] Searching for block: '" + targetCustomName + "' with color: '" + targetColor + "'");
+        
         for (int slot = 0; slot < inventory.getContainerSize(); slot++) {
             ItemStack stack = inventory.getItem(slot);
             
             if (stack.isEmpty()) continue;
             
-            // Check if this item is one of our custom blocks
+            // Check if this item is one of our custom blocks (both DynamicBlockItem and UserBlock items)
             if (stack.getItem() instanceof com.blockeditor.mod.content.DynamicBlockItem) {
                 var tag = stack.getTag();
                 if (tag != null && tag.contains("Color") && tag.contains("CustomName")) {
-                    String stackColor = tag.getString("Color");
+                    String stackColor = tag.getString("Color").toUpperCase();
                     String stackCustomName = tag.getString("CustomName");
+                    
+                    // Debug: Log each block we find
+                    System.out.println("[BlockEditor] Found custom block in slot " + slot + ": '" + stackCustomName + "' with color: '" + stackColor + "'");
                     
                     // Check if this matches the block we're looking for (by color and name)
                     if (stackColor.equals(targetColor) && stackCustomName.equals(targetCustomName)) {
                         
-                        // Found the matching block! Move it to slot 0 (first hotbar slot)
-                        ItemStack currentItem = inventory.getItem(0);
-                        inventory.setItem(0, stack.copy());
+                        System.out.println("[BlockEditor] Match found! Moving to hotbar slot 0");
+                        
+                        // Found the matching block! 
+                        // Strategy: Find the best hotbar slot to place it in
+                        int targetSlot = findBestHotbarSlot(inventory);
+                        
+                        // Move the block to the target hotbar slot
+                        ItemStack currentItem = inventory.getItem(targetSlot);
+                        inventory.setItem(targetSlot, stack.copy());
                         inventory.setItem(slot, currentItem);
                         
-                        // Set the player's selected slot to 0
-                        inventory.selected = 0;
+                        // Set the player's selected slot to the target slot
+                        inventory.selected = targetSlot;
                         
                         // Show success message
                         this.minecraft.player.displayClientMessage(
@@ -1343,6 +1355,8 @@ public class BlockEditorScreen extends Screen {
                 }
             }
         }
+        
+        System.out.println("[BlockEditor] Block not found in inventory, creating new one");
         
         // Block not found in inventory - create a new one exactly like it
         try {
@@ -1413,6 +1427,29 @@ public class BlockEditorScreen extends Screen {
             net.minecraft.network.chat.Component.literal("§cUnable to find or create block: §f" + targetCustomName + " §7(#" + targetColor + ")"),
             true // Action bar
         );
+    }
+
+    /**
+     * Find the best hotbar slot to place a block in.
+     * Priority: Currently selected slot if empty > First empty slot > Currently selected slot (replace)
+     */
+    private int findBestHotbarSlot(net.minecraft.world.entity.player.Inventory inventory) {
+        int currentSlot = inventory.selected;
+        
+        // First choice: Use currently selected slot if it's empty
+        if (inventory.getItem(currentSlot).isEmpty()) {
+            return currentSlot;
+        }
+        
+        // Second choice: Find any empty hotbar slot (0-8)
+        for (int slot = 0; slot < 9; slot++) {
+            if (inventory.getItem(slot).isEmpty()) {
+                return slot;
+            }
+        }
+        
+        // Last resort: Use currently selected slot (will replace whatever is there)
+        return currentSlot;
     }
 
     @Override
