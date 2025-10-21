@@ -39,6 +39,7 @@ public class WorldEditIntegration {
     public static void updateCustomBlockMapping(String customName, String internalIdentifier) {
         customBlockMappings.put(customName.toLowerCase(), internalIdentifier);
         LOGGER.info("WorldEdit Integration: Mapped '{}' -> '{}'", customName, internalIdentifier);
+        LOGGER.info("WorldEdit Integration: Current mappings: {}", customBlockMappings);
         
         // Register with WorldEdit's block alias system
         registerWorldEditAlias(customName, internalIdentifier);

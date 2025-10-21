@@ -9,7 +9,7 @@ Create and customize blocks with any color, texture, and **custom names** in Min
 ![Block Editor Interface](./images/image-1760931259480.png)
 *Enhanced Block Editor interface with custom naming, recent blocks history, and middle-click shortcuts*
 
-## ✨ New Features (v1.0.1)
+## ✨ New Features (v1.0.2)
 
 ### 🏷️ **Custom Block Naming**
 - **Name Your Blocks**: Give each block a unique custom name (e.g., "wall", "roof", "floor")
@@ -30,8 +30,8 @@ Create and customize blocks with any color, texture, and **custom names** in Min
 - **Color Preview**: Real-time hex color validation and preview
 
 ### 🌍 **Advanced WorldEdit Integration**
-- **Custom Name Commands**: `//set be:your_custom_name` works instantly
-- **Replace Operations**: `//replace stone be:wall` using your named blocks
+- **Custom Name Commands**: `/bset be:your_custom_name` works instantly
+- **Replace Operations**: `/breplace stone be:wall` using your named blocks
 - **Command Autocomplete**: WorldEdit recognizes all your custom block names
 - **Seamless Workflow**: Create block → Name it → Use in WorldEdit immediately
 
@@ -81,27 +81,27 @@ Use your custom-named blocks in any WorldEdit command:
 
 ```bash
 # Basic usage with custom names
-//set be:wall
-//replace stone be:floor  
-//walls be:accent
+/bset be:wall
+/breplace stone be:floor  
+/bset be:accent
 
 # Complex building operations
 //copy
 //paste
-//set 50% be:wall,30% be:floor,20% be:accent
+/bset 50% be:wall,30% be:floor,20% be:accent
 
 # Selection and replacement
 //sel cuboid
 //pos1
 //pos2
-//replace minecraft:stone be:custom_stone
+/breplace minecraft:stone be:custom_stone
 ```
 
 **Pro Tip**: Create blocks with descriptive names like "red_brick", "blue_roof", "green_wall" for easy WorldEdit use!
 
 ### 📋 **Commands**
 - `/be clear` - Clear all custom blocks from registry
-- **WorldEdit Commands**: All standard WorldEdit commands work with `be:your_block_name`
+- **WorldEdit Commands**: Use `/bset be:your_block_name` and `/breplace from_block be:your_block_name`
 
 ## 🎨 **Color & Naming System**
 
@@ -145,7 +145,7 @@ Use your custom-named blocks in any WorldEdit command:
 1. **Plan Colors**: Choose your palette before building
 2. **Name Systematically**: Use names like "wall_light", "wall_dark", "trim"
 3. **Use Middle-Click**: Quick access to frequently used blocks
-4. **WorldEdit Integration**: Build structures with `//set be:wall` commands
+4. **WorldEdit Integration**: Build structures with `/bset be:wall` commands
 
 ### 🎨 **Color Coordination**
 ```
@@ -164,14 +164,20 @@ Medieval Castle Theme:
 
 ## 📋 **Version History**
 
-### v1.0.1 (Current)
+### v1.0.2 (Current)
 - ✨ **Custom block naming system**
-- ✨ **Enhanced WorldEdit integration** with custom names
+- ✨ **Enhanced WorldEdit integration** with custom names (`/bset`, `/breplace`)
 - ✨ **Middle-click block history shortcuts**
-- ✨ **Smart duplicate name handling** (auto-numbering)
+- ✨ **Smart duplicate name handling** (auto-numbering with timestamps)
 - ✨ **Improved UI design** and user experience
+- ✨ **Better inventory management** (blocks always appear in hand)
 - 🐛 **20 slots per block type** (increased from limited slots)
-- � **Fixed block persistence** issues
+- 🐛 **Fixed block persistence** issues
+
+### v1.0.1
+- 🔧 **Initial WorldEdit proxy commands**
+- 🔧 **Basic custom naming support**
+- 🐛 **Bug fixes** for block creation
 
 ### v1.0.0
 - 🎉 Initial release with basic color customization

@@ -1,5 +1,37 @@
 # Block Editor Mod - Changelog
 
+## Version 1.0.2 - WorldEdit Integration & Advanced Features
+
+### 🌍 **WorldEdit Integration**
+- **Custom Block Commands**: Added `/bset be:custom_name` and `/breplace from_block be:custom_name` commands
+- **Smart Name Resolution**: Automatic translation of custom names to internal block identifiers
+- **Command Interception**: Seamless integration with WorldEdit without requiring WorldEdit modifications
+- **Enhanced Building Workflow**: Create custom block → Name it → Use immediately in WorldEdit commands
+
+### 🖱️ **Middle-Click Block History**
+- **Instant Block Access**: Middle-click any block in Recent Blocks panel to instantly equip it
+- **Smart Inventory Search**: Automatically finds existing blocks in inventory or creates new ones
+- **Auto-Numbering System**: Intelligent duplicate name handling with timestamp fallback (up to 50 variations)
+- **One-Click Workflow**: Middle-click → Block equipped → Screen closes → Ready to build
+
+### 🏷️ **Advanced Custom Naming**
+- **Flexible Block Names**: Use any descriptive name for your custom blocks
+- **Duplicate Prevention**: Smart detection and auto-numbering to prevent name conflicts
+- **WorldEdit Ready**: Custom names work instantly in all WorldEdit commands
+- **Persistent Storage**: Names saved across world restarts and multiplayer sessions
+
+### 🎯 **Improved Inventory Management**
+- **Always In Hand**: New blocks consistently appear in your selected hotbar slot
+- **Smart Slot Finding**: Automatically finds empty hotbar slots when current slot is occupied
+- **Inventory Swapping**: Intelligent swapping between hotbar and inventory when needed
+- **Better Feedback**: Clear messages showing exactly where blocks were placed
+
+### 🔧 **Technical Improvements**
+- **20 Slots Per Block Type**: Increased from limited slots to full 20 slots for each texture type
+- **Enhanced Server Integration**: Better client-server communication for block creation
+- **Timestamp-Based Uniqueness**: Guaranteed unique naming when conflicts occur
+- **Debug Message Cleanup**: Removed spam messages for cleaner user experience
+
 ## Version 1.0.1 - UI Overhaul & Enhancement Update
 
 ### 📸 **Screenshots**
