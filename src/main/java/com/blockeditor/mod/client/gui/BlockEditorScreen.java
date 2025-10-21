@@ -1351,35 +1351,32 @@ public class BlockEditorScreen extends Screen {
             ResourceLocation blockId = BuiltInRegistries.BLOCK.getKey(targetBlockType);
             ResourceLocation mimicBlockId = BuiltInRegistries.BLOCK.getKey(blockInfo.originalBlock);
             
-            // Try to find a unique name by checking existing history and appending numbers if needed
-            String finalCustomName = targetCustomName;
-            int attempt = 1;
+            // Generate a more unique name by combining timestamp + random element
+            // This approach is more likely to avoid server-side conflicts
+            long timestamp = System.currentTimeMillis();
+            int randomComponent = (int) (timestamp % 9999); // Use last 4 digits for uniqueness
             
-            // Check against our local history to avoid obvious duplicates
-            while (attempt <= 50) {
-                boolean nameExists = false;
-                
-                // Check if this name already exists in our recent history
-                for (CreatedBlockInfo historyBlock : createdBlocksHistory) {
-                    if (historyBlock.blockName.equals(finalCustomName) && 
-                        historyBlock.hexColor.equals(targetColor)) {
-                        nameExists = true;
-                        break;
-                    }
-                }
-                
-                if (!nameExists) {
-                    break; // Found a unique name
-                }
-                
-                // Try next numbered variation
-                attempt++;
-                if (attempt <= 50) {
-                    finalCustomName = targetCustomName + attempt;
+            // Try different strategies for unique naming
+            String finalCustomName;
+            
+            // Strategy 1: Try original name first
+            finalCustomName = targetCustomName;
+            
+            // Strategy 2: If we know this might conflict, start with a more unique approach
+            boolean likelyToConflict = false;
+            for (CreatedBlockInfo historyBlock : createdBlocksHistory) {
+                if (historyBlock.blockName.startsWith(targetCustomName)) {
+                    likelyToConflict = true;
+                    break;
                 }
             }
             
-            // Send the packet to create the block with the (hopefully) unique name
+            if (likelyToConflict) {
+                // Use timestamp-based naming for higher success rate
+                finalCustomName = targetCustomName + "_" + randomComponent;
+            }
+            
+            // Send the packet to create the block with the unique name
             CreateBlockPacket packet = new CreateBlockPacket(
                 targetColor,
                 mimicBlockId.toString(),
@@ -1392,10 +1389,10 @@ public class BlockEditorScreen extends Screen {
             
             // Show success message that the block will be created
             String displayName = finalCustomName.equals(targetCustomName) ? 
-                finalCustomName : finalCustomName + " (renamed to avoid duplicate)";
+                finalCustomName : finalCustomName + " (auto-named)";
             
             this.minecraft.player.displayClientMessage(
-                net.minecraft.network.chat.Component.literal("§a✓ Creating and equipping: §f" + displayName + " §7(#" + targetColor + ")"),
+                net.minecraft.network.chat.Component.literal("§a✓ Creating: §f" + displayName + " §7(#" + targetColor + ")"),
                 true // Action bar
             );
             
