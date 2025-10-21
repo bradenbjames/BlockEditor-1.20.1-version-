@@ -76,9 +76,6 @@ public class WorldEditProxyCommand {
                     matcher.appendReplacement(translatedCommand, replacement);
                     foundReplacement = true;
                     LOGGER.info("WorldEdit Proxy: Translated '{}' -> '{}'", customName, replacement);
-                    
-                    // Send feedback to player
-                    player.sendSystemMessage(Component.literal("§7Translated §e" + customName + " §7-> §a" + replacement));
                 } else {
                     // No mapping found, keep original
                     matcher.appendReplacement(translatedCommand, matcher.group());

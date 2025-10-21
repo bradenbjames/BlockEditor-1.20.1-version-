@@ -96,13 +96,11 @@ public class BlockNameResolver {
     public static String getRegistryName(String customName) {
         Block block = resolveCustomName(customName);
         if (block == null) {
-            System.out.println("RESOLVER DEBUG: No block found for custom name: " + customName);
             return null;
         }
         
         ResourceLocation location = BuiltInRegistries.BLOCK.getKey(block);
         String result = location.toString();
-        System.out.println("RESOLVER DEBUG: Custom name '" + customName + "' resolved to '" + result + "'");
         return result;
     }
 }

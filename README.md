@@ -1,144 +1,202 @@
 # BlockEditor - Custom Block Creator
 
 [![Minecraft](https://img.shields.io/badge/Minecraft-1.20.1-brightgreen.svg)](https://minecraft.net/)
-[![Forge](https://img.shields.io/badge/Forge-47.4.0+-orange.svg)](https://files.minecraftforge.net/)
+[![Forge](https://img.shields.io/badge/Forge-47.3.0+-orange.svg)](https://files.minecraftforge.net/)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-Create and customize blocks with any color and texture in Minecraft!
+Create and customize blocks with any color, texture, and **custom names** in Minecraft! Now with enhanced WorldEdit integration and smart UI features.
 
-## ✨ Features
+![Block Editor Interface](./images/image-1760931259480.png)
+*Enhanced Block Editor interface with custom naming, recent blocks history, and middle-click shortcuts*
 
-- 🎨 **Custom Block Creation**: Intuitive GUI-based block editor with color picker
-- 🧱 **Multiple Block Types**: Supports wool, stone, dirt, sand, concrete, deepslate, wood, and more
-- 🔧 **WorldEdit Integration**: Use custom blocks seamlessly in WorldEdit commands
-- 📝 **Numbered User Blocks**: Easy-to-use system (`user_wool1`, `user_stone1`, etc.)
-- ⚡ **Performance Optimized**: Efficient color application and world persistence
-- 🎮 **Pick Block Support**: Middle-click to get custom blocks in creative mode
-- 💾 **Persistent Storage**: Custom blocks saved across world restarts
-- 🌐 **Multiplayer Compatible**: Works on both single-player and dedicated servers
+## ✨ New Features (v1.0.1)
+
+### 🏷️ **Custom Block Naming**
+- **Name Your Blocks**: Give each block a unique custom name (e.g., "wall", "roof", "floor")
+- **WorldEdit Ready**: Use custom names directly in WorldEdit commands: `//set be:wall`, `//replace stone be:roof`
+- **Smart Validation**: Automatic duplicate name detection with intelligent numbering (wall, wall2, wall3...)
+- **Persistent Names**: Custom names are saved and work across world restarts
+
+### 🖱️ **Middle-Click Block History**
+- **Instant Access**: Middle-click any block in the Recent Blocks panel to instantly equip it
+- **Smart Finding**: Searches your inventory first, creates new block if not found
+- **Auto-Numbering**: Automatically creates uniquely named versions (up to 50 variations)
+- **One-Click Workflow**: Middle-click → Block equipped → Screen closes → Ready to build
+
+### 🎨 **Enhanced UI & Experience**
+- **Streamlined Interface**: Clean, modern design with better spacing and visual clarity
+- **Recent Blocks Panel**: Visual history of your created blocks with names and colors
+- **Smart Block Grid**: Optimized layout for faster block type selection
+- **Color Preview**: Real-time hex color validation and preview
+
+### 🌍 **Advanced WorldEdit Integration**
+- **Custom Name Commands**: `//set be:your_custom_name` works instantly
+- **Replace Operations**: `//replace stone be:wall` using your named blocks
+- **Command Autocomplete**: WorldEdit recognizes all your custom block names
+- **Seamless Workflow**: Create block → Name it → Use in WorldEdit immediately
 
 ## 🌈 Unlimited Color & Texture Combinations
 
-What sets BlockEditor apart from other block mods is its **massive variety** of combinations:
+**16.7 Million Colors × 9 Textures × Custom Names = Infinite Building Possibilities**
 
-### 🎨 **16.7 Million Colors × 9 Textures = 150+ Million Unique Blocks**
-- **Full RGB Spectrum**: Any hex color from `#000000` to `#FFFFFF` (16,777,216 colors) via color picker
-- **9 Base Textures**: Wool, Stone, Dirt, Sand, Concrete, Deepslate, Wood, Smooth Stone, and Cobblestone
-- **Smart Storage**: 20 user slots per texture (180 total) for your favorite combinations with persistent storage
+### 🎨 **Full RGB Spectrum with Smart Storage**
+- **Any Color**: Full hex color support from `#000000` to `#FFFFFF` (16,777,216 colors)
+- **9 Base Textures**: Wool, Stone, Dirt, Sand, Concrete, Deepslate, Wood, Smooth Stone, Cobblestone
+- **20 Slots Per Type**: 180 total custom block slots with persistent storage
+- **Custom Names**: Each block can have a unique, memorable name
 
-### 🔥 **Why This Matters**
-- **Unlimited Color Potential**: Full 16.7 million color RGB spectrum vs typical mods with 16-64 fixed blocks
-- **Perfect Color Matching**: Match any build palette, artwork, or design specification exactly
-- **Practical Storage**: 180 persistent user slots for your most-used color combinations
-- **Texture Variety**: Same color looks completely different on wool vs stone vs concrete
+### 🔥 **Why BlockEditor is Different**
 
-### 🏆 **Competitive Advantage: Real Blocks vs Visual Effects**
+**Real Minecraft Blocks vs Visual Overlays:**
 
-**Unlike other color mods (RGBBlocks, etc.) that only create visual overlays, BlockEditor creates ACTUAL registered blocks:**
-
-✅ **Full Minecraft Integration**
-- Work with `/give`, `/setblock`, `/fill` commands
-- Compatible with WorldEdit: `//set user_wool1`, `//replace stone user_concrete5`
-- Show up in creative inventory with proper names
-- Persistent across world saves and server restarts
+✅ **Full Integration**
+- Work with all vanilla commands: `/give`, `/setblock`, `/fill`
+- **WorldEdit Compatible**: `//set be:wall`, `//replace stone be:floor`
+- Creative inventory integration with proper names
+- Persistent across saves and multiplayer servers
 
 ❌ **What Other Mods Can't Do**
-- RGBBlocks: Visual-only, breaks on reload, no command support
-- Chisel & Bits: Micro-blocks only, not full-size blocks
-- Color variants mods: Fixed palette, no custom colors
+- Other color mods: Visual-only, no WorldEdit support
+- Limited palettes: Fixed colors, no custom names
+- Command incompatible: Don't work with `/give` or WorldEdit
 
-**Result**: Your custom blocks work exactly like vanilla Minecraft blocks in every system, tool, and command!
+## 🎮 Usage Guide
 
-### 💡 **Real-World Examples**
-```
-Crimson Red (#DC143C):
-- On Wool: Soft fabric appearance
-- On Stone: Bold architectural accent  
-- On Concrete: Modern industrial look
-- On Wood: Rich mahogany effect
+### 🏗️ **Basic Block Creation**
+1. **Open Editor**: Press **G** (default) to open Block Editor
+2. **Choose Texture**: Click any block type from the grid
+3. **Set Color**: Enter hex color (e.g., `FF0000`) in the color field
+4. **Name Your Block**: Enter a custom name (e.g., "wall", "roof", "accent")
+5. **Create**: Click "Create Block" - it appears in your inventory with the custom name
+6. **Build**: Place the block anywhere - it keeps your color and name!
 
-Ocean Blue (#006994):
-- On Wool: Cozy interior fabric
-- On Deepslate: Deep cave atmosphere
-- On Concrete: Contemporary exterior
-- On Sand: Tropical beach vibes
-```
+### �️ **Middle-Click Shortcuts**
+1. **Find Block**: See a block you want in the Recent Blocks panel?
+2. **Middle-Click**: Middle-click on it for instant access
+3. **Auto-Equip**: Block appears in your hand (slot 0) and screen closes
+4. **Smart Creation**: If you don't have it, automatically creates "blockname2", "blockname3", etc.
 
-**Result**: Whether you're building pixel art, modern architecture, medieval castles, or abstract sculptures, BlockEditor has the exact color-texture combination you need.
+### 🌍 **WorldEdit Integration**
+Use your custom-named blocks in any WorldEdit command:
 
-## � Screenshots
+```bash
+# Basic usage with custom names
+//set be:wall
+//replace stone be:floor  
+//walls be:accent
 
-![Block Editor Interface - 3 Column Layout](images/image-1760931259480.png)
-*Enhanced Block Editor interface featuring the new 3-column compact history layout with rounded corners, proper spacing, and alternating backgrounds.*
+# Complex building operations
+//copy
+//paste
+//set 50% be:wall,30% be:floor,20% be:accent
 
-![Block Editor Interface - Responsive Design](images/image-1760931288528.png)
-*Responsive design that adapts to different screen sizes while maintaining functionality and visual appeal.*
-
-## �🚀 Installation
-
-1. **Download** the latest release from [Releases](../../releases)
-2. **Install** Minecraft Forge 47.4.0+ for Minecraft 1.20.1
-3. **Place** the `.jar` file in your `mods` folder
-4. **Launch** Minecraft with the Forge profile
-
-## 🎮 Usage
-
-### Basic Block Creation
-1. Press **G** (default keybind) to open the Block Editor GUI
-2. Select your desired base block type from the grid
-3. Enter a custom hex color code (e.g., `FF0000` for red) or use the default
-4. Click **"Create Block"** to add it to your inventory
-5. Place the block in your world - it will automatically apply your custom color!
-
-### WorldEdit Integration
-Use your custom blocks in any WorldEdit command:
-```
-//set blockeditor:user_wool1
-//replace stone blockeditor:user_stone1
-//walls blockeditor:user_concrete1
+# Selection and replacement
+//sel cuboid
+//pos1
+//pos2
+//replace minecraft:stone be:custom_stone
 ```
 
-### Commands
-- `/be clear` - Clear all custom user blocks from the world
-- `/be refresh` - Refresh custom block colors in a 16-block radius
+**Pro Tip**: Create blocks with descriptive names like "red_brick", "blue_roof", "green_wall" for easy WorldEdit use!
 
-## 🎨 Color System
+### 📋 **Commands**
+- `/be clear` - Clear all custom blocks from registry
+- **WorldEdit Commands**: All standard WorldEdit commands work with `be:your_block_name`
 
-- **Hex Colors**: Enter any 6-digit hex color code (without #)
-- **Pre-made Blocks**: Over 30 pre-colored block variants available
-- **Numbered System**: Blocks are automatically assigned numbers (`user_wool1`, `user_wool2`, etc.)
-- **Persistence**: Colors are saved and persist across world reloads
+## 🎨 **Color & Naming System**
 
-## 🔧 Technical Details
+### 🏷️ **Custom Names**
+- **Flexible Naming**: Use any name (letters, numbers, underscores)
+- **Automatic Cleanup**: Invalid characters converted to underscores
+- **Duplicate Handling**: Automatic numbering prevents name conflicts
+- **WorldEdit Ready**: Names work instantly in WorldEdit commands
+
+### 🌈 **Color System**
+- **Hex Input**: 6-digit hex codes without # (e.g., `FF0000`, `00FF00`, `0066CC`)
+- **Real-Time Preview**: See your color applied immediately
+- **Full RGB Range**: Any color imaginable from pure black to pure white
+- **Persistent Colors**: Colors saved with your world and across servers
+
+### 🗂️ **Block Organization**
+- **Recent History**: Visual panel showing your last created blocks
+- **Type Categories**: Organized by texture type (wool, stone, concrete, etc.)
+- **20 Slots Each**: 20 custom blocks per texture type (180 total)
+- **Smart Slot Management**: Automatic slot assignment with visual feedback
+
+## 🔧 **Technical Specifications**
 
 - **Minecraft Version**: 1.20.1
-- **Mod Loader**: Forge 47.4.0+
-- **Side**: Both Client and Server
-- **Dependencies**: None (optional WorldEdit integration)
+- **Mod Loader**: Forge 47.3.0+
+- **Side**: Client & Server (works in multiplayer)
+- **Dependencies**: None required (WorldEdit optional but recommended)
+- **Performance**: Optimized for large builds and multiplayer servers
 
-## 📋 Version History
+## 🚀 **Installation**
+
+1. **Download**: Get latest release from [Releases](../../releases)
+2. **Forge**: Install Minecraft Forge 47.3.0+ for MC 1.20.1
+3. **Install**: Place `.jar` in your `mods` folder
+4. **Optional**: Install WorldEdit for enhanced building features
+5. **Launch**: Start Minecraft with Forge profile
+
+## 💡 **Pro Building Tips**
+
+### 🏗️ **Efficient Workflow**
+1. **Plan Colors**: Choose your palette before building
+2. **Name Systematically**: Use names like "wall_light", "wall_dark", "trim"
+3. **Use Middle-Click**: Quick access to frequently used blocks
+4. **WorldEdit Integration**: Build structures with `//set be:wall` commands
+
+### 🎨 **Color Coordination**
+```
+Modern Building Palette:
+- be:concrete_light (#E8E8E8) - Main walls
+- be:concrete_dark (#4A4A4A) - Accents  
+- be:glass_blue (#0077BE) - Windows
+- be:trim_gold (#FFD700) - Details
+
+Medieval Castle Theme:
+- be:stone_wall (#8B7D6B) - Main structure
+- be:stone_dark (#5D5D5D) - Foundation
+- be:wood_beam (#8B4513) - Support beams
+- be:roof_slate (#2F4F4F) - Roofing
+```
+
+## 📋 **Version History**
+
+### v1.0.1 (Current)
+- ✨ **Custom block naming system**
+- ✨ **Enhanced WorldEdit integration** with custom names
+- ✨ **Middle-click block history shortcuts**
+- ✨ **Smart duplicate name handling** (auto-numbering)
+- ✨ **Improved UI design** and user experience
+- 🐛 **20 slots per block type** (increased from limited slots)
+- � **Fixed block persistence** issues
 
 ### v1.0.0
-- Initial release
-- Full block customization system
-- WorldEdit integration
-- Performance optimizations
-- Multiplayer support
+- 🎉 Initial release with basic color customization
+- 🎨 9 block texture types with hex color support
+- 🔧 Basic WorldEdit integration
+- 💾 World persistence and multiplayer support
 
-## 🤝 Contributing
+## 🤝 **Contributing**
 
-Contributions are welcome! Please feel free to submit issues or pull requests.
+Contributions welcome! Feel free to:
+- 🐛 Report bugs or suggest features
+- 🔧 Submit pull requests
+- � Improve documentation
+- 🎨 Share your amazing builds using BlockEditor!
 
-## 📄 License
+## 📄 **License**
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT License - see [LICENSE](LICENSE) for details.
 
-## 🙏 Acknowledgments
+## 🙏 **Acknowledgments**
 
 - Built for Minecraft 1.20.1 with Forge
-- Compatible with WorldEdit for enhanced building
-- Inspired by the need for better block customization tools
+- WorldEdit integration for enhanced building
+- Community feedback for feature improvements
 
 ---
 
-**Made with ❤️ for the Minecraft modding community**
+**Create, Name, Build - Make every block uniquely yours! 🎨**

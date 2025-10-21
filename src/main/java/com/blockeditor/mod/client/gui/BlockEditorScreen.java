@@ -8,7 +8,11 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
+import com.blockeditor.mod.registry.ModItems;
+import com.blockeditor.mod.network.CreateBlockPacket;
+import com.blockeditor.mod.network.ModNetworking;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -125,13 +129,11 @@ public class BlockEditorScreen extends Screen {
         try {
             File historyFile = new File("config/blockeditor_history.dat");
             if (!historyFile.exists()) {
-                System.out.println("DEBUG: No history file exists yet");
                 return; // No history file exists yet
             }
             
             CompoundTag rootTag = NbtIo.read(historyFile);
             if (rootTag == null || !rootTag.contains("history")) {
-                System.out.println("DEBUG: No history data in file");
                 return;
             }
             
@@ -158,7 +160,6 @@ public class BlockEditorScreen extends Screen {
                 }
             }
             
-            System.out.println("DEBUG: Loaded " + createdBlocksHistory.size() + " blocks from history");
         } catch (IOException e) {
             System.err.println("Failed to load block history: " + e.getMessage());
         }
@@ -647,13 +648,19 @@ public class BlockEditorScreen extends Screen {
             
             if (clickedIndex >= 0 && clickedIndex < createdBlocksHistory.size() && col >= 0 && col < blocksPerRow) {
                 CreatedBlockInfo info = createdBlocksHistory.get(clickedIndex);
-                selectedBlock = info.originalBlock;
-                hexColor = info.hexColor;
-                hexBox.setValue(hexColor);
                 
-                // Clear the name box so user can type a fresh name
-                if (nameBox != null) {
-                    nameBox.setValue("");
+                if (button == 2) { // Middle click - find and equip the block
+                    findAndEquipBlock(info);
+                    return true;
+                } else { // Left/right click - set as template
+                    selectedBlock = info.originalBlock;
+                    hexColor = info.hexColor;
+                    hexBox.setValue(hexColor);
+                    
+                    // Clear the name box so user can type a fresh name
+                    if (nameBox != null) {
+                        nameBox.setValue("");
+                    }
                 }
                 
                 return true;
@@ -952,9 +959,6 @@ public class BlockEditorScreen extends Screen {
     
     private boolean isNameBoxValid() {
         if (nameBox == null) {
-            if (this.minecraft != null && this.minecraft.player != null) {
-                this.minecraft.player.displayClientMessage(Component.literal("§eDEBUG: nameBox is null"), false);
-            }
             return false;
         }
         
@@ -1100,14 +1104,6 @@ public class BlockEditorScreen extends Screen {
             return;
         }
 
-            // Check for duplicate blocks (same texture and hex color)
-            if (isDuplicateBlock(selectedBlock, hexColor)) {
-                // Instead of showing error, give the existing block to the player
-                giveExistingBlockToPlayer(selectedBlock, hexColor);
-                this.onClose();
-                return;
-            }
-
             // Check if inventory is full before creating
             boolean inventoryWasFull = isInventoryFull();
             if (inventoryWasFull && this.minecraft.player != null) {
@@ -1250,39 +1246,27 @@ public class BlockEditorScreen extends Screen {
         ResourceLocation blockId = BuiltInRegistries.BLOCK.getKey(selectedBlock);
         String blockName = blockId.getPath().toLowerCase();
 
-        System.out.println("getBlockTypeForTexture: blockId=" + blockId + ", blockName=" + blockName);
-
         // Check for texture category keywords
         if (blockName.contains("dirt") || blockName.contains("coarse")) {
-            System.out.println("Matched DIRT texture");
             return ModBlocks.DYNAMIC_BLOCK_DIRT.get();
         } else if (blockName.contains("planks") || blockName.contains("wood")) {
-            System.out.println("Matched WOOD texture");
             return ModBlocks.DYNAMIC_BLOCK_WOOD.get();
         } else if (blockName.contains("wool")) {
-            System.out.println("Matched WOOL texture");
             return ModBlocks.DYNAMIC_BLOCK_WOOL.get();
         } else if (blockName.contains("concrete") && !blockName.contains("powder")) {
-            System.out.println("Matched CONCRETE texture");
             return ModBlocks.DYNAMIC_BLOCK_CONCRETE.get();
         } else if (blockName.contains("cobblestone")) {
-            System.out.println("Matched COBBLESTONE texture");
             return ModBlocks.DYNAMIC_BLOCK_COBBLESTONE.get();
         } else if (blockName.contains("deepslate")) {
-            System.out.println("Matched DEEPSLATE texture");
             return ModBlocks.DYNAMIC_BLOCK_DEEPSLATE.get();
         } else if (blockName.contains("sand")) {
-            System.out.println("Matched SAND texture");
             return ModBlocks.DYNAMIC_BLOCK_SAND.get();
         } else if (blockName.contains("smooth_stone")) {
-            System.out.println("Matched SMOOTH_STONE texture");
             return ModBlocks.DYNAMIC_BLOCK_SMOOTH_STONE.get();
         } else if (blockName.contains("stone")) {
-            System.out.println("Matched STONE texture");
             return ModBlocks.DYNAMIC_BLOCK.get();
         } else {
             // Default to stone texture for any other blocks
-            System.out.println("Defaulting to STONE texture");
             return ModBlocks.DYNAMIC_BLOCK.get();
         }
     }
@@ -1301,9 +1285,7 @@ public class BlockEditorScreen extends Screen {
             return true;
         }
         if (codePoint == ' ') {
-            System.out.println("SPACE TEST: Directly incrementing historyScrollOffset from " + historyScrollOffset);
             historyScrollOffset = (historyScrollOffset + 1) % Math.max(1, createdBlocksHistory.size());
-            System.out.println("SPACE TEST: historyScrollOffset is now " + historyScrollOffset);
             return true;
         }
         return super.charTyped(codePoint, modifiers);
@@ -1311,8 +1293,129 @@ public class BlockEditorScreen extends Screen {
 
     @Override 
     public void setFocused(net.minecraft.client.gui.components.events.GuiEventListener focused) {
-        System.out.println("FOCUS DEBUG: setFocused called with " + (focused != null ? focused.getClass().getSimpleName() : "null"));
         super.setFocused(focused);
+    }
+
+    private void findAndEquipBlock(CreatedBlockInfo blockInfo) {
+        if (this.minecraft == null || this.minecraft.player == null) {
+            return;
+        }
+        
+        String targetColor = blockInfo.hexColor.toUpperCase();
+        String targetCustomName = blockInfo.blockName;
+        
+        // Search through player's inventory for a matching block
+        var inventory = this.minecraft.player.getInventory();
+        
+        for (int slot = 0; slot < inventory.getContainerSize(); slot++) {
+            ItemStack stack = inventory.getItem(slot);
+            
+            if (stack.isEmpty()) continue;
+            
+            // Check if this item is one of our custom blocks
+            if (stack.getItem() instanceof com.blockeditor.mod.content.DynamicBlockItem) {
+                var tag = stack.getTag();
+                if (tag != null && tag.contains("Color") && tag.contains("CustomName")) {
+                    String stackColor = tag.getString("Color");
+                    String stackCustomName = tag.getString("CustomName");
+                    
+                    // Check if this matches the block we're looking for (by color and name)
+                    if (stackColor.equals(targetColor) && stackCustomName.equals(targetCustomName)) {
+                        
+                        // Found the matching block! Move it to slot 0 (first hotbar slot)
+                        ItemStack currentItem = inventory.getItem(0);
+                        inventory.setItem(0, stack.copy());
+                        inventory.setItem(slot, currentItem);
+                        
+                        // Set the player's selected slot to 0
+                        inventory.selected = 0;
+                        
+                        // Show success message
+                        this.minecraft.player.displayClientMessage(
+                            net.minecraft.network.chat.Component.literal("§a✓ Found and equipped: §f" + targetCustomName + " §7(#" + targetColor + ")"),
+                            true // Action bar
+                        );
+                        
+                        // Close the screen
+                        this.onClose();
+                        return;
+                    }
+                }
+            }
+        }
+        
+        // Block not found in inventory - create a new one exactly like it
+        try {
+            // Get the block type for the target texture
+            Block targetBlockType = getBlockTypeForTexture(blockInfo.originalBlock);
+            ResourceLocation blockId = BuiltInRegistries.BLOCK.getKey(targetBlockType);
+            ResourceLocation mimicBlockId = BuiltInRegistries.BLOCK.getKey(blockInfo.originalBlock);
+            
+            // Try to find a unique name by checking existing history and appending numbers if needed
+            String finalCustomName = targetCustomName;
+            int attempt = 1;
+            
+            // Check against our local history to avoid obvious duplicates
+            while (attempt <= 50) {
+                boolean nameExists = false;
+                
+                // Check if this name already exists in our recent history
+                for (CreatedBlockInfo historyBlock : createdBlocksHistory) {
+                    if (historyBlock.blockName.equals(finalCustomName) && 
+                        historyBlock.hexColor.equals(targetColor)) {
+                        nameExists = true;
+                        break;
+                    }
+                }
+                
+                if (!nameExists) {
+                    break; // Found a unique name
+                }
+                
+                // Try next numbered variation
+                attempt++;
+                if (attempt <= 50) {
+                    finalCustomName = targetCustomName + attempt;
+                }
+            }
+            
+            // Send the packet to create the block with the (hopefully) unique name
+            CreateBlockPacket packet = new CreateBlockPacket(
+                targetColor,
+                mimicBlockId.toString(),
+                blockId.toString(),
+                finalCustomName
+            );
+            
+            // Send the packet to the server to register the block
+            ModNetworking.sendToServer(packet);
+            
+            // Show success message that the block will be created
+            String displayName = finalCustomName.equals(targetCustomName) ? 
+                finalCustomName : finalCustomName + " (renamed to avoid duplicate)";
+            
+            this.minecraft.player.displayClientMessage(
+                net.minecraft.network.chat.Component.literal("§a✓ Creating and equipping: §f" + displayName + " §7(#" + targetColor + ")"),
+                true // Action bar
+            );
+            
+            // Close the screen
+            this.onClose();
+            return;
+            
+        } catch (Exception e) {
+            // If creation fails, show error
+            this.minecraft.player.displayClientMessage(
+                net.minecraft.network.chat.Component.literal("§cFailed to create block: §f" + targetCustomName),
+                true // Action bar
+            );
+        }
+        
+        // If we get here, something went wrong
+        this.minecraft.player.displayClientMessage(
+            net.minecraft.network.chat.Component.literal("§cUnable to find or create block: §f" + targetCustomName + " §7(#" + targetColor + ")"),
+            true // Action bar
+        );
     }
 
     @Override

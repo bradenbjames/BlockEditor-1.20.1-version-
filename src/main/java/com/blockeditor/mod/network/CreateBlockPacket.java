@@ -29,7 +29,6 @@ public class CreateBlockPacket {
     }
 
     public static void encode(CreateBlockPacket packet, FriendlyByteBuf buf) {
-        System.out.println("NETWORK ENCODE: *** SENDING NAME: '" + packet.customName + "' ***");
         buf.writeUtf(packet.hexColor);
         buf.writeUtf(packet.mimicBlockId);
         buf.writeUtf(packet.blockType);
@@ -37,28 +36,18 @@ public class CreateBlockPacket {
     }
 
     public static CreateBlockPacket decode(FriendlyByteBuf buf) {
-        System.out.println("NETWORK DECODE: Starting decode...");
         CreateBlockPacket packet = new CreateBlockPacket(buf.readUtf(), buf.readUtf(), buf.readUtf(), buf.readUtf());
-        System.out.println("NETWORK DECODE: *** RECEIVED NAME: '" + packet.customName + "' ***");
         return packet;
     }
 
     public static void handle(CreateBlockPacket packet, Supplier<NetworkEvent.Context> contextSupplier) {
         NetworkEvent.Context context = contextSupplier.get();
-        System.out.println("=== SERVER: CreateBlockPacket.handle called! ===");
-        System.out.println("SERVER:   Color: " + packet.hexColor);
-        System.out.println("SERVER:   Mimic: " + packet.mimicBlockId);
-        System.out.println("SERVER:   Block type: " + packet.blockType);
-        System.out.println("SERVER:   Custom name: " + packet.customName);
 
         context.enqueueWork(() -> {
             ServerPlayer player = context.getSender();
             if (player == null) {
-                System.out.println("SERVER ERROR: No sender player!");
                 return;
             }
-
-            System.out.println("SERVER:   Player: " + player.getName().getString());
 
             // Get the user block registry
             ServerLevel level = player.serverLevel();
@@ -67,7 +56,6 @@ public class CreateBlockPacket {
             // Determine block type from the block ID
             ResourceLocation blockId = ResourceLocation.tryParse(packet.blockType);
             if (blockId == null) {
-                System.out.println("ERROR: Invalid block ID: " + packet.blockType);
                 return;
             }
             
@@ -82,14 +70,11 @@ public class CreateBlockPacket {
             else if (blockPath.contains("cobblestone")) blockType = "cobblestone";
             else if (blockPath.contains("smooth_stone")) blockType = "smooth_stone";
             
-            System.out.println("SERVER: Block detection - Path: '" + blockPath + "' -> Type: '" + blockType + "'");
-            
             // Parse color
             int color;
             try {
                 color = Integer.parseInt(packet.hexColor, 16);
             } catch (NumberFormatException e) {
-                System.out.println("ERROR: Invalid hex color: " + packet.hexColor);
                 return;
             }
             
@@ -124,20 +109,15 @@ public class CreateBlockPacket {
             // Update WorldEdit integration with the new custom block mapping
             try {
                 com.blockeditor.mod.integration.WorldEditIntegration.updateCustomBlockMapping(cleanCustomName, internalId);
-                System.out.println("SERVER: Updated WorldEdit integration for custom name: " + cleanCustomName + " -> " + internalId);
             } catch (Exception e) {
-                System.err.println("SERVER ERROR: Failed to update WorldEdit integration: " + e.getMessage());
                 e.printStackTrace();
             }
             
             // Get the actual user block from ModBlocks
             Block userBlock = getUserBlockByIdentifier(internalId);
             if (userBlock == null) {
-                System.out.println("ERROR: Could not find user block for identifier: " + internalId);
                 return;
             }
-
-            System.out.println("Creating item stack for user block: " + userBlock + " with custom name: " + cleanCustomName);
 
             // Create the item stack
             ItemStack coloredBlock = new ItemStack(userBlock);
@@ -164,35 +144,62 @@ public class CreateBlockPacket {
                 net.minecraft.network.chat.Component.literal("§r" + cleanCustomName + " §7(#" + packet.hexColor + ")")
             );
 
-            System.out.println("Adding item to player inventory...");
-
-            // Try to add to the current selected slot first, then hotbar, then inventory
+            // Improved inventory management - always try to put in hand first
             boolean itemPlaced = false;
             
-            // Get the currently selected hotbar slot
+            // Get the currently selected hotbar slot (0-8)
             int selectedSlot = player.getInventory().selected;
             
-            // If the selected slot is empty, place it there
+            // Strategy 1: If the selected slot is empty, place it there and ensure it's selected
             if (player.getInventory().getItem(selectedSlot).isEmpty()) {
                 player.getInventory().setItem(selectedSlot, coloredBlock);
+                // Force the player to select this slot (redundant but ensures it's active)
+                player.getInventory().selected = selectedSlot;
                 itemPlaced = true;
-                System.out.println("Item placed in selected hotbar slot: " + selectedSlot);
-            } else {
-                // Try to add to inventory normally
-                if (player.getInventory().add(coloredBlock)) {
-                    itemPlaced = true;
-                    System.out.println("Item added to inventory successfully!");
-                } else {
-                    // If inventory is full, drop the item
-                    player.drop(coloredBlock, false);
-                    System.out.println("Inventory full, dropping item");
+            } 
+            // Strategy 2: Try to find any empty hotbar slot (0-8) and switch to it
+            else {
+                boolean foundEmptyHotbarSlot = false;
+                for (int hotbarSlot = 0; hotbarSlot < 9; hotbarSlot++) {
+                    if (player.getInventory().getItem(hotbarSlot).isEmpty()) {
+                        player.getInventory().setItem(hotbarSlot, coloredBlock);
+                        player.getInventory().selected = hotbarSlot; // Switch to this slot
+                        foundEmptyHotbarSlot = true;
+                        itemPlaced = true;
+                        break;
+                    }
+                }
+                
+                // Strategy 3: If no empty hotbar slots, try general inventory
+                if (!foundEmptyHotbarSlot) {
+                    if (player.getInventory().add(coloredBlock)) {
+                        itemPlaced = true;
+                        // Try to move it to the selected slot if possible
+                        for (int slot = 9; slot < player.getInventory().getContainerSize(); slot++) {
+                            ItemStack stackInSlot = player.getInventory().getItem(slot);
+                            if (stackInSlot == coloredBlock) {
+                                // Found our block in inventory, try to swap it to selected slot
+                                ItemStack currentSelected = player.getInventory().getItem(selectedSlot);
+                                player.getInventory().setItem(selectedSlot, coloredBlock);
+                                player.getInventory().setItem(slot, currentSelected);
+                                break;
+                            }
+                        }
+                    } else {
+                        // Strategy 4: If inventory is completely full, drop the item
+                        player.drop(coloredBlock, false);
+                        player.displayClientMessage(
+                            net.minecraft.network.chat.Component.literal("§c§lInventory Full! §r§7Block dropped on ground"), 
+                            true
+                        );
+                    }
                 }
             }
             
-            // Send a more prominent notification
+            // Send success notification
             if (itemPlaced) {
                 player.displayClientMessage(
-                    net.minecraft.network.chat.Component.literal("§a§lBlock Created! §r§7Check your hotbar or inventory"), 
+                    net.minecraft.network.chat.Component.literal("§a§lBlock Created! §r§f" + cleanCustomName + " §7in your hand"), 
                     true // Show as action bar message
                 );
             }

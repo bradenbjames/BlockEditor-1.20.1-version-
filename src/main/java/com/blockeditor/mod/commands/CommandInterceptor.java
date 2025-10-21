@@ -68,8 +68,6 @@ public class CommandInterceptor {
     private static String replaceCustomBlockNames(String command) {
         String modifiedCommand = command;
         
-        System.out.println("REPLACE DEBUG: Processing command: " + command);
-        
         // Find all "be:customname" patterns and replace them
         java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("be:([a-zA-Z0-9_]+)");
         java.util.regex.Matcher matcher = pattern.matcher(command);
@@ -77,24 +75,19 @@ public class CommandInterceptor {
         StringBuffer sb = new StringBuffer();
         while (matcher.find()) {
             String customName = matcher.group(1);
-            System.out.println("REPLACE DEBUG: Found pattern 'be:" + customName + "'");
             
             // Skip if it's already an internal name (starts with u_)
             if (customName.startsWith("u_")) {
-                System.out.println("REPLACE DEBUG: Skipping internal name: " + customName);
                 matcher.appendReplacement(sb, matcher.group(0));
                 continue;
             }
             
             String registryName = BlockNameResolver.getRegistryName(customName);
-            System.out.println("REPLACE DEBUG: BlockNameResolver returned: " + registryName);
             if (registryName != null) {
                 // Replace be:customname with the actual registry name
-                System.out.println("REPLACE DEBUG: Replacing 'be:" + customName + "' with '" + registryName + "'");
                 matcher.appendReplacement(sb, registryName);
             } else {
                 // Keep original if no mapping found
-                System.out.println("REPLACE DEBUG: No mapping found, keeping original: be:" + customName);
                 matcher.appendReplacement(sb, matcher.group(0));
             }
         }

@@ -111,10 +111,8 @@ public class UserBlockRegistry extends SavedData {
     
     private int getMaxBlocksForType(String blockType) {
         return switch (blockType) {
-            case "wool", "stone", "concrete" -> 5;
-            case "wood", "dirt", "sand" -> 3;
-            case "deepslate" -> 3;
-            default -> 1;
+            case "wool", "stone", "concrete", "wood", "dirt", "sand", "deepslate", "cobblestone", "smooth_stone" -> 20;
+            default -> 20; // Default to 20 for any new block types
         };
     }
     

@@ -58,11 +58,8 @@ public class BlockEditorMod {
     
     @SubscribeEvent
     public void onRegisterCommands(RegisterCommandsEvent event) {
-        System.out.println("BLOCKEDITOR: Registering debug command");
         DebugCommand.register(event.getDispatcher());
-        System.out.println("BLOCKEDITOR: Registering translate command");
         TranslateCommand.register(event.getDispatcher());
-        System.out.println("BLOCKEDITOR: Registering WorldEdit proxy command");
         WorldEditProxyCommand.register(event.getDispatcher());
     }
 }
