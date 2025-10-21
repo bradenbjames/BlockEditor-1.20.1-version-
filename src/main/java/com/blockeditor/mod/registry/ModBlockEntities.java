@@ -26,7 +26,15 @@ public class ModBlockEntities {
                 ModBlocks.DYNAMIC_BLOCK_WOOD.get(),
                 ModBlocks.DYNAMIC_BLOCK_STONE.get(),
                 ModBlocks.DYNAMIC_BLOCK_COBBLESTONE.get(),
-                ModBlocks.DYNAMIC_BLOCK_SMOOTH_STONE.get()
+                ModBlocks.DYNAMIC_BLOCK_SMOOTH_STONE.get(),
+                ModBlocks.DYNAMIC_BLOCK_TERRACOTTA.get(),
+                ModBlocks.DYNAMIC_BLOCK_CONCRETE_POWDER.get(),
+                ModBlocks.DYNAMIC_BLOCK_GLASS.get(),
+                ModBlocks.DYNAMIC_BLOCK_DIORITE.get(),
+                ModBlocks.DYNAMIC_BLOCK_CALCITE.get(),
+                ModBlocks.DYNAMIC_BLOCK_MUSHROOM_STEM.get(),
+                ModBlocks.DYNAMIC_BLOCK_DEAD_TUBE_CORAL.get(),
+                ModBlocks.DYNAMIC_BLOCK_PEARLESCENT_FROGLIGHT.get()
             ).build(null);
         });
 }

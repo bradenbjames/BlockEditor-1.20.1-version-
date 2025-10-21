@@ -41,6 +41,30 @@ public class ModItems {
     public static final RegistryObject<Item> DYNAMIC_BLOCK_SMOOTH_STONE_ITEM = ITEMS.register("dynamic_block_smooth_stone",
         () -> new DynamicBlockItem(ModBlocks.DYNAMIC_BLOCK_SMOOTH_STONE.get(), new Item.Properties()));
 
+    public static final RegistryObject<Item> DYNAMIC_BLOCK_TERRACOTTA_ITEM = ITEMS.register("dynamic_block_terracotta",
+        () -> new DynamicBlockItem(ModBlocks.DYNAMIC_BLOCK_TERRACOTTA.get(), new Item.Properties()));
+
+    public static final RegistryObject<Item> DYNAMIC_BLOCK_CONCRETE_POWDER_ITEM = ITEMS.register("dynamic_block_concrete_powder",
+        () -> new DynamicBlockItem(ModBlocks.DYNAMIC_BLOCK_CONCRETE_POWDER.get(), new Item.Properties()));
+
+    public static final RegistryObject<Item> DYNAMIC_BLOCK_GLASS_ITEM = ITEMS.register("dynamic_block_glass",
+        () -> new DynamicBlockItem(ModBlocks.DYNAMIC_BLOCK_GLASS.get(), new Item.Properties()));
+
+    public static final RegistryObject<Item> DYNAMIC_BLOCK_DIORITE_ITEM = ITEMS.register("dynamic_block_diorite",
+        () -> new DynamicBlockItem(ModBlocks.DYNAMIC_BLOCK_DIORITE.get(), new Item.Properties()));
+
+    public static final RegistryObject<Item> DYNAMIC_BLOCK_CALCITE_ITEM = ITEMS.register("dynamic_block_calcite",
+        () -> new DynamicBlockItem(ModBlocks.DYNAMIC_BLOCK_CALCITE.get(), new Item.Properties()));
+
+    public static final RegistryObject<Item> DYNAMIC_BLOCK_MUSHROOM_STEM_ITEM = ITEMS.register("dynamic_block_mushroom_stem",
+        () -> new DynamicBlockItem(ModBlocks.DYNAMIC_BLOCK_MUSHROOM_STEM.get(), new Item.Properties()));
+
+    public static final RegistryObject<Item> DYNAMIC_BLOCK_DEAD_TUBE_CORAL_ITEM = ITEMS.register("dynamic_block_dead_tube_coral",
+        () -> new DynamicBlockItem(ModBlocks.DYNAMIC_BLOCK_DEAD_TUBE_CORAL.get(), new Item.Properties()));
+
+    public static final RegistryObject<Item> DYNAMIC_BLOCK_PEARLESCENT_FROGLIGHT_ITEM = ITEMS.register("dynamic_block_pearlescent_froglight",
+        () -> new DynamicBlockItem(ModBlocks.DYNAMIC_BLOCK_PEARLESCENT_FROGLIGHT.get(), new Item.Properties()));
+
     // User block items for WorldEdit autocomplete (numbered system)
     // Wool blocks (1-20)
     public static final RegistryObject<Item> USER_WOOL_1_ITEM = ITEMS.register("u_wool1", () -> new DynamicBlockItem(ModBlocks.USER_WOOL_1.get(), new Item.Properties()));
@@ -239,4 +263,180 @@ public class ModItems {
     public static final RegistryObject<Item> USER_SMOOTH_STONE_18_ITEM = ITEMS.register("u_smooth_stone18", () -> new DynamicBlockItem(ModBlocks.USER_SMOOTH_STONE_18.get(), new Item.Properties()));
     public static final RegistryObject<Item> USER_SMOOTH_STONE_19_ITEM = ITEMS.register("u_smooth_stone19", () -> new DynamicBlockItem(ModBlocks.USER_SMOOTH_STONE_19.get(), new Item.Properties()));
     public static final RegistryObject<Item> USER_SMOOTH_STONE_20_ITEM = ITEMS.register("u_smooth_stone20", () -> new DynamicBlockItem(ModBlocks.USER_SMOOTH_STONE_20.get(), new Item.Properties()));
+
+    // Terracotta items (1-20)
+    public static final RegistryObject<Item> USER_TERRACOTTA_1_ITEM = ITEMS.register("u_terracotta1", () -> new DynamicBlockItem(ModBlocks.USER_TERRACOTTA_1.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_TERRACOTTA_2_ITEM = ITEMS.register("u_terracotta2", () -> new DynamicBlockItem(ModBlocks.USER_TERRACOTTA_2.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_TERRACOTTA_3_ITEM = ITEMS.register("u_terracotta3", () -> new DynamicBlockItem(ModBlocks.USER_TERRACOTTA_3.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_TERRACOTTA_4_ITEM = ITEMS.register("u_terracotta4", () -> new DynamicBlockItem(ModBlocks.USER_TERRACOTTA_4.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_TERRACOTTA_5_ITEM = ITEMS.register("u_terracotta5", () -> new DynamicBlockItem(ModBlocks.USER_TERRACOTTA_5.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_TERRACOTTA_6_ITEM = ITEMS.register("u_terracotta6", () -> new DynamicBlockItem(ModBlocks.USER_TERRACOTTA_6.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_TERRACOTTA_7_ITEM = ITEMS.register("u_terracotta7", () -> new DynamicBlockItem(ModBlocks.USER_TERRACOTTA_7.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_TERRACOTTA_8_ITEM = ITEMS.register("u_terracotta8", () -> new DynamicBlockItem(ModBlocks.USER_TERRACOTTA_8.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_TERRACOTTA_9_ITEM = ITEMS.register("u_terracotta9", () -> new DynamicBlockItem(ModBlocks.USER_TERRACOTTA_9.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_TERRACOTTA_10_ITEM = ITEMS.register("u_terracotta10", () -> new DynamicBlockItem(ModBlocks.USER_TERRACOTTA_10.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_TERRACOTTA_11_ITEM = ITEMS.register("u_terracotta11", () -> new DynamicBlockItem(ModBlocks.USER_TERRACOTTA_11.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_TERRACOTTA_12_ITEM = ITEMS.register("u_terracotta12", () -> new DynamicBlockItem(ModBlocks.USER_TERRACOTTA_12.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_TERRACOTTA_13_ITEM = ITEMS.register("u_terracotta13", () -> new DynamicBlockItem(ModBlocks.USER_TERRACOTTA_13.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_TERRACOTTA_14_ITEM = ITEMS.register("u_terracotta14", () -> new DynamicBlockItem(ModBlocks.USER_TERRACOTTA_14.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_TERRACOTTA_15_ITEM = ITEMS.register("u_terracotta15", () -> new DynamicBlockItem(ModBlocks.USER_TERRACOTTA_15.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_TERRACOTTA_16_ITEM = ITEMS.register("u_terracotta16", () -> new DynamicBlockItem(ModBlocks.USER_TERRACOTTA_16.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_TERRACOTTA_17_ITEM = ITEMS.register("u_terracotta17", () -> new DynamicBlockItem(ModBlocks.USER_TERRACOTTA_17.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_TERRACOTTA_18_ITEM = ITEMS.register("u_terracotta18", () -> new DynamicBlockItem(ModBlocks.USER_TERRACOTTA_18.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_TERRACOTTA_19_ITEM = ITEMS.register("u_terracotta19", () -> new DynamicBlockItem(ModBlocks.USER_TERRACOTTA_19.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_TERRACOTTA_20_ITEM = ITEMS.register("u_terracotta20", () -> new DynamicBlockItem(ModBlocks.USER_TERRACOTTA_20.get(), new Item.Properties()));
+
+    // Concrete Powder items (1-20)
+    public static final RegistryObject<Item> USER_CONCRETE_POWDER_1_ITEM = ITEMS.register("u_concrete_powder1", () -> new DynamicBlockItem(ModBlocks.USER_CONCRETE_POWDER_1.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_CONCRETE_POWDER_2_ITEM = ITEMS.register("u_concrete_powder2", () -> new DynamicBlockItem(ModBlocks.USER_CONCRETE_POWDER_2.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_CONCRETE_POWDER_3_ITEM = ITEMS.register("u_concrete_powder3", () -> new DynamicBlockItem(ModBlocks.USER_CONCRETE_POWDER_3.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_CONCRETE_POWDER_4_ITEM = ITEMS.register("u_concrete_powder4", () -> new DynamicBlockItem(ModBlocks.USER_CONCRETE_POWDER_4.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_CONCRETE_POWDER_5_ITEM = ITEMS.register("u_concrete_powder5", () -> new DynamicBlockItem(ModBlocks.USER_CONCRETE_POWDER_5.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_CONCRETE_POWDER_6_ITEM = ITEMS.register("u_concrete_powder6", () -> new DynamicBlockItem(ModBlocks.USER_CONCRETE_POWDER_6.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_CONCRETE_POWDER_7_ITEM = ITEMS.register("u_concrete_powder7", () -> new DynamicBlockItem(ModBlocks.USER_CONCRETE_POWDER_7.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_CONCRETE_POWDER_8_ITEM = ITEMS.register("u_concrete_powder8", () -> new DynamicBlockItem(ModBlocks.USER_CONCRETE_POWDER_8.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_CONCRETE_POWDER_9_ITEM = ITEMS.register("u_concrete_powder9", () -> new DynamicBlockItem(ModBlocks.USER_CONCRETE_POWDER_9.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_CONCRETE_POWDER_10_ITEM = ITEMS.register("u_concrete_powder10", () -> new DynamicBlockItem(ModBlocks.USER_CONCRETE_POWDER_10.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_CONCRETE_POWDER_11_ITEM = ITEMS.register("u_concrete_powder11", () -> new DynamicBlockItem(ModBlocks.USER_CONCRETE_POWDER_11.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_CONCRETE_POWDER_12_ITEM = ITEMS.register("u_concrete_powder12", () -> new DynamicBlockItem(ModBlocks.USER_CONCRETE_POWDER_12.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_CONCRETE_POWDER_13_ITEM = ITEMS.register("u_concrete_powder13", () -> new DynamicBlockItem(ModBlocks.USER_CONCRETE_POWDER_13.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_CONCRETE_POWDER_14_ITEM = ITEMS.register("u_concrete_powder14", () -> new DynamicBlockItem(ModBlocks.USER_CONCRETE_POWDER_14.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_CONCRETE_POWDER_15_ITEM = ITEMS.register("u_concrete_powder15", () -> new DynamicBlockItem(ModBlocks.USER_CONCRETE_POWDER_15.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_CONCRETE_POWDER_16_ITEM = ITEMS.register("u_concrete_powder16", () -> new DynamicBlockItem(ModBlocks.USER_CONCRETE_POWDER_16.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_CONCRETE_POWDER_17_ITEM = ITEMS.register("u_concrete_powder17", () -> new DynamicBlockItem(ModBlocks.USER_CONCRETE_POWDER_17.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_CONCRETE_POWDER_18_ITEM = ITEMS.register("u_concrete_powder18", () -> new DynamicBlockItem(ModBlocks.USER_CONCRETE_POWDER_18.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_CONCRETE_POWDER_19_ITEM = ITEMS.register("u_concrete_powder19", () -> new DynamicBlockItem(ModBlocks.USER_CONCRETE_POWDER_19.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_CONCRETE_POWDER_20_ITEM = ITEMS.register("u_concrete_powder20", () -> new DynamicBlockItem(ModBlocks.USER_CONCRETE_POWDER_20.get(), new Item.Properties()));
+
+    // Glass items (1-20)
+    public static final RegistryObject<Item> USER_GLASS_1_ITEM = ITEMS.register("u_glass1", () -> new DynamicBlockItem(ModBlocks.USER_GLASS_1.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_GLASS_2_ITEM = ITEMS.register("u_glass2", () -> new DynamicBlockItem(ModBlocks.USER_GLASS_2.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_GLASS_3_ITEM = ITEMS.register("u_glass3", () -> new DynamicBlockItem(ModBlocks.USER_GLASS_3.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_GLASS_4_ITEM = ITEMS.register("u_glass4", () -> new DynamicBlockItem(ModBlocks.USER_GLASS_4.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_GLASS_5_ITEM = ITEMS.register("u_glass5", () -> new DynamicBlockItem(ModBlocks.USER_GLASS_5.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_GLASS_6_ITEM = ITEMS.register("u_glass6", () -> new DynamicBlockItem(ModBlocks.USER_GLASS_6.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_GLASS_7_ITEM = ITEMS.register("u_glass7", () -> new DynamicBlockItem(ModBlocks.USER_GLASS_7.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_GLASS_8_ITEM = ITEMS.register("u_glass8", () -> new DynamicBlockItem(ModBlocks.USER_GLASS_8.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_GLASS_9_ITEM = ITEMS.register("u_glass9", () -> new DynamicBlockItem(ModBlocks.USER_GLASS_9.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_GLASS_10_ITEM = ITEMS.register("u_glass10", () -> new DynamicBlockItem(ModBlocks.USER_GLASS_10.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_GLASS_11_ITEM = ITEMS.register("u_glass11", () -> new DynamicBlockItem(ModBlocks.USER_GLASS_11.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_GLASS_12_ITEM = ITEMS.register("u_glass12", () -> new DynamicBlockItem(ModBlocks.USER_GLASS_12.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_GLASS_13_ITEM = ITEMS.register("u_glass13", () -> new DynamicBlockItem(ModBlocks.USER_GLASS_13.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_GLASS_14_ITEM = ITEMS.register("u_glass14", () -> new DynamicBlockItem(ModBlocks.USER_GLASS_14.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_GLASS_15_ITEM = ITEMS.register("u_glass15", () -> new DynamicBlockItem(ModBlocks.USER_GLASS_15.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_GLASS_16_ITEM = ITEMS.register("u_glass16", () -> new DynamicBlockItem(ModBlocks.USER_GLASS_16.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_GLASS_17_ITEM = ITEMS.register("u_glass17", () -> new DynamicBlockItem(ModBlocks.USER_GLASS_17.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_GLASS_18_ITEM = ITEMS.register("u_glass18", () -> new DynamicBlockItem(ModBlocks.USER_GLASS_18.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_GLASS_19_ITEM = ITEMS.register("u_glass19", () -> new DynamicBlockItem(ModBlocks.USER_GLASS_19.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_GLASS_20_ITEM = ITEMS.register("u_glass20", () -> new DynamicBlockItem(ModBlocks.USER_GLASS_20.get(), new Item.Properties()));
+
+    // Diorite items (1-20)
+    public static final RegistryObject<Item> USER_DIORITE_1_ITEM = ITEMS.register("u_diorite1", () -> new DynamicBlockItem(ModBlocks.USER_DIORITE_1.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_DIORITE_2_ITEM = ITEMS.register("u_diorite2", () -> new DynamicBlockItem(ModBlocks.USER_DIORITE_2.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_DIORITE_3_ITEM = ITEMS.register("u_diorite3", () -> new DynamicBlockItem(ModBlocks.USER_DIORITE_3.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_DIORITE_4_ITEM = ITEMS.register("u_diorite4", () -> new DynamicBlockItem(ModBlocks.USER_DIORITE_4.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_DIORITE_5_ITEM = ITEMS.register("u_diorite5", () -> new DynamicBlockItem(ModBlocks.USER_DIORITE_5.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_DIORITE_6_ITEM = ITEMS.register("u_diorite6", () -> new DynamicBlockItem(ModBlocks.USER_DIORITE_6.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_DIORITE_7_ITEM = ITEMS.register("u_diorite7", () -> new DynamicBlockItem(ModBlocks.USER_DIORITE_7.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_DIORITE_8_ITEM = ITEMS.register("u_diorite8", () -> new DynamicBlockItem(ModBlocks.USER_DIORITE_8.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_DIORITE_9_ITEM = ITEMS.register("u_diorite9", () -> new DynamicBlockItem(ModBlocks.USER_DIORITE_9.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_DIORITE_10_ITEM = ITEMS.register("u_diorite10", () -> new DynamicBlockItem(ModBlocks.USER_DIORITE_10.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_DIORITE_11_ITEM = ITEMS.register("u_diorite11", () -> new DynamicBlockItem(ModBlocks.USER_DIORITE_11.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_DIORITE_12_ITEM = ITEMS.register("u_diorite12", () -> new DynamicBlockItem(ModBlocks.USER_DIORITE_12.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_DIORITE_13_ITEM = ITEMS.register("u_diorite13", () -> new DynamicBlockItem(ModBlocks.USER_DIORITE_13.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_DIORITE_14_ITEM = ITEMS.register("u_diorite14", () -> new DynamicBlockItem(ModBlocks.USER_DIORITE_14.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_DIORITE_15_ITEM = ITEMS.register("u_diorite15", () -> new DynamicBlockItem(ModBlocks.USER_DIORITE_15.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_DIORITE_16_ITEM = ITEMS.register("u_diorite16", () -> new DynamicBlockItem(ModBlocks.USER_DIORITE_16.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_DIORITE_17_ITEM = ITEMS.register("u_diorite17", () -> new DynamicBlockItem(ModBlocks.USER_DIORITE_17.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_DIORITE_18_ITEM = ITEMS.register("u_diorite18", () -> new DynamicBlockItem(ModBlocks.USER_DIORITE_18.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_DIORITE_19_ITEM = ITEMS.register("u_diorite19", () -> new DynamicBlockItem(ModBlocks.USER_DIORITE_19.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_DIORITE_20_ITEM = ITEMS.register("u_diorite20", () -> new DynamicBlockItem(ModBlocks.USER_DIORITE_20.get(), new Item.Properties()));
+
+    // Calcite items (1-20)
+    public static final RegistryObject<Item> USER_CALCITE_1_ITEM = ITEMS.register("u_calcite1", () -> new DynamicBlockItem(ModBlocks.USER_CALCITE_1.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_CALCITE_2_ITEM = ITEMS.register("u_calcite2", () -> new DynamicBlockItem(ModBlocks.USER_CALCITE_2.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_CALCITE_3_ITEM = ITEMS.register("u_calcite3", () -> new DynamicBlockItem(ModBlocks.USER_CALCITE_3.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_CALCITE_4_ITEM = ITEMS.register("u_calcite4", () -> new DynamicBlockItem(ModBlocks.USER_CALCITE_4.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_CALCITE_5_ITEM = ITEMS.register("u_calcite5", () -> new DynamicBlockItem(ModBlocks.USER_CALCITE_5.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_CALCITE_6_ITEM = ITEMS.register("u_calcite6", () -> new DynamicBlockItem(ModBlocks.USER_CALCITE_6.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_CALCITE_7_ITEM = ITEMS.register("u_calcite7", () -> new DynamicBlockItem(ModBlocks.USER_CALCITE_7.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_CALCITE_8_ITEM = ITEMS.register("u_calcite8", () -> new DynamicBlockItem(ModBlocks.USER_CALCITE_8.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_CALCITE_9_ITEM = ITEMS.register("u_calcite9", () -> new DynamicBlockItem(ModBlocks.USER_CALCITE_9.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_CALCITE_10_ITEM = ITEMS.register("u_calcite10", () -> new DynamicBlockItem(ModBlocks.USER_CALCITE_10.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_CALCITE_11_ITEM = ITEMS.register("u_calcite11", () -> new DynamicBlockItem(ModBlocks.USER_CALCITE_11.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_CALCITE_12_ITEM = ITEMS.register("u_calcite12", () -> new DynamicBlockItem(ModBlocks.USER_CALCITE_12.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_CALCITE_13_ITEM = ITEMS.register("u_calcite13", () -> new DynamicBlockItem(ModBlocks.USER_CALCITE_13.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_CALCITE_14_ITEM = ITEMS.register("u_calcite14", () -> new DynamicBlockItem(ModBlocks.USER_CALCITE_14.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_CALCITE_15_ITEM = ITEMS.register("u_calcite15", () -> new DynamicBlockItem(ModBlocks.USER_CALCITE_15.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_CALCITE_16_ITEM = ITEMS.register("u_calcite16", () -> new DynamicBlockItem(ModBlocks.USER_CALCITE_16.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_CALCITE_17_ITEM = ITEMS.register("u_calcite17", () -> new DynamicBlockItem(ModBlocks.USER_CALCITE_17.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_CALCITE_18_ITEM = ITEMS.register("u_calcite18", () -> new DynamicBlockItem(ModBlocks.USER_CALCITE_18.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_CALCITE_19_ITEM = ITEMS.register("u_calcite19", () -> new DynamicBlockItem(ModBlocks.USER_CALCITE_19.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_CALCITE_20_ITEM = ITEMS.register("u_calcite20", () -> new DynamicBlockItem(ModBlocks.USER_CALCITE_20.get(), new Item.Properties()));
+
+    // Mushroom Stem items (1-20)
+    public static final RegistryObject<Item> USER_MUSHROOM_STEM_1_ITEM = ITEMS.register("u_mushroom_stem1", () -> new DynamicBlockItem(ModBlocks.USER_MUSHROOM_STEM_1.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_MUSHROOM_STEM_2_ITEM = ITEMS.register("u_mushroom_stem2", () -> new DynamicBlockItem(ModBlocks.USER_MUSHROOM_STEM_2.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_MUSHROOM_STEM_3_ITEM = ITEMS.register("u_mushroom_stem3", () -> new DynamicBlockItem(ModBlocks.USER_MUSHROOM_STEM_3.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_MUSHROOM_STEM_4_ITEM = ITEMS.register("u_mushroom_stem4", () -> new DynamicBlockItem(ModBlocks.USER_MUSHROOM_STEM_4.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_MUSHROOM_STEM_5_ITEM = ITEMS.register("u_mushroom_stem5", () -> new DynamicBlockItem(ModBlocks.USER_MUSHROOM_STEM_5.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_MUSHROOM_STEM_6_ITEM = ITEMS.register("u_mushroom_stem6", () -> new DynamicBlockItem(ModBlocks.USER_MUSHROOM_STEM_6.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_MUSHROOM_STEM_7_ITEM = ITEMS.register("u_mushroom_stem7", () -> new DynamicBlockItem(ModBlocks.USER_MUSHROOM_STEM_7.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_MUSHROOM_STEM_8_ITEM = ITEMS.register("u_mushroom_stem8", () -> new DynamicBlockItem(ModBlocks.USER_MUSHROOM_STEM_8.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_MUSHROOM_STEM_9_ITEM = ITEMS.register("u_mushroom_stem9", () -> new DynamicBlockItem(ModBlocks.USER_MUSHROOM_STEM_9.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_MUSHROOM_STEM_10_ITEM = ITEMS.register("u_mushroom_stem10", () -> new DynamicBlockItem(ModBlocks.USER_MUSHROOM_STEM_10.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_MUSHROOM_STEM_11_ITEM = ITEMS.register("u_mushroom_stem11", () -> new DynamicBlockItem(ModBlocks.USER_MUSHROOM_STEM_11.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_MUSHROOM_STEM_12_ITEM = ITEMS.register("u_mushroom_stem12", () -> new DynamicBlockItem(ModBlocks.USER_MUSHROOM_STEM_12.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_MUSHROOM_STEM_13_ITEM = ITEMS.register("u_mushroom_stem13", () -> new DynamicBlockItem(ModBlocks.USER_MUSHROOM_STEM_13.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_MUSHROOM_STEM_14_ITEM = ITEMS.register("u_mushroom_stem14", () -> new DynamicBlockItem(ModBlocks.USER_MUSHROOM_STEM_14.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_MUSHROOM_STEM_15_ITEM = ITEMS.register("u_mushroom_stem15", () -> new DynamicBlockItem(ModBlocks.USER_MUSHROOM_STEM_15.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_MUSHROOM_STEM_16_ITEM = ITEMS.register("u_mushroom_stem16", () -> new DynamicBlockItem(ModBlocks.USER_MUSHROOM_STEM_16.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_MUSHROOM_STEM_17_ITEM = ITEMS.register("u_mushroom_stem17", () -> new DynamicBlockItem(ModBlocks.USER_MUSHROOM_STEM_17.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_MUSHROOM_STEM_18_ITEM = ITEMS.register("u_mushroom_stem18", () -> new DynamicBlockItem(ModBlocks.USER_MUSHROOM_STEM_18.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_MUSHROOM_STEM_19_ITEM = ITEMS.register("u_mushroom_stem19", () -> new DynamicBlockItem(ModBlocks.USER_MUSHROOM_STEM_19.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_MUSHROOM_STEM_20_ITEM = ITEMS.register("u_mushroom_stem20", () -> new DynamicBlockItem(ModBlocks.USER_MUSHROOM_STEM_20.get(), new Item.Properties()));
+
+    // Dead Tube Coral items (1-20)
+    public static final RegistryObject<Item> USER_DEAD_TUBE_CORAL_1_ITEM = ITEMS.register("u_dead_tube_coral1", () -> new DynamicBlockItem(ModBlocks.USER_DEAD_TUBE_CORAL_1.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_DEAD_TUBE_CORAL_2_ITEM = ITEMS.register("u_dead_tube_coral2", () -> new DynamicBlockItem(ModBlocks.USER_DEAD_TUBE_CORAL_2.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_DEAD_TUBE_CORAL_3_ITEM = ITEMS.register("u_dead_tube_coral3", () -> new DynamicBlockItem(ModBlocks.USER_DEAD_TUBE_CORAL_3.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_DEAD_TUBE_CORAL_4_ITEM = ITEMS.register("u_dead_tube_coral4", () -> new DynamicBlockItem(ModBlocks.USER_DEAD_TUBE_CORAL_4.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_DEAD_TUBE_CORAL_5_ITEM = ITEMS.register("u_dead_tube_coral5", () -> new DynamicBlockItem(ModBlocks.USER_DEAD_TUBE_CORAL_5.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_DEAD_TUBE_CORAL_6_ITEM = ITEMS.register("u_dead_tube_coral6", () -> new DynamicBlockItem(ModBlocks.USER_DEAD_TUBE_CORAL_6.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_DEAD_TUBE_CORAL_7_ITEM = ITEMS.register("u_dead_tube_coral7", () -> new DynamicBlockItem(ModBlocks.USER_DEAD_TUBE_CORAL_7.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_DEAD_TUBE_CORAL_8_ITEM = ITEMS.register("u_dead_tube_coral8", () -> new DynamicBlockItem(ModBlocks.USER_DEAD_TUBE_CORAL_8.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_DEAD_TUBE_CORAL_9_ITEM = ITEMS.register("u_dead_tube_coral9", () -> new DynamicBlockItem(ModBlocks.USER_DEAD_TUBE_CORAL_9.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_DEAD_TUBE_CORAL_10_ITEM = ITEMS.register("u_dead_tube_coral10", () -> new DynamicBlockItem(ModBlocks.USER_DEAD_TUBE_CORAL_10.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_DEAD_TUBE_CORAL_11_ITEM = ITEMS.register("u_dead_tube_coral11", () -> new DynamicBlockItem(ModBlocks.USER_DEAD_TUBE_CORAL_11.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_DEAD_TUBE_CORAL_12_ITEM = ITEMS.register("u_dead_tube_coral12", () -> new DynamicBlockItem(ModBlocks.USER_DEAD_TUBE_CORAL_12.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_DEAD_TUBE_CORAL_13_ITEM = ITEMS.register("u_dead_tube_coral13", () -> new DynamicBlockItem(ModBlocks.USER_DEAD_TUBE_CORAL_13.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_DEAD_TUBE_CORAL_14_ITEM = ITEMS.register("u_dead_tube_coral14", () -> new DynamicBlockItem(ModBlocks.USER_DEAD_TUBE_CORAL_14.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_DEAD_TUBE_CORAL_15_ITEM = ITEMS.register("u_dead_tube_coral15", () -> new DynamicBlockItem(ModBlocks.USER_DEAD_TUBE_CORAL_15.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_DEAD_TUBE_CORAL_16_ITEM = ITEMS.register("u_dead_tube_coral16", () -> new DynamicBlockItem(ModBlocks.USER_DEAD_TUBE_CORAL_16.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_DEAD_TUBE_CORAL_17_ITEM = ITEMS.register("u_dead_tube_coral17", () -> new DynamicBlockItem(ModBlocks.USER_DEAD_TUBE_CORAL_17.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_DEAD_TUBE_CORAL_18_ITEM = ITEMS.register("u_dead_tube_coral18", () -> new DynamicBlockItem(ModBlocks.USER_DEAD_TUBE_CORAL_18.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_DEAD_TUBE_CORAL_19_ITEM = ITEMS.register("u_dead_tube_coral19", () -> new DynamicBlockItem(ModBlocks.USER_DEAD_TUBE_CORAL_19.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_DEAD_TUBE_CORAL_20_ITEM = ITEMS.register("u_dead_tube_coral20", () -> new DynamicBlockItem(ModBlocks.USER_DEAD_TUBE_CORAL_20.get(), new Item.Properties()));
+
+    // Pearlescent Froglight items (1-20)
+    public static final RegistryObject<Item> USER_PEARLESCENT_FROGLIGHT_1_ITEM = ITEMS.register("u_pearlescent_froglight1", () -> new DynamicBlockItem(ModBlocks.USER_PEARLESCENT_FROGLIGHT_1.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_PEARLESCENT_FROGLIGHT_2_ITEM = ITEMS.register("u_pearlescent_froglight2", () -> new DynamicBlockItem(ModBlocks.USER_PEARLESCENT_FROGLIGHT_2.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_PEARLESCENT_FROGLIGHT_3_ITEM = ITEMS.register("u_pearlescent_froglight3", () -> new DynamicBlockItem(ModBlocks.USER_PEARLESCENT_FROGLIGHT_3.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_PEARLESCENT_FROGLIGHT_4_ITEM = ITEMS.register("u_pearlescent_froglight4", () -> new DynamicBlockItem(ModBlocks.USER_PEARLESCENT_FROGLIGHT_4.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_PEARLESCENT_FROGLIGHT_5_ITEM = ITEMS.register("u_pearlescent_froglight5", () -> new DynamicBlockItem(ModBlocks.USER_PEARLESCENT_FROGLIGHT_5.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_PEARLESCENT_FROGLIGHT_6_ITEM = ITEMS.register("u_pearlescent_froglight6", () -> new DynamicBlockItem(ModBlocks.USER_PEARLESCENT_FROGLIGHT_6.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_PEARLESCENT_FROGLIGHT_7_ITEM = ITEMS.register("u_pearlescent_froglight7", () -> new DynamicBlockItem(ModBlocks.USER_PEARLESCENT_FROGLIGHT_7.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_PEARLESCENT_FROGLIGHT_8_ITEM = ITEMS.register("u_pearlescent_froglight8", () -> new DynamicBlockItem(ModBlocks.USER_PEARLESCENT_FROGLIGHT_8.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_PEARLESCENT_FROGLIGHT_9_ITEM = ITEMS.register("u_pearlescent_froglight9", () -> new DynamicBlockItem(ModBlocks.USER_PEARLESCENT_FROGLIGHT_9.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_PEARLESCENT_FROGLIGHT_10_ITEM = ITEMS.register("u_pearlescent_froglight10", () -> new DynamicBlockItem(ModBlocks.USER_PEARLESCENT_FROGLIGHT_10.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_PEARLESCENT_FROGLIGHT_11_ITEM = ITEMS.register("u_pearlescent_froglight11", () -> new DynamicBlockItem(ModBlocks.USER_PEARLESCENT_FROGLIGHT_11.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_PEARLESCENT_FROGLIGHT_12_ITEM = ITEMS.register("u_pearlescent_froglight12", () -> new DynamicBlockItem(ModBlocks.USER_PEARLESCENT_FROGLIGHT_12.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_PEARLESCENT_FROGLIGHT_13_ITEM = ITEMS.register("u_pearlescent_froglight13", () -> new DynamicBlockItem(ModBlocks.USER_PEARLESCENT_FROGLIGHT_13.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_PEARLESCENT_FROGLIGHT_14_ITEM = ITEMS.register("u_pearlescent_froglight14", () -> new DynamicBlockItem(ModBlocks.USER_PEARLESCENT_FROGLIGHT_14.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_PEARLESCENT_FROGLIGHT_15_ITEM = ITEMS.register("u_pearlescent_froglight15", () -> new DynamicBlockItem(ModBlocks.USER_PEARLESCENT_FROGLIGHT_15.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_PEARLESCENT_FROGLIGHT_16_ITEM = ITEMS.register("u_pearlescent_froglight16", () -> new DynamicBlockItem(ModBlocks.USER_PEARLESCENT_FROGLIGHT_16.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_PEARLESCENT_FROGLIGHT_17_ITEM = ITEMS.register("u_pearlescent_froglight17", () -> new DynamicBlockItem(ModBlocks.USER_PEARLESCENT_FROGLIGHT_17.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_PEARLESCENT_FROGLIGHT_18_ITEM = ITEMS.register("u_pearlescent_froglight18", () -> new DynamicBlockItem(ModBlocks.USER_PEARLESCENT_FROGLIGHT_18.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_PEARLESCENT_FROGLIGHT_19_ITEM = ITEMS.register("u_pearlescent_froglight19", () -> new DynamicBlockItem(ModBlocks.USER_PEARLESCENT_FROGLIGHT_19.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_PEARLESCENT_FROGLIGHT_20_ITEM = ITEMS.register("u_pearlescent_froglight20", () -> new DynamicBlockItem(ModBlocks.USER_PEARLESCENT_FROGLIGHT_20.get(), new Item.Properties()));
 }

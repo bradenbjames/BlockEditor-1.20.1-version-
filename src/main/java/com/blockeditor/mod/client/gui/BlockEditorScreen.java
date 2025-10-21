@@ -372,15 +372,25 @@ public class BlockEditorScreen extends Screen {
         int blockGridWidth = BLOCKS_PER_ROW * (BLOCK_SIZE + BLOCK_PADDING);
         int gridEndX = centerX + (blockGridWidth / 2);
         
-        // Calculate compact panel dimensions for 3-column layout
+        // Calculate compact panel dimensions for optimal layout
         // Each item needs: 16px (block) + 2px (padding) + ~24px (hex text) = ~42px per item
         int itemWidth = 42; // Compact width per item
-        int maxColumns = 3; // Always try for 3 columns
         int panelMargin = 10;
         
         // Calculate how many columns can actually fit based on available space
         int availableWidth = this.width - gridEndX - panelMargin - 20; // 20px buffer
-        int actualColumns = Math.min(maxColumns, Math.max(1, availableWidth / itemWidth));
+        
+        // Dynamic column calculation based on screen width for optimal 2-row layout
+        int maxColumns;
+        if (this.width >= 1800) { // For 1920x1080 and larger screens
+            maxColumns = Math.min(6, availableWidth / itemWidth); // Allow up to 6 columns for 2 nice rows
+        } else if (this.width >= 1400) { // Medium screens
+            maxColumns = Math.min(4, availableWidth / itemWidth); // 4 columns max
+        } else { // Smaller screens
+            maxColumns = Math.min(3, availableWidth / itemWidth); // 3 columns max like before
+        }
+        
+        int actualColumns = Math.max(1, maxColumns);
         
         // Only hide text if we're really cramped (less than 25px per item)
         boolean hideHexText = (availableWidth / actualColumns) < 25;
@@ -1228,7 +1238,15 @@ public class BlockEditorScreen extends Screen {
             "oak_planks",          // Oak planks
             "bamboo_planks",       // Bamboo planks
             "cobblestone",         // Cobblestone
-            "deepslate"            // Deepslate
+            "deepslate",           // Deepslate
+            "white_terracotta",    // White terracotta for base texture
+            "white_concrete_powder", // White concrete powder for base texture
+            "glass",               // Clear glass for base texture
+            "diorite",             // Diorite
+            "calcite",             // Calcite
+            "mushroom_stem",       // Mushroom stem
+            "dead_tube_coral_block", // Dead tube coral block
+            "pearlescent_froglight"  // Pearlescent froglight
         };
 
         // Check for exact matches only
@@ -1255,6 +1273,22 @@ public class BlockEditorScreen extends Screen {
             return ModBlocks.DYNAMIC_BLOCK_WOOL.get();
         } else if (blockName.contains("concrete") && !blockName.contains("powder")) {
             return ModBlocks.DYNAMIC_BLOCK_CONCRETE.get();
+        } else if (blockName.contains("concrete_powder")) {
+            return ModBlocks.DYNAMIC_BLOCK_CONCRETE_POWDER.get();
+        } else if (blockName.contains("terracotta")) {
+            return ModBlocks.DYNAMIC_BLOCK_TERRACOTTA.get();
+        } else if (blockName.contains("glass") && !blockName.contains("pane")) {
+            return ModBlocks.DYNAMIC_BLOCK_GLASS.get();
+        } else if (blockName.contains("diorite")) {
+            return ModBlocks.DYNAMIC_BLOCK_DIORITE.get();
+        } else if (blockName.contains("calcite")) {
+            return ModBlocks.DYNAMIC_BLOCK_CALCITE.get();
+        } else if (blockName.contains("mushroom_stem")) {
+            return ModBlocks.DYNAMIC_BLOCK_MUSHROOM_STEM.get();
+        } else if (blockName.contains("dead_tube_coral")) {
+            return ModBlocks.DYNAMIC_BLOCK_DEAD_TUBE_CORAL.get();
+        } else if (blockName.contains("pearlescent_froglight")) {
+            return ModBlocks.DYNAMIC_BLOCK_PEARLESCENT_FROGLIGHT.get();
         } else if (blockName.contains("cobblestone")) {
             return ModBlocks.DYNAMIC_BLOCK_COBBLESTONE.get();
         } else if (blockName.contains("deepslate")) {

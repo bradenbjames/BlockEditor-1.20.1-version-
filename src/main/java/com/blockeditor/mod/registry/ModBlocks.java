@@ -44,6 +44,30 @@ public class ModBlocks {
     public static final RegistryObject<Block> DYNAMIC_BLOCK_SMOOTH_STONE = BLOCKS.register("dynamic_block_smooth_stone",
         () -> new DynamicBlock());
 
+    public static final RegistryObject<Block> DYNAMIC_BLOCK_TERRACOTTA = BLOCKS.register("dynamic_block_terracotta",
+        () -> new DynamicBlock());
+
+    public static final RegistryObject<Block> DYNAMIC_BLOCK_CONCRETE_POWDER = BLOCKS.register("dynamic_block_concrete_powder",
+        () -> new DynamicBlock());
+
+    public static final RegistryObject<Block> DYNAMIC_BLOCK_GLASS = BLOCKS.register("dynamic_block_glass",
+        () -> new DynamicBlock());
+
+    public static final RegistryObject<Block> DYNAMIC_BLOCK_DIORITE = BLOCKS.register("dynamic_block_diorite",
+        () -> new DynamicBlock());
+
+    public static final RegistryObject<Block> DYNAMIC_BLOCK_CALCITE = BLOCKS.register("dynamic_block_calcite",
+        () -> new DynamicBlock());
+
+    public static final RegistryObject<Block> DYNAMIC_BLOCK_MUSHROOM_STEM = BLOCKS.register("dynamic_block_mushroom_stem",
+        () -> new DynamicBlock());
+
+    public static final RegistryObject<Block> DYNAMIC_BLOCK_DEAD_TUBE_CORAL = BLOCKS.register("dynamic_block_dead_tube_coral",
+        () -> new DynamicBlock());
+
+    public static final RegistryObject<Block> DYNAMIC_BLOCK_PEARLESCENT_FROGLIGHT = BLOCKS.register("dynamic_block_pearlescent_froglight",
+        () -> new DynamicBlock());
+
     // User-created block variants for WorldEdit autocomplete (numbered system)
     // Wool blocks (up to 20 custom wool blocks)
     public static final RegistryObject<Block> USER_WOOL_1 = BLOCKS.register("u_wool1", () -> new UserBlock("wool"));

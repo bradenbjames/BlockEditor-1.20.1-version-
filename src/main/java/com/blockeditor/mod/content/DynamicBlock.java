@@ -144,7 +144,15 @@ public class DynamicBlock extends Block implements EntityBlock {
     private String getUserBlockTypeFromMimic(String mimicBlock) {
         if (mimicBlock.contains("wool")) return "wool";
         if (mimicBlock.contains("stone") && !mimicBlock.contains("deepslate")) return "stone";
-        if (mimicBlock.contains("concrete")) return "concrete";
+        if (mimicBlock.contains("concrete") && !mimicBlock.contains("powder")) return "concrete";
+        if (mimicBlock.contains("concrete_powder")) return "concrete_powder";
+        if (mimicBlock.contains("terracotta")) return "terracotta";
+        if (mimicBlock.contains("glass") && !mimicBlock.contains("pane")) return "glass";
+        if (mimicBlock.contains("diorite")) return "diorite";
+        if (mimicBlock.contains("calcite")) return "calcite";
+        if (mimicBlock.contains("mushroom_stem")) return "mushroom_stem";
+        if (mimicBlock.contains("dead_tube_coral")) return "dead_tube_coral";
+        if (mimicBlock.contains("pearlescent_froglight")) return "pearlescent_froglight";
         if (mimicBlock.contains("planks") || mimicBlock.contains("wood") || mimicBlock.contains("log")) return "wood";
         if (mimicBlock.contains("dirt")) return "dirt";
         if (mimicBlock.contains("sand")) return "sand";
