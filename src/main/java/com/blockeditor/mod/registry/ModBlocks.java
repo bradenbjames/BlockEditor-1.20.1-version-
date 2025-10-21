@@ -198,4 +198,48 @@ public class ModBlocks {
     public static final RegistryObject<Block> USER_DEEPSLATE_18 = BLOCKS.register("u_deepslate18", () -> new UserBlock("deepslate"));
     public static final RegistryObject<Block> USER_DEEPSLATE_19 = BLOCKS.register("u_deepslate19", () -> new UserBlock("deepslate"));
     public static final RegistryObject<Block> USER_DEEPSLATE_20 = BLOCKS.register("u_deepslate20", () -> new UserBlock("deepslate"));
+    
+    // Cobblestone blocks (up to 20 custom cobblestone blocks)
+    public static final RegistryObject<Block> USER_COBBLESTONE_1 = BLOCKS.register("u_cobblestone1", () -> new UserBlock("cobblestone"));
+    public static final RegistryObject<Block> USER_COBBLESTONE_2 = BLOCKS.register("u_cobblestone2", () -> new UserBlock("cobblestone"));
+    public static final RegistryObject<Block> USER_COBBLESTONE_3 = BLOCKS.register("u_cobblestone3", () -> new UserBlock("cobblestone"));
+    public static final RegistryObject<Block> USER_COBBLESTONE_4 = BLOCKS.register("u_cobblestone4", () -> new UserBlock("cobblestone"));
+    public static final RegistryObject<Block> USER_COBBLESTONE_5 = BLOCKS.register("u_cobblestone5", () -> new UserBlock("cobblestone"));
+    public static final RegistryObject<Block> USER_COBBLESTONE_6 = BLOCKS.register("u_cobblestone6", () -> new UserBlock("cobblestone"));
+    public static final RegistryObject<Block> USER_COBBLESTONE_7 = BLOCKS.register("u_cobblestone7", () -> new UserBlock("cobblestone"));
+    public static final RegistryObject<Block> USER_COBBLESTONE_8 = BLOCKS.register("u_cobblestone8", () -> new UserBlock("cobblestone"));
+    public static final RegistryObject<Block> USER_COBBLESTONE_9 = BLOCKS.register("u_cobblestone9", () -> new UserBlock("cobblestone"));
+    public static final RegistryObject<Block> USER_COBBLESTONE_10 = BLOCKS.register("u_cobblestone10", () -> new UserBlock("cobblestone"));
+    public static final RegistryObject<Block> USER_COBBLESTONE_11 = BLOCKS.register("u_cobblestone11", () -> new UserBlock("cobblestone"));
+    public static final RegistryObject<Block> USER_COBBLESTONE_12 = BLOCKS.register("u_cobblestone12", () -> new UserBlock("cobblestone"));
+    public static final RegistryObject<Block> USER_COBBLESTONE_13 = BLOCKS.register("u_cobblestone13", () -> new UserBlock("cobblestone"));
+    public static final RegistryObject<Block> USER_COBBLESTONE_14 = BLOCKS.register("u_cobblestone14", () -> new UserBlock("cobblestone"));
+    public static final RegistryObject<Block> USER_COBBLESTONE_15 = BLOCKS.register("u_cobblestone15", () -> new UserBlock("cobblestone"));
+    public static final RegistryObject<Block> USER_COBBLESTONE_16 = BLOCKS.register("u_cobblestone16", () -> new UserBlock("cobblestone"));
+    public static final RegistryObject<Block> USER_COBBLESTONE_17 = BLOCKS.register("u_cobblestone17", () -> new UserBlock("cobblestone"));
+    public static final RegistryObject<Block> USER_COBBLESTONE_18 = BLOCKS.register("u_cobblestone18", () -> new UserBlock("cobblestone"));
+    public static final RegistryObject<Block> USER_COBBLESTONE_19 = BLOCKS.register("u_cobblestone19", () -> new UserBlock("cobblestone"));
+    public static final RegistryObject<Block> USER_COBBLESTONE_20 = BLOCKS.register("u_cobblestone20", () -> new UserBlock("cobblestone"));
+    
+    // Smooth Stone blocks (up to 20 custom smooth stone blocks)
+    public static final RegistryObject<Block> USER_SMOOTH_STONE_1 = BLOCKS.register("u_smooth_stone1", () -> new UserBlock("smooth_stone"));
+    public static final RegistryObject<Block> USER_SMOOTH_STONE_2 = BLOCKS.register("u_smooth_stone2", () -> new UserBlock("smooth_stone"));
+    public static final RegistryObject<Block> USER_SMOOTH_STONE_3 = BLOCKS.register("u_smooth_stone3", () -> new UserBlock("smooth_stone"));
+    public static final RegistryObject<Block> USER_SMOOTH_STONE_4 = BLOCKS.register("u_smooth_stone4", () -> new UserBlock("smooth_stone"));
+    public static final RegistryObject<Block> USER_SMOOTH_STONE_5 = BLOCKS.register("u_smooth_stone5", () -> new UserBlock("smooth_stone"));
+    public static final RegistryObject<Block> USER_SMOOTH_STONE_6 = BLOCKS.register("u_smooth_stone6", () -> new UserBlock("smooth_stone"));
+    public static final RegistryObject<Block> USER_SMOOTH_STONE_7 = BLOCKS.register("u_smooth_stone7", () -> new UserBlock("smooth_stone"));
+    public static final RegistryObject<Block> USER_SMOOTH_STONE_8 = BLOCKS.register("u_smooth_stone8", () -> new UserBlock("smooth_stone"));
+    public static final RegistryObject<Block> USER_SMOOTH_STONE_9 = BLOCKS.register("u_smooth_stone9", () -> new UserBlock("smooth_stone"));
+    public static final RegistryObject<Block> USER_SMOOTH_STONE_10 = BLOCKS.register("u_smooth_stone10", () -> new UserBlock("smooth_stone"));
+    public static final RegistryObject<Block> USER_SMOOTH_STONE_11 = BLOCKS.register("u_smooth_stone11", () -> new UserBlock("smooth_stone"));
+    public static final RegistryObject<Block> USER_SMOOTH_STONE_12 = BLOCKS.register("u_smooth_stone12", () -> new UserBlock("smooth_stone"));
+    public static final RegistryObject<Block> USER_SMOOTH_STONE_13 = BLOCKS.register("u_smooth_stone13", () -> new UserBlock("smooth_stone"));
+    public static final RegistryObject<Block> USER_SMOOTH_STONE_14 = BLOCKS.register("u_smooth_stone14", () -> new UserBlock("smooth_stone"));
+    public static final RegistryObject<Block> USER_SMOOTH_STONE_15 = BLOCKS.register("u_smooth_stone15", () -> new UserBlock("smooth_stone"));
+    public static final RegistryObject<Block> USER_SMOOTH_STONE_16 = BLOCKS.register("u_smooth_stone16", () -> new UserBlock("smooth_stone"));
+    public static final RegistryObject<Block> USER_SMOOTH_STONE_17 = BLOCKS.register("u_smooth_stone17", () -> new UserBlock("smooth_stone"));
+    public static final RegistryObject<Block> USER_SMOOTH_STONE_18 = BLOCKS.register("u_smooth_stone18", () -> new UserBlock("smooth_stone"));
+    public static final RegistryObject<Block> USER_SMOOTH_STONE_19 = BLOCKS.register("u_smooth_stone19", () -> new UserBlock("smooth_stone"));
+    public static final RegistryObject<Block> USER_SMOOTH_STONE_20 = BLOCKS.register("u_smooth_stone20", () -> new UserBlock("smooth_stone"));
 }

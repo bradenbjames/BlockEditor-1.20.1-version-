@@ -1,6 +1,7 @@
 package com.blockeditor.mod.client.gui;
 
 import com.blockeditor.mod.network.CreateBlockPacket;
+import com.blockeditor.mod.network.ClearRegistryPacket;
 import com.blockeditor.mod.network.ModNetworking;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.GuiGraphics;
@@ -120,11 +121,13 @@ public class BlockEditorScreen extends Screen {
         try {
             File historyFile = new File("config/blockeditor_history.dat");
             if (!historyFile.exists()) {
+                System.out.println("DEBUG: No history file exists yet");
                 return; // No history file exists yet
             }
             
             CompoundTag rootTag = NbtIo.read(historyFile);
             if (rootTag == null || !rootTag.contains("history")) {
+                System.out.println("DEBUG: No history data in file");
                 return;
             }
             
@@ -150,6 +153,8 @@ public class BlockEditorScreen extends Screen {
                     createdBlocksHistory.add(info);
                 }
             }
+            
+            System.out.println("DEBUG: Loaded " + createdBlocksHistory.size() + " blocks from history");
         } catch (IOException e) {
             System.err.println("Failed to load block history: " + e.getMessage());
         }
@@ -271,6 +276,12 @@ public class BlockEditorScreen extends Screen {
             Component.literal("Cancel"),
             button -> this.onClose()
         ).bounds(buttonStartX + buttonWidth + buttonSpacing, buttonY, buttonWidth, 20).build());
+
+        // Clear Registry button - positioned below other buttons
+        this.addRenderableWidget(Button.builder(
+            Component.literal("Clear Registry"),
+            button -> clearServerRegistry()
+        ).bounds(buttonStartX, buttonY + 25, buttonWidth, 20).build());
 
 
     }
@@ -591,7 +602,17 @@ public class BlockEditorScreen extends Screen {
                 selectedBlock = info.originalBlock;
                 hexColor = info.hexColor;
                 hexBox.setValue(hexColor);
+                
+                // Clear the name box so user can type a fresh name
+                if (nameBox != null) {
+                    nameBox.setValue("");
+                }
+                
+                System.out.println("=== HISTORY CLICK DEBUG ===");
                 System.out.println("HISTORY CLICK: Selected block " + info.originalBlock + " with color " + info.hexColor);
+                System.out.println("HISTORY CLICK: Block name was: '" + info.blockName + "'");
+                System.out.println("HISTORY CLICK: Cleared nameBox for fresh input");
+                System.out.println("HISTORY CLICK: New nameBox value: '" + (nameBox != null ? nameBox.getValue() : "NULL") + "'");
                 return true;
             }
         }
@@ -881,7 +902,29 @@ public class BlockEditorScreen extends Screen {
     }
     
     private boolean isNameBoxValid() {
-        return nameBox != null && isValidBlockName(nameBox.getValue()) && !isDuplicateName(nameBox.getValue());
+        if (nameBox == null) {
+            if (this.minecraft != null && this.minecraft.player != null) {
+                this.minecraft.player.displayClientMessage(Component.literal("§eDEBUG: nameBox is null"), false);
+            }
+            return false;
+        }
+        
+        String nameValue = nameBox.getValue();
+        if (this.minecraft != null && this.minecraft.player != null) {
+            this.minecraft.player.displayClientMessage(Component.literal("§eDEBUG isNameBoxValid: nameBox.getValue() = '" + nameValue + "'"), false);
+        }
+        
+        boolean validName = isValidBlockName(nameValue);
+        if (this.minecraft != null && this.minecraft.player != null) {
+            this.minecraft.player.displayClientMessage(Component.literal("§eDEBUG isNameBoxValid: isValidName = " + validName), false);
+        }
+        
+        boolean notDuplicate = !isDuplicateName(nameValue);
+        if (this.minecraft != null && this.minecraft.player != null) {
+            this.minecraft.player.displayClientMessage(Component.literal("§eDEBUG isNameBoxValid: !isDuplicate = " + notDuplicate), false);
+        }
+        
+        return validName && notDuplicate;
     }
 
     private boolean isDuplicateBlock(Block textureBlock, String hexColor) {
@@ -906,10 +949,27 @@ public class BlockEditorScreen extends Screen {
         }
         
         String trimmedName = customName.trim();
-        for (CreatedBlockInfo info : createdBlocksHistory) {
-            if (info.blockName != null && info.blockName.equalsIgnoreCase(trimmedName)) {
-                return true;
+        if (this.minecraft != null && this.minecraft.player != null) {
+            this.minecraft.player.displayClientMessage(Component.literal("§eDEBUG: Checking duplicate for name: '" + trimmedName + "'"), false);
+            this.minecraft.player.displayClientMessage(Component.literal("§eDEBUG: History size: " + createdBlocksHistory.size()), false);
+        }
+        
+        for (int i = 0; i < createdBlocksHistory.size(); i++) {
+            CreatedBlockInfo info = createdBlocksHistory.get(i);
+            if (info.blockName != null) {
+                if (this.minecraft != null && this.minecraft.player != null) {
+                    this.minecraft.player.displayClientMessage(Component.literal("§eDEBUG: [" + i + "] Comparing with: '" + info.blockName + "'"), false);
+                }
+                if (info.blockName.equalsIgnoreCase(trimmedName)) {
+                    if (this.minecraft != null && this.minecraft.player != null) {
+                        this.minecraft.player.displayClientMessage(Component.literal("§cDEBUG: DUPLICATE FOUND! '" + trimmedName + "' matches '" + info.blockName + "'"), false);
+                    }
+                    return true;
+                }
             }
+        }
+        if (this.minecraft != null && this.minecraft.player != null) {
+            this.minecraft.player.displayClientMessage(Component.literal("§aDEBUG: No duplicates found for: '" + trimmedName + "'"), false);
         }
         return false;
     }
@@ -1001,16 +1061,26 @@ public class BlockEditorScreen extends Screen {
                 return;
             }
 
-            // Check for duplicate custom names
-            String customNameCheck = nameBox.getValue().trim();
-            if (isDuplicateName(customNameCheck)) {
+        // Check for duplicate custom names - CAPTURE VALUE IMMEDIATELY
+        String nameBoxRawValue = nameBox.getValue();
+        String customNameCheck = nameBoxRawValue.trim();
+        if (this.minecraft.player != null) {
+            this.minecraft.player.displayClientMessage(Component.literal("§e=== CLIENT DEBUG: DUPLICATE NAME CHECK ==="), false);
+            this.minecraft.player.displayClientMessage(Component.literal("§eCLIENT DEBUG: Name box raw: '" + nameBoxRawValue + "'"), false);
+            this.minecraft.player.displayClientMessage(Component.literal("§eCLIENT DEBUG: After trim: '" + customNameCheck + "'"), false);
+            this.minecraft.player.displayClientMessage(Component.literal("§eCLIENT DEBUG: nameBox object: " + nameBox.hashCode()), false);
+        }            if (isDuplicateName(customNameCheck)) {
                 if (this.minecraft.player != null) {
+                    this.minecraft.player.displayClientMessage(Component.literal("§cCLIENT DEBUG: Client-side duplicate found for: '" + customNameCheck + "'"), false);
                     this.minecraft.player.displayClientMessage(
                         Component.literal("§cError: Block name '" + customNameCheck + "' already exists! Please choose a different name."),
                         false
                     );
                 }
                 return;
+            }
+            if (this.minecraft.player != null) {
+                this.minecraft.player.displayClientMessage(Component.literal("§aCLIENT DEBUG: No client-side duplicate found, proceeding"), false);
             }
 
             // Check for duplicate blocks (same texture and hex color)
@@ -1036,21 +1106,34 @@ public class BlockEditorScreen extends Screen {
             ResourceLocation blockId = BuiltInRegistries.BLOCK.getKey(blockToUse);
             ResourceLocation mimicBlockId = BuiltInRegistries.BLOCK.getKey(selectedBlock);
 
-            System.out.println("BlockEditorScreen: Sending CreateBlockPacket to server");
-            System.out.println("  Block type: " + blockId);
-            System.out.println("  Mimic: " + mimicBlockId);
-            System.out.println("  Color: " + hexColor.toUpperCase());
+            System.out.println("=== CLIENT: BlockEditorScreen: Sending CreateBlockPacket to server ===");
+            System.out.println("CLIENT:   Block type: " + blockId);
+            System.out.println("CLIENT:   Mimic: " + mimicBlockId);
+            System.out.println("CLIENT:   Color: " + hexColor.toUpperCase());
 
-            // Send packet to server to create the item
-            String customName = nameBox.getValue().trim();
-            ModNetworking.sendToServer(new CreateBlockPacket(
-                hexColor.toUpperCase(),
-                mimicBlockId.toString(),
-                blockId.toString(),
-                customName
-            ));
-
-            System.out.println("BlockEditorScreen: Packet sent!");
+            // Send packet to server to create the item - CAPTURE VALUE AGAIN
+            String packetNameBoxRaw = nameBox.getValue();
+            String customName = packetNameBoxRaw.trim();
+            if (this.minecraft.player != null) {
+                this.minecraft.player.displayClientMessage(Component.literal("§e=== SENDING PACKET TO SERVER ==="), false);
+                this.minecraft.player.displayClientMessage(Component.literal("§ePacket raw nameBox: '" + packetNameBoxRaw + "'"), false);
+                this.minecraft.player.displayClientMessage(Component.literal("§eCustom name (trimmed): '" + customName + "'"), false);
+                this.minecraft.player.displayClientMessage(Component.literal("§eNameBox object: " + nameBox.hashCode()), false);
+                this.minecraft.player.displayClientMessage(Component.literal("§e** ABOUT TO SEND: '" + customName + "' **"), false);
+            }
+            
+            try {
+                ModNetworking.sendToServer(new CreateBlockPacket(
+                    hexColor.toUpperCase(),
+                    mimicBlockId.toString(),
+                    blockId.toString(),
+                    customName
+                ));
+                System.out.println("CLIENT: Packet sent successfully!");
+            } catch (Exception e) {
+                System.out.println("CLIENT ERROR: Failed to send packet: " + e.getMessage());
+                e.printStackTrace();
+            }
 
             // Add to history (client-side only for display)
             int color = parseHexColor(hexColor);
@@ -1072,6 +1155,40 @@ public class BlockEditorScreen extends Screen {
             }
         }
         this.onClose();
+    }
+
+    private void clearServerRegistry() {
+        if (this.minecraft != null && this.minecraft.player != null) {
+            // Clear client-side history first
+            createdBlocksHistory.clear();
+            saveHistoryToFile();
+            
+            // Also delete the history file completely
+            try {
+                File historyFile = new File("config", "blockeditor_history.dat");
+                if (historyFile.exists()) {
+                    historyFile.delete();
+                    this.minecraft.player.displayClientMessage(
+                        Component.literal("§aDeleted history file: " + historyFile.getAbsolutePath()),
+                        false
+                    );
+                }
+            } catch (Exception e) {
+                this.minecraft.player.displayClientMessage(
+                    Component.literal("§cError deleting history file: " + e.getMessage()),
+                    false
+                );
+            }
+            
+            // Send packet to clear server-side registry
+            ModNetworking.sendToServer(new ClearRegistryPacket(true));
+            
+            // Show confirmation message
+            this.minecraft.player.displayClientMessage(
+                Component.literal("§aClearing server registry and client history..."),
+                false
+            );
+        }
     }
 
     // Helper method to check if a block is allowed (only specific base blocks)

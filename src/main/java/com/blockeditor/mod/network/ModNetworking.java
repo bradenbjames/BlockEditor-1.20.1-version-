@@ -25,7 +25,13 @@ public class ModNetworking {
             CreateBlockPacket::handle
         );
 
-        System.out.println("ModNetworking.register completed - CreateBlockPacket registered");
+        INSTANCE.registerMessage(1, ClearRegistryPacket.class,
+            ClearRegistryPacket::encode,
+            ClearRegistryPacket::decode,
+            ClearRegistryPacket::handle
+        );
+
+        System.out.println("ModNetworking.register completed - packets registered");
     }
 
     public static void sendToServer(Object message) {

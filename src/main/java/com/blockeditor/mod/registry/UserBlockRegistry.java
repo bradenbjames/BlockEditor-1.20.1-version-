@@ -199,10 +199,42 @@ public class UserBlockRegistry extends SavedData {
     public int clearAllUserBlocks() {
         int clearedCount = assignedBlocks.size();
         assignedBlocks.clear();
+        customNameMappings.clear();
+        reverseCustomNameMappings.clear();
+        
+        // Reset next available numbers to 1
         nextAvailableNumbers.clear();
+        nextAvailableNumbers.put("wool", 1);
+        nextAvailableNumbers.put("stone", 1);
+        nextAvailableNumbers.put("concrete", 1);
+        nextAvailableNumbers.put("wood", 1);
+        nextAvailableNumbers.put("dirt", 1);
+        nextAvailableNumbers.put("sand", 1);
+        nextAvailableNumbers.put("deepslate", 1);
+        
         setDirty(); // Mark as dirty to save changes
-        // Remove the LOGGER reference since it's private in SavedData
         return clearedCount;
+    }
+    
+    /**
+     * Removes a specific custom name mapping
+     */
+    public boolean removeCustomName(String customName) {
+        String internalId = customNameMappings.remove(customName);
+        if (internalId != null) {
+            reverseCustomNameMappings.remove(internalId);
+            assignedBlocks.remove(internalId);
+            setDirty();
+            return true;
+        }
+        return false;
+    }
+    
+    /**
+     * Gets all custom names currently registered
+     */
+    public java.util.Set<String> getAllCustomNames() {
+        return customNameMappings.keySet();
     }
     
     /**
