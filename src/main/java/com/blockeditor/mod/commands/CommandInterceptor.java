@@ -12,6 +12,10 @@ import net.minecraftforge.fml.common.Mod;
 @Mod.EventBusSubscriber(modid = "be")
 public class CommandInterceptor {
     
+    static {
+        System.out.println("COMMAND INTERCEPTOR: Class loaded and registered!");
+    }
+    
     @SubscribeEvent
     public static void onCommand(CommandEvent event) {
         String command = event.getParseResults().getReader().getString();

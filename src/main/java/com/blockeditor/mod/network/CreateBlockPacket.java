@@ -121,6 +121,15 @@ public class CreateBlockPacket {
                 return;
             }
             
+            // Update WorldEdit integration with the new custom block mapping
+            try {
+                com.blockeditor.mod.integration.WorldEditIntegration.updateCustomBlockMapping(cleanCustomName, internalId);
+                System.out.println("SERVER: Updated WorldEdit integration for custom name: " + cleanCustomName + " -> " + internalId);
+            } catch (Exception e) {
+                System.err.println("SERVER ERROR: Failed to update WorldEdit integration: " + e.getMessage());
+                e.printStackTrace();
+            }
+            
             // Get the actual user block from ModBlocks
             Block userBlock = getUserBlockByIdentifier(internalId);
             if (userBlock == null) {

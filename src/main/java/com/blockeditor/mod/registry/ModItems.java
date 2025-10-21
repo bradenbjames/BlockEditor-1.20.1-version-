@@ -195,4 +195,48 @@ public class ModItems {
     public static final RegistryObject<Item> USER_DEEPSLATE_18_ITEM = ITEMS.register("u_deepslate18", () -> new DynamicBlockItem(ModBlocks.USER_DEEPSLATE_18.get(), new Item.Properties()));
     public static final RegistryObject<Item> USER_DEEPSLATE_19_ITEM = ITEMS.register("u_deepslate19", () -> new DynamicBlockItem(ModBlocks.USER_DEEPSLATE_19.get(), new Item.Properties()));
     public static final RegistryObject<Item> USER_DEEPSLATE_20_ITEM = ITEMS.register("u_deepslate20", () -> new DynamicBlockItem(ModBlocks.USER_DEEPSLATE_20.get(), new Item.Properties()));
+
+    // Cobblestone blocks (1-20)
+    public static final RegistryObject<Item> USER_COBBLESTONE_1_ITEM = ITEMS.register("u_cobblestone1", () -> new DynamicBlockItem(ModBlocks.USER_COBBLESTONE_1.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_COBBLESTONE_2_ITEM = ITEMS.register("u_cobblestone2", () -> new DynamicBlockItem(ModBlocks.USER_COBBLESTONE_2.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_COBBLESTONE_3_ITEM = ITEMS.register("u_cobblestone3", () -> new DynamicBlockItem(ModBlocks.USER_COBBLESTONE_3.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_COBBLESTONE_4_ITEM = ITEMS.register("u_cobblestone4", () -> new DynamicBlockItem(ModBlocks.USER_COBBLESTONE_4.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_COBBLESTONE_5_ITEM = ITEMS.register("u_cobblestone5", () -> new DynamicBlockItem(ModBlocks.USER_COBBLESTONE_5.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_COBBLESTONE_6_ITEM = ITEMS.register("u_cobblestone6", () -> new DynamicBlockItem(ModBlocks.USER_COBBLESTONE_6.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_COBBLESTONE_7_ITEM = ITEMS.register("u_cobblestone7", () -> new DynamicBlockItem(ModBlocks.USER_COBBLESTONE_7.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_COBBLESTONE_8_ITEM = ITEMS.register("u_cobblestone8", () -> new DynamicBlockItem(ModBlocks.USER_COBBLESTONE_8.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_COBBLESTONE_9_ITEM = ITEMS.register("u_cobblestone9", () -> new DynamicBlockItem(ModBlocks.USER_COBBLESTONE_9.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_COBBLESTONE_10_ITEM = ITEMS.register("u_cobblestone10", () -> new DynamicBlockItem(ModBlocks.USER_COBBLESTONE_10.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_COBBLESTONE_11_ITEM = ITEMS.register("u_cobblestone11", () -> new DynamicBlockItem(ModBlocks.USER_COBBLESTONE_11.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_COBBLESTONE_12_ITEM = ITEMS.register("u_cobblestone12", () -> new DynamicBlockItem(ModBlocks.USER_COBBLESTONE_12.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_COBBLESTONE_13_ITEM = ITEMS.register("u_cobblestone13", () -> new DynamicBlockItem(ModBlocks.USER_COBBLESTONE_13.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_COBBLESTONE_14_ITEM = ITEMS.register("u_cobblestone14", () -> new DynamicBlockItem(ModBlocks.USER_COBBLESTONE_14.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_COBBLESTONE_15_ITEM = ITEMS.register("u_cobblestone15", () -> new DynamicBlockItem(ModBlocks.USER_COBBLESTONE_15.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_COBBLESTONE_16_ITEM = ITEMS.register("u_cobblestone16", () -> new DynamicBlockItem(ModBlocks.USER_COBBLESTONE_16.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_COBBLESTONE_17_ITEM = ITEMS.register("u_cobblestone17", () -> new DynamicBlockItem(ModBlocks.USER_COBBLESTONE_17.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_COBBLESTONE_18_ITEM = ITEMS.register("u_cobblestone18", () -> new DynamicBlockItem(ModBlocks.USER_COBBLESTONE_18.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_COBBLESTONE_19_ITEM = ITEMS.register("u_cobblestone19", () -> new DynamicBlockItem(ModBlocks.USER_COBBLESTONE_19.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_COBBLESTONE_20_ITEM = ITEMS.register("u_cobblestone20", () -> new DynamicBlockItem(ModBlocks.USER_COBBLESTONE_20.get(), new Item.Properties()));
+
+    // Smooth Stone blocks (1-20)
+    public static final RegistryObject<Item> USER_SMOOTH_STONE_1_ITEM = ITEMS.register("u_smooth_stone1", () -> new DynamicBlockItem(ModBlocks.USER_SMOOTH_STONE_1.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_SMOOTH_STONE_2_ITEM = ITEMS.register("u_smooth_stone2", () -> new DynamicBlockItem(ModBlocks.USER_SMOOTH_STONE_2.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_SMOOTH_STONE_3_ITEM = ITEMS.register("u_smooth_stone3", () -> new DynamicBlockItem(ModBlocks.USER_SMOOTH_STONE_3.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_SMOOTH_STONE_4_ITEM = ITEMS.register("u_smooth_stone4", () -> new DynamicBlockItem(ModBlocks.USER_SMOOTH_STONE_4.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_SMOOTH_STONE_5_ITEM = ITEMS.register("u_smooth_stone5", () -> new DynamicBlockItem(ModBlocks.USER_SMOOTH_STONE_5.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_SMOOTH_STONE_6_ITEM = ITEMS.register("u_smooth_stone6", () -> new DynamicBlockItem(ModBlocks.USER_SMOOTH_STONE_6.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_SMOOTH_STONE_7_ITEM = ITEMS.register("u_smooth_stone7", () -> new DynamicBlockItem(ModBlocks.USER_SMOOTH_STONE_7.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_SMOOTH_STONE_8_ITEM = ITEMS.register("u_smooth_stone8", () -> new DynamicBlockItem(ModBlocks.USER_SMOOTH_STONE_8.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_SMOOTH_STONE_9_ITEM = ITEMS.register("u_smooth_stone9", () -> new DynamicBlockItem(ModBlocks.USER_SMOOTH_STONE_9.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_SMOOTH_STONE_10_ITEM = ITEMS.register("u_smooth_stone10", () -> new DynamicBlockItem(ModBlocks.USER_SMOOTH_STONE_10.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_SMOOTH_STONE_11_ITEM = ITEMS.register("u_smooth_stone11", () -> new DynamicBlockItem(ModBlocks.USER_SMOOTH_STONE_11.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_SMOOTH_STONE_12_ITEM = ITEMS.register("u_smooth_stone12", () -> new DynamicBlockItem(ModBlocks.USER_SMOOTH_STONE_12.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_SMOOTH_STONE_13_ITEM = ITEMS.register("u_smooth_stone13", () -> new DynamicBlockItem(ModBlocks.USER_SMOOTH_STONE_13.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_SMOOTH_STONE_14_ITEM = ITEMS.register("u_smooth_stone14", () -> new DynamicBlockItem(ModBlocks.USER_SMOOTH_STONE_14.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_SMOOTH_STONE_15_ITEM = ITEMS.register("u_smooth_stone15", () -> new DynamicBlockItem(ModBlocks.USER_SMOOTH_STONE_15.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_SMOOTH_STONE_16_ITEM = ITEMS.register("u_smooth_stone16", () -> new DynamicBlockItem(ModBlocks.USER_SMOOTH_STONE_16.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_SMOOTH_STONE_17_ITEM = ITEMS.register("u_smooth_stone17", () -> new DynamicBlockItem(ModBlocks.USER_SMOOTH_STONE_17.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_SMOOTH_STONE_18_ITEM = ITEMS.register("u_smooth_stone18", () -> new DynamicBlockItem(ModBlocks.USER_SMOOTH_STONE_18.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_SMOOTH_STONE_19_ITEM = ITEMS.register("u_smooth_stone19", () -> new DynamicBlockItem(ModBlocks.USER_SMOOTH_STONE_19.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_SMOOTH_STONE_20_ITEM = ITEMS.register("u_smooth_stone20", () -> new DynamicBlockItem(ModBlocks.USER_SMOOTH_STONE_20.get(), new Item.Properties()));
 }

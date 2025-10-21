@@ -35,6 +35,15 @@ public class ClearRegistryPacket {
                 
                 int clearedCount = registry.clearAllUserBlocks();
                 
+                // Clear WorldEdit integration mappings
+                try {
+                    com.blockeditor.mod.integration.WorldEditIntegration.clearAllMappings();
+                    System.out.println("SERVER: Cleared WorldEdit integration mappings");
+                } catch (Exception e) {
+                    System.err.println("SERVER ERROR: Failed to clear WorldEdit integration mappings: " + e.getMessage());
+                    e.printStackTrace();
+                }
+                
                 // Send feedback to player
                 String message = "Cleared " + clearedCount + " user blocks from server registry.";
                 player.sendSystemMessage(Component.literal(message));

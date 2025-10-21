@@ -32,16 +32,7 @@ public class ClientModEvents {
             if (tintIndex != 0) return 0xFFFFFF; // Only tint layer 0
             if (level != null && pos != null && level.getBlockEntity(pos) instanceof DynamicBlockEntity blockEntity) {
                 int color = blockEntity.getColor();
-                // Use both System.out and LOGGER to ensure we see the output
-                String msg = "BlockColors: tintIndex=" + tintIndex + ", pos=" + pos + ", color=" + String.format("#%06X", color);
-                System.out.println(msg);
-                com.mojang.logging.LogUtils.getLogger().info(msg);
                 return color;
-            }
-            if (pos != null) {
-                String msg = "BlockColors: no BE at pos=" + pos + ", tintIndex=" + tintIndex + ", default white";
-                System.out.println(msg);
-                com.mojang.logging.LogUtils.getLogger().info(msg);
             }
             return 0xFFFFFF; // Default white
         },
@@ -92,7 +83,17 @@ public class ClientModEvents {
         ModBlocks.USER_DEEPSLATE_1.get(), ModBlocks.USER_DEEPSLATE_2.get(), ModBlocks.USER_DEEPSLATE_3.get(), ModBlocks.USER_DEEPSLATE_4.get(), ModBlocks.USER_DEEPSLATE_5.get(),
         ModBlocks.USER_DEEPSLATE_6.get(), ModBlocks.USER_DEEPSLATE_7.get(), ModBlocks.USER_DEEPSLATE_8.get(), ModBlocks.USER_DEEPSLATE_9.get(), ModBlocks.USER_DEEPSLATE_10.get(),
         ModBlocks.USER_DEEPSLATE_11.get(), ModBlocks.USER_DEEPSLATE_12.get(), ModBlocks.USER_DEEPSLATE_13.get(), ModBlocks.USER_DEEPSLATE_14.get(), ModBlocks.USER_DEEPSLATE_15.get(),
-        ModBlocks.USER_DEEPSLATE_16.get(), ModBlocks.USER_DEEPSLATE_17.get(), ModBlocks.USER_DEEPSLATE_18.get(), ModBlocks.USER_DEEPSLATE_19.get(), ModBlocks.USER_DEEPSLATE_20.get());
+        ModBlocks.USER_DEEPSLATE_16.get(), ModBlocks.USER_DEEPSLATE_17.get(), ModBlocks.USER_DEEPSLATE_18.get(), ModBlocks.USER_DEEPSLATE_19.get(), ModBlocks.USER_DEEPSLATE_20.get(),
+        // Cobblestone blocks (1-20)
+        ModBlocks.USER_COBBLESTONE_1.get(), ModBlocks.USER_COBBLESTONE_2.get(), ModBlocks.USER_COBBLESTONE_3.get(), ModBlocks.USER_COBBLESTONE_4.get(), ModBlocks.USER_COBBLESTONE_5.get(),
+        ModBlocks.USER_COBBLESTONE_6.get(), ModBlocks.USER_COBBLESTONE_7.get(), ModBlocks.USER_COBBLESTONE_8.get(), ModBlocks.USER_COBBLESTONE_9.get(), ModBlocks.USER_COBBLESTONE_10.get(),
+        ModBlocks.USER_COBBLESTONE_11.get(), ModBlocks.USER_COBBLESTONE_12.get(), ModBlocks.USER_COBBLESTONE_13.get(), ModBlocks.USER_COBBLESTONE_14.get(), ModBlocks.USER_COBBLESTONE_15.get(),
+        ModBlocks.USER_COBBLESTONE_16.get(), ModBlocks.USER_COBBLESTONE_17.get(), ModBlocks.USER_COBBLESTONE_18.get(), ModBlocks.USER_COBBLESTONE_19.get(), ModBlocks.USER_COBBLESTONE_20.get(),
+        // Smooth Stone blocks (1-20)
+        ModBlocks.USER_SMOOTH_STONE_1.get(), ModBlocks.USER_SMOOTH_STONE_2.get(), ModBlocks.USER_SMOOTH_STONE_3.get(), ModBlocks.USER_SMOOTH_STONE_4.get(), ModBlocks.USER_SMOOTH_STONE_5.get(),
+        ModBlocks.USER_SMOOTH_STONE_6.get(), ModBlocks.USER_SMOOTH_STONE_7.get(), ModBlocks.USER_SMOOTH_STONE_8.get(), ModBlocks.USER_SMOOTH_STONE_9.get(), ModBlocks.USER_SMOOTH_STONE_10.get(),
+        ModBlocks.USER_SMOOTH_STONE_11.get(), ModBlocks.USER_SMOOTH_STONE_12.get(), ModBlocks.USER_SMOOTH_STONE_13.get(), ModBlocks.USER_SMOOTH_STONE_14.get(), ModBlocks.USER_SMOOTH_STONE_15.get(),
+        ModBlocks.USER_SMOOTH_STONE_16.get(), ModBlocks.USER_SMOOTH_STONE_17.get(), ModBlocks.USER_SMOOTH_STONE_18.get(), ModBlocks.USER_SMOOTH_STONE_19.get(), ModBlocks.USER_SMOOTH_STONE_20.get());
         
         System.out.println("=== FINISHED REGISTERING BLOCK COLORS - INCLUDING ALL USER BLOCKS ===");
     }
@@ -155,7 +156,17 @@ public class ClientModEvents {
         ModItems.USER_DEEPSLATE_1_ITEM.get(), ModItems.USER_DEEPSLATE_2_ITEM.get(), ModItems.USER_DEEPSLATE_3_ITEM.get(), ModItems.USER_DEEPSLATE_4_ITEM.get(), ModItems.USER_DEEPSLATE_5_ITEM.get(),
         ModItems.USER_DEEPSLATE_6_ITEM.get(), ModItems.USER_DEEPSLATE_7_ITEM.get(), ModItems.USER_DEEPSLATE_8_ITEM.get(), ModItems.USER_DEEPSLATE_9_ITEM.get(), ModItems.USER_DEEPSLATE_10_ITEM.get(),
         ModItems.USER_DEEPSLATE_11_ITEM.get(), ModItems.USER_DEEPSLATE_12_ITEM.get(), ModItems.USER_DEEPSLATE_13_ITEM.get(), ModItems.USER_DEEPSLATE_14_ITEM.get(), ModItems.USER_DEEPSLATE_15_ITEM.get(),
-        ModItems.USER_DEEPSLATE_16_ITEM.get(), ModItems.USER_DEEPSLATE_17_ITEM.get(), ModItems.USER_DEEPSLATE_18_ITEM.get(), ModItems.USER_DEEPSLATE_19_ITEM.get(), ModItems.USER_DEEPSLATE_20_ITEM.get());
+        ModItems.USER_DEEPSLATE_16_ITEM.get(), ModItems.USER_DEEPSLATE_17_ITEM.get(), ModItems.USER_DEEPSLATE_18_ITEM.get(), ModItems.USER_DEEPSLATE_19_ITEM.get(), ModItems.USER_DEEPSLATE_20_ITEM.get(),
+        // Cobblestone items (1-20)
+        ModItems.USER_COBBLESTONE_1_ITEM.get(), ModItems.USER_COBBLESTONE_2_ITEM.get(), ModItems.USER_COBBLESTONE_3_ITEM.get(), ModItems.USER_COBBLESTONE_4_ITEM.get(), ModItems.USER_COBBLESTONE_5_ITEM.get(),
+        ModItems.USER_COBBLESTONE_6_ITEM.get(), ModItems.USER_COBBLESTONE_7_ITEM.get(), ModItems.USER_COBBLESTONE_8_ITEM.get(), ModItems.USER_COBBLESTONE_9_ITEM.get(), ModItems.USER_COBBLESTONE_10_ITEM.get(),
+        ModItems.USER_COBBLESTONE_11_ITEM.get(), ModItems.USER_COBBLESTONE_12_ITEM.get(), ModItems.USER_COBBLESTONE_13_ITEM.get(), ModItems.USER_COBBLESTONE_14_ITEM.get(), ModItems.USER_COBBLESTONE_15_ITEM.get(),
+        ModItems.USER_COBBLESTONE_16_ITEM.get(), ModItems.USER_COBBLESTONE_17_ITEM.get(), ModItems.USER_COBBLESTONE_18_ITEM.get(), ModItems.USER_COBBLESTONE_19_ITEM.get(), ModItems.USER_COBBLESTONE_20_ITEM.get(),
+        // Smooth Stone items (1-20)
+        ModItems.USER_SMOOTH_STONE_1_ITEM.get(), ModItems.USER_SMOOTH_STONE_2_ITEM.get(), ModItems.USER_SMOOTH_STONE_3_ITEM.get(), ModItems.USER_SMOOTH_STONE_4_ITEM.get(), ModItems.USER_SMOOTH_STONE_5_ITEM.get(),
+        ModItems.USER_SMOOTH_STONE_6_ITEM.get(), ModItems.USER_SMOOTH_STONE_7_ITEM.get(), ModItems.USER_SMOOTH_STONE_8_ITEM.get(), ModItems.USER_SMOOTH_STONE_9_ITEM.get(), ModItems.USER_SMOOTH_STONE_10_ITEM.get(),
+        ModItems.USER_SMOOTH_STONE_11_ITEM.get(), ModItems.USER_SMOOTH_STONE_12_ITEM.get(), ModItems.USER_SMOOTH_STONE_13_ITEM.get(), ModItems.USER_SMOOTH_STONE_14_ITEM.get(), ModItems.USER_SMOOTH_STONE_15_ITEM.get(),
+        ModItems.USER_SMOOTH_STONE_16_ITEM.get(), ModItems.USER_SMOOTH_STONE_17_ITEM.get(), ModItems.USER_SMOOTH_STONE_18_ITEM.get(), ModItems.USER_SMOOTH_STONE_19_ITEM.get(), ModItems.USER_SMOOTH_STONE_20_ITEM.get());
     }
 }
 

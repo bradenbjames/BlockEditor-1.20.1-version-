@@ -36,6 +36,10 @@ public class BlockEditorScreen extends Screen {
     private EditBox searchBox;
     private EditBox nameBox;
     private Button createButton;
+    private Button clearRegistryButton;
+
+    // Confirmation dialog state
+    private boolean showingClearConfirmation = false;
 
     private List<Block> allBlocks = new ArrayList<>();
     private List<Block> filteredBlocks = new ArrayList<>();
@@ -178,7 +182,7 @@ public class BlockEditorScreen extends Screen {
         }
         filteredBlocks = new ArrayList<>(allBlocks);
 
-        int centerX = this.width / 2;
+        int centerX = this.width / 2 - 40; // Shift main content left by 40px
 
         // Calculate block grid width: 8 blocks × (32 + 4 padding) = 288 pixels
         int blockGridWidth = BLOCKS_PER_ROW * (BLOCK_SIZE + BLOCK_PADDING);
@@ -278,10 +282,11 @@ public class BlockEditorScreen extends Screen {
         ).bounds(buttonStartX + buttonWidth + buttonSpacing, buttonY, buttonWidth, 20).build());
 
         // Clear Registry button - positioned below other buttons
-        this.addRenderableWidget(Button.builder(
+        clearRegistryButton = Button.builder(
             Component.literal("Clear Registry"),
-            button -> clearServerRegistry()
-        ).bounds(buttonStartX, buttonY + 25, buttonWidth, 20).build());
+            button -> handleClearRegistryClick()
+        ).bounds(buttonStartX, buttonY + 25, buttonWidth, 20).build();
+        this.addRenderableWidget(clearRegistryButton);
 
 
     }
@@ -294,13 +299,13 @@ public class BlockEditorScreen extends Screen {
         graphics.fill(0, 0, this.width, this.height, 0xC0101010);
 
         // Draw title
-        graphics.drawCenteredString(this.font, this.title, this.width / 2, 10, 0xFFFFFF);
+        graphics.drawCenteredString(this.font, this.title, this.width / 2 - 40, 10, 0xFFFFFF);
 
         // Draw block grid
         renderBlockGrid(graphics, mouseX, mouseY);
 
         // Calculate positions to match init()
-        int centerX = this.width / 2;
+        int centerX = this.width / 2 - 40; // Shift main content left
         int blockGridWidth = BLOCKS_PER_ROW * (BLOCK_SIZE + BLOCK_PADDING);
         int gridStartX = centerX - (blockGridWidth / 2);
         int gridEndY = 55 + (4 * (BLOCK_SIZE + BLOCK_PADDING));
@@ -392,12 +397,21 @@ public class BlockEditorScreen extends Screen {
             // Draw title bar
             graphics.fill(panelX - 5, panelY - 25, panelX + finalPanelWidth + 5, panelY - 5, 0xFF333333);
             
-            // Draw scaled title
+            // Draw scaled title with better text handling
             var titlePose = graphics.pose();
             titlePose.pushPose();
             titlePose.translate(panelX + finalPanelWidth / 2, panelY - 18, 0);
-            titlePose.scale(0.7f, 0.7f, 1.0f);
-            graphics.drawCenteredString(this.font, "§eRecent Blocks", 0, 0, 0xFFFFFF);
+            titlePose.scale(0.6f, 0.6f, 1.0f); // Smaller text
+            
+            // Split text if panel is narrow
+            String titleText = "Recent Blocks";
+            int textWidth = this.font.width(titleText);
+            if (textWidth > finalPanelWidth * 1.4f) { // If text is too wide for panel
+                graphics.drawCenteredString(this.font, "§eRecent", 0, -5, 0xFFFFFF);
+                graphics.drawCenteredString(this.font, "§eBlocks", 0, 5, 0xFFFFFF);
+            } else {
+                graphics.drawCenteredString(this.font, "§eRecent Blocks", 0, 0, 0xFFFFFF);
+            }
             titlePose.popPose();
             
             graphics.drawCenteredString(this.font, "§7No blocks yet", panelX + finalPanelWidth / 2, panelY + 20, 0xAAAAAA);
@@ -417,12 +431,21 @@ public class BlockEditorScreen extends Screen {
         // Draw title bar
         graphics.fill(panelX - 5, panelY - 25, panelX + finalPanelWidth + 5, panelY - 5, 0xFF333333);
         
-        // Draw scaled title
+        // Draw scaled title with better text handling
         var titlePose = graphics.pose();
         titlePose.pushPose();
         titlePose.translate(panelX + finalPanelWidth / 2, panelY - 18, 0);
-        titlePose.scale(0.7f, 0.7f, 1.0f);
-        graphics.drawCenteredString(this.font, "§eRecent Blocks", 0, 0, 0xFFFFFF);
+        titlePose.scale(0.6f, 0.6f, 1.0f); // Smaller text
+        
+        // Split text if panel is narrow
+        String titleText = "Recent Blocks";
+        int textWidth = this.font.width(titleText);
+        if (textWidth > finalPanelWidth * 1.4f) { // If text is too wide for panel
+            graphics.drawCenteredString(this.font, "§eRecent", 0, -5, 0xFFFFFF);
+            graphics.drawCenteredString(this.font, "§eBlocks", 0, 5, 0xFFFFFF);
+        } else {
+            graphics.drawCenteredString(this.font, "§eRecent Blocks", 0, 0, 0xFFFFFF);
+        }
         titlePose.popPose();
 
         // Calculate visible range
@@ -477,18 +500,35 @@ public class BlockEditorScreen extends Screen {
             RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
             pose.popPose();
 
-            // Draw small hex color text inline to the right of the block (only if not hiding text)
+            // Draw block name and hex color text centered in the available text area
             if (!hideHexText) {
-                String hexText = "#" + info.hexColor;
-                int textX = itemX + 18; // Right of the 16px block icon
-                int textY = itemY + (itemHeight / 2) - 3; // Vertically centered in the box
+                String blockName = info.blockName;
+                String hexText = "(#" + info.hexColor + ")";
                 
-                // Scale down the text even more
+                // Calculate available text area (total width - icon width - spacing)
+                int textAreaWidth = individualItemWidth - 18; // 18px used by icon + spacing
+                int textAreaCenterX = itemX + 18 + (textAreaWidth / 2); // Center of text area
+                
+                int nameY = itemY + (itemHeight / 2) - 6; // Position name higher
+                int hexY = itemY + (itemHeight / 2) + 2; // Position hex lower
+                
+                // Draw block name (primary text) - centered
                 pose = graphics.pose();
                 pose.pushPose();
-                pose.translate(textX, textY, 0);
-                pose.scale(0.5f, 0.5f, 1.0f); // Make text 50% of normal size (was 60%)
-                graphics.drawString(this.font, hexText, 0, 0, 0xAAAAAA);
+                pose.translate(textAreaCenterX, nameY, 0);
+                pose.scale(0.5f, 0.5f, 1.0f);
+                // Calculate text width at original scale, then offset by half to center
+                int nameWidth = this.font.width(blockName);
+                graphics.drawString(this.font, blockName, -nameWidth / 2, 0, 0xFFFFFF); // White text for name
+                pose.popPose();
+                
+                // Draw hex color in parentheses (secondary text, slightly smaller) - centered
+                pose.pushPose();
+                pose.translate(textAreaCenterX, hexY, 0);
+                pose.scale(0.4f, 0.4f, 1.0f);
+                // Calculate text width at original scale, then offset by half to center
+                int hexWidth = this.font.width(hexText);
+                graphics.drawString(this.font, hexText, -hexWidth / 2, 0, 0xAAAAAA); // Gray text for hex
                 pose.popPose();
             }
         }
@@ -511,7 +551,7 @@ public class BlockEditorScreen extends Screen {
     }
 
     private void renderBlockGrid(GuiGraphics graphics, int mouseX, int mouseY) {
-        int startX = this.width / 2 - (BLOCKS_PER_ROW * (BLOCK_SIZE + BLOCK_PADDING)) / 2;
+        int startX = (this.width / 2 - 40) - (BLOCKS_PER_ROW * (BLOCK_SIZE + BLOCK_PADDING)) / 2; // Shifted left
         int startY = 55;
         int maxRows = 4;
         int gridHeight = maxRows * (BLOCK_SIZE + BLOCK_PADDING);
@@ -557,6 +597,14 @@ public class BlockEditorScreen extends Screen {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        // Reset confirmation state if user clicks elsewhere (not on the clear button)
+        if (showingClearConfirmation && clearRegistryButton != null) {
+            if (!clearRegistryButton.isMouseOver(mouseX, mouseY)) {
+                showingClearConfirmation = false;
+                updateClearButtonText();
+            }
+        }
+        
         // Check if clicking in history panel first - use same compact logic as rendering
         int centerX = this.width / 2;
         int blockGridWidth = BLOCKS_PER_ROW * (BLOCK_SIZE + BLOCK_PADDING);
@@ -608,17 +656,12 @@ public class BlockEditorScreen extends Screen {
                     nameBox.setValue("");
                 }
                 
-                System.out.println("=== HISTORY CLICK DEBUG ===");
-                System.out.println("HISTORY CLICK: Selected block " + info.originalBlock + " with color " + info.hexColor);
-                System.out.println("HISTORY CLICK: Block name was: '" + info.blockName + "'");
-                System.out.println("HISTORY CLICK: Cleared nameBox for fresh input");
-                System.out.println("HISTORY CLICK: New nameBox value: '" + (nameBox != null ? nameBox.getValue() : "NULL") + "'");
                 return true;
             }
         }
 
         // Handle block selection clicks - MUST match renderBlockGrid positions
-        int startX = this.width / 2 - (BLOCKS_PER_ROW * (BLOCK_SIZE + BLOCK_PADDING)) / 2;
+        int startX = (this.width / 2 - 40) - (BLOCKS_PER_ROW * (BLOCK_SIZE + BLOCK_PADDING)) / 2; // Shifted left
         int startY = 55;  // Changed from 60 to match renderBlockGrid
         int maxRows = 4;  // Changed from 6 to match renderBlockGrid
 
@@ -642,7 +685,7 @@ public class BlockEditorScreen extends Screen {
         
         // Check hex box click
         if (hexBox != null) {
-            int hexX = centerX - (blockGridWidth / 2); // Match the position
+            int hexX = centerX - (blockGridWidth / 2); // Match the position (already shifted)
             int hexY = 30;
             int hexWidth = 90; // Updated width
             int hexHeight = 20;
@@ -654,7 +697,7 @@ public class BlockEditorScreen extends Screen {
         
         // Check name box click - select all text when clicked (if it has placeholder text)
         if (nameBox != null) {
-            int nameX = centerX - (blockGridWidth / 2) + 90 + 15; // Calculate nameBox X position (updated for 90px hex box)
+            int nameX = centerX - (blockGridWidth / 2) + 90 + 15; // Calculate nameBox X position (already shifted)
             int nameY = 30;
             int nameWidth = 140;
             int nameHeight = 20;
@@ -754,6 +797,12 @@ public class BlockEditorScreen extends Screen {
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        // Reset confirmation state if user presses escape or any other key (except Enter)
+        if (showingClearConfirmation && keyCode != 257) { // 257 is ENTER key
+            showingClearConfirmation = false;
+            updateClearButtonText();
+        }
+        
         // Test direct scroll with number keys (not affected by text focus)
         if (keyCode == 49) { // 1 key
             scrollHistoryUp();
@@ -910,19 +959,8 @@ public class BlockEditorScreen extends Screen {
         }
         
         String nameValue = nameBox.getValue();
-        if (this.minecraft != null && this.minecraft.player != null) {
-            this.minecraft.player.displayClientMessage(Component.literal("§eDEBUG isNameBoxValid: nameBox.getValue() = '" + nameValue + "'"), false);
-        }
-        
         boolean validName = isValidBlockName(nameValue);
-        if (this.minecraft != null && this.minecraft.player != null) {
-            this.minecraft.player.displayClientMessage(Component.literal("§eDEBUG isNameBoxValid: isValidName = " + validName), false);
-        }
-        
         boolean notDuplicate = !isDuplicateName(nameValue);
-        if (this.minecraft != null && this.minecraft.player != null) {
-            this.minecraft.player.displayClientMessage(Component.literal("§eDEBUG isNameBoxValid: !isDuplicate = " + notDuplicate), false);
-        }
         
         return validName && notDuplicate;
     }
@@ -949,27 +987,14 @@ public class BlockEditorScreen extends Screen {
         }
         
         String trimmedName = customName.trim();
-        if (this.minecraft != null && this.minecraft.player != null) {
-            this.minecraft.player.displayClientMessage(Component.literal("§eDEBUG: Checking duplicate for name: '" + trimmedName + "'"), false);
-            this.minecraft.player.displayClientMessage(Component.literal("§eDEBUG: History size: " + createdBlocksHistory.size()), false);
-        }
         
         for (int i = 0; i < createdBlocksHistory.size(); i++) {
             CreatedBlockInfo info = createdBlocksHistory.get(i);
             if (info.blockName != null) {
-                if (this.minecraft != null && this.minecraft.player != null) {
-                    this.minecraft.player.displayClientMessage(Component.literal("§eDEBUG: [" + i + "] Comparing with: '" + info.blockName + "'"), false);
-                }
                 if (info.blockName.equalsIgnoreCase(trimmedName)) {
-                    if (this.minecraft != null && this.minecraft.player != null) {
-                        this.minecraft.player.displayClientMessage(Component.literal("§cDEBUG: DUPLICATE FOUND! '" + trimmedName + "' matches '" + info.blockName + "'"), false);
-                    }
                     return true;
                 }
             }
-        }
-        if (this.minecraft != null && this.minecraft.player != null) {
-            this.minecraft.player.displayClientMessage(Component.literal("§aDEBUG: No duplicates found for: '" + trimmedName + "'"), false);
         }
         return false;
     }
@@ -1064,24 +1089,16 @@ public class BlockEditorScreen extends Screen {
         // Check for duplicate custom names - CAPTURE VALUE IMMEDIATELY
         String nameBoxRawValue = nameBox.getValue();
         String customNameCheck = nameBoxRawValue.trim();
-        if (this.minecraft.player != null) {
-            this.minecraft.player.displayClientMessage(Component.literal("§e=== CLIENT DEBUG: DUPLICATE NAME CHECK ==="), false);
-            this.minecraft.player.displayClientMessage(Component.literal("§eCLIENT DEBUG: Name box raw: '" + nameBoxRawValue + "'"), false);
-            this.minecraft.player.displayClientMessage(Component.literal("§eCLIENT DEBUG: After trim: '" + customNameCheck + "'"), false);
-            this.minecraft.player.displayClientMessage(Component.literal("§eCLIENT DEBUG: nameBox object: " + nameBox.hashCode()), false);
-        }            if (isDuplicateName(customNameCheck)) {
-                if (this.minecraft.player != null) {
-                    this.minecraft.player.displayClientMessage(Component.literal("§cCLIENT DEBUG: Client-side duplicate found for: '" + customNameCheck + "'"), false);
-                    this.minecraft.player.displayClientMessage(
-                        Component.literal("§cError: Block name '" + customNameCheck + "' already exists! Please choose a different name."),
-                        false
-                    );
-                }
-                return;
-            }
+        
+        if (isDuplicateName(customNameCheck)) {
             if (this.minecraft.player != null) {
-                this.minecraft.player.displayClientMessage(Component.literal("§aCLIENT DEBUG: No client-side duplicate found, proceeding"), false);
+                this.minecraft.player.displayClientMessage(
+                    Component.literal("§cError: Block name '" + customNameCheck + "' already exists! Please choose a different name."),
+                    false
+                );
             }
+            return;
+        }
 
             // Check for duplicate blocks (same texture and hex color)
             if (isDuplicateBlock(selectedBlock, hexColor)) {
@@ -1106,21 +1123,9 @@ public class BlockEditorScreen extends Screen {
             ResourceLocation blockId = BuiltInRegistries.BLOCK.getKey(blockToUse);
             ResourceLocation mimicBlockId = BuiltInRegistries.BLOCK.getKey(selectedBlock);
 
-            System.out.println("=== CLIENT: BlockEditorScreen: Sending CreateBlockPacket to server ===");
-            System.out.println("CLIENT:   Block type: " + blockId);
-            System.out.println("CLIENT:   Mimic: " + mimicBlockId);
-            System.out.println("CLIENT:   Color: " + hexColor.toUpperCase());
-
             // Send packet to server to create the item - CAPTURE VALUE AGAIN
             String packetNameBoxRaw = nameBox.getValue();
             String customName = packetNameBoxRaw.trim();
-            if (this.minecraft.player != null) {
-                this.minecraft.player.displayClientMessage(Component.literal("§e=== SENDING PACKET TO SERVER ==="), false);
-                this.minecraft.player.displayClientMessage(Component.literal("§ePacket raw nameBox: '" + packetNameBoxRaw + "'"), false);
-                this.minecraft.player.displayClientMessage(Component.literal("§eCustom name (trimmed): '" + customName + "'"), false);
-                this.minecraft.player.displayClientMessage(Component.literal("§eNameBox object: " + nameBox.hashCode()), false);
-                this.minecraft.player.displayClientMessage(Component.literal("§e** ABOUT TO SEND: '" + customName + "' **"), false);
-            }
             
             try {
                 ModNetworking.sendToServer(new CreateBlockPacket(
@@ -1129,7 +1134,6 @@ public class BlockEditorScreen extends Screen {
                     blockId.toString(),
                     customName
                 ));
-                System.out.println("CLIENT: Packet sent successfully!");
             } catch (Exception e) {
                 System.out.println("CLIENT ERROR: Failed to send packet: " + e.getMessage());
                 e.printStackTrace();
@@ -1155,6 +1159,29 @@ public class BlockEditorScreen extends Screen {
             }
         }
         this.onClose();
+    }
+
+    private void handleClearRegistryClick() {
+        if (!showingClearConfirmation) {
+            // First click - show confirmation
+            showingClearConfirmation = true;
+            updateClearButtonText();
+        } else {
+            // Second click - actually clear
+            clearServerRegistry();
+            showingClearConfirmation = false;
+            updateClearButtonText();
+        }
+    }
+
+    private void updateClearButtonText() {
+        if (clearRegistryButton != null) {
+            if (showingClearConfirmation) {
+                clearRegistryButton.setMessage(Component.literal("§c§lARE YOU SURE?"));
+            } else {
+                clearRegistryButton.setMessage(Component.literal("Clear Registry"));
+            }
+        }
     }
 
     private void clearServerRegistry() {

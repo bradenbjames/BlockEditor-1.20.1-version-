@@ -106,12 +106,14 @@ public class ClientColorManager {
      */
     private static String getUserBlockTypeFromMimic(String mimicBlock) {
         if (mimicBlock.contains("wool")) return "wool";
-        if (mimicBlock.contains("stone") && !mimicBlock.contains("deepslate")) return "stone";
+        if (mimicBlock.contains("stone") && !mimicBlock.contains("deepslate") && !mimicBlock.contains("smooth")) return "stone";
         if (mimicBlock.contains("concrete")) return "concrete";
         if (mimicBlock.contains("planks") || mimicBlock.contains("wood") || mimicBlock.contains("log")) return "wood";
         if (mimicBlock.contains("dirt")) return "dirt";
         if (mimicBlock.contains("sand")) return "sand";
         if (mimicBlock.contains("deepslate")) return "deepslate";
+        if (mimicBlock.contains("cobblestone")) return "cobblestone";
+        if (mimicBlock.contains("smooth_stone")) return "smooth_stone";
         return null;
     }
 }
