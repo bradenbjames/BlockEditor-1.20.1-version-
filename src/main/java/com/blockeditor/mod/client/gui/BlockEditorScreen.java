@@ -55,6 +55,12 @@ public class BlockEditorScreen extends Screen {
     private static final int BLOCK_SIZE = 32;
     private static final int BLOCK_PADDING = 4;
 
+    // Layout constants for the history panel
+    private static final int HISTORY_ITEM_WIDTH = 42; // icon + padding + text space
+    private static final int HISTORY_ITEM_HEIGHT = 20;
+    private static final int HISTORY_SPACING = 2;
+    private static final int HISTORY_PANEL_MARGIN = 10;
+
     // Inner class to store created block info
     private static class CreatedBlockInfo {
         Block originalBlock;
@@ -365,37 +371,53 @@ public class BlockEditorScreen extends Screen {
         super.render(graphics, mouseX, mouseY, partialTick);
     }
 
+    /**
+     * Calculate the number of columns the history panel should use based on
+     * available space. Guarantees 2 columns at 1920x1080, and up to 3 when space allows.
+     */
+    private int getHistoryColumns() {
+        // Use the same -40 center shift as the main grid so available space matches reality
+        int centerX = this.width / 2 - 40;
+        int blockGridWidth = BLOCKS_PER_ROW * (BLOCK_SIZE + BLOCK_PADDING);
+        int gridEndX = centerX + (blockGridWidth / 2);
+
+        int availableWidth = this.width - gridEndX - HISTORY_PANEL_MARGIN - 20; // 20px buffer
+
+        // Cap to a maximum of 3 columns overall
+        int maxColumnsBySpace = Math.max(1, availableWidth / HISTORY_ITEM_WIDTH);
+        int capped = Math.min(3, maxColumnsBySpace);
+
+        // Ensure 2 columns on typical 1080p (>= 1800px width), but don't exceed space
+        if (this.width >= 1800) {
+            return Math.max(2, capped);
+        }
+
+        // For narrower widths, fallback to what space allows (1..3)
+        return Math.max(1, capped);
+    }
+
     private void renderHistoryPanel(GuiGraphics graphics, int mouseX, int mouseY) {
         
         // Calculate main block grid dimensions to check for overlap
-        int centerX = this.width / 2;
+    int centerX = this.width / 2 - 40;
         int blockGridWidth = BLOCKS_PER_ROW * (BLOCK_SIZE + BLOCK_PADDING);
         int gridEndX = centerX + (blockGridWidth / 2);
         
         // Calculate compact panel dimensions for optimal layout
-        // Each item needs: 16px (block) + 2px (padding) + ~24px (hex text) = ~42px per item
-        int itemWidth = 42; // Compact width per item
-        int panelMargin = 10;
+    // Each item needs: 16px (block) + 2px (padding) + ~24px (hex text) = ~42px per item
+    int itemWidth = HISTORY_ITEM_WIDTH; // Compact width per item
+    int panelMargin = HISTORY_PANEL_MARGIN;
         
         // Calculate how many columns can actually fit based on available space
         int availableWidth = this.width - gridEndX - panelMargin - 20; // 20px buffer
-        
-        // Dynamic column calculation based on screen width for optimal 2-row layout
-        int maxColumns;
-        if (this.width >= 1800) { // For 1920x1080 and larger screens
-            maxColumns = Math.min(6, availableWidth / itemWidth); // Allow up to 6 columns for 2 nice rows
-        } else if (this.width >= 1400) { // Medium screens
-            maxColumns = Math.min(4, availableWidth / itemWidth); // 4 columns max
-        } else { // Smaller screens
-            maxColumns = Math.min(3, availableWidth / itemWidth); // 3 columns max like before
-        }
-        
-        int actualColumns = Math.max(1, maxColumns);
+
+        // Use unified column calculation across render/click/scroll
+        int actualColumns = getHistoryColumns();
         
         // Only hide text if we're really cramped (less than 25px per item)
         boolean hideHexText = (availableWidth / actualColumns) < 25;
         
-        int spacing = 2; // Small gap between boxes
+    int spacing = HISTORY_SPACING; // Small gap between boxes
         int individualItemWidth = hideHexText ? 20 : itemWidth;
         int finalPanelWidth = actualColumns * (individualItemWidth + spacing) - spacing + 8; // Include spacing and padding
         int panelX = this.width - finalPanelWidth - panelMargin;
@@ -430,7 +452,7 @@ public class BlockEditorScreen extends Screen {
         }
 
         // Calculate layout based on dynamic column count
-        int itemHeight = 20; // Height for each row
+    int itemHeight = HISTORY_ITEM_HEIGHT; // Height for each row
         int blocksPerRow = actualColumns;
         int totalRows = (int) Math.ceil((double) createdBlocksHistory.size() / blocksPerRow);
         int maxVisibleRows = panelHeight / itemHeight;
@@ -616,32 +638,31 @@ public class BlockEditorScreen extends Screen {
             }
         }
         
-        // Check if clicking in history panel first - use same compact logic as rendering
-        int centerX = this.width / 2;
-        int blockGridWidth = BLOCKS_PER_ROW * (BLOCK_SIZE + BLOCK_PADDING);
-        int gridEndX = centerX + (blockGridWidth / 2);
-        
-        // Calculate compact panel dimensions (same as render method)
-        int itemWidth = 42;
-        int maxColumns = 3;
-        int panelMargin = 10;
-        
-        int availableWidth = this.width - gridEndX - panelMargin - 20;
-        int actualColumns = Math.min(maxColumns, Math.max(1, availableWidth / itemWidth));
-        boolean hideHexText = (availableWidth / actualColumns) < 25;
-        
-        int spacing = 2; // Small gap between boxes
-        int individualItemWidth = hideHexText ? 20 : itemWidth;
-        int finalPanelWidth = actualColumns * (individualItemWidth + spacing) - spacing + 8; // Include spacing and padding
-        int panelX = this.width - finalPanelWidth - panelMargin;
-        int panelY = 60;
-        int panelHeight = this.height - panelY - 20;
+    // Check if clicking in history panel first - use same compact logic as rendering
+    int centerX = this.width / 2 - 40;
+    int blockGridWidth = BLOCKS_PER_ROW * (BLOCK_SIZE + BLOCK_PADDING);
+    int gridEndX = centerX + (blockGridWidth / 2);
+
+    // Calculate compact panel dimensions (same as render method)
+    int itemWidth = HISTORY_ITEM_WIDTH;
+    int panelMargin = HISTORY_PANEL_MARGIN;
+
+    int availableWidth = this.width - gridEndX - panelMargin - 20;
+    int actualColumns = getHistoryColumns();
+    boolean hideHexText = (availableWidth / Math.max(1, actualColumns)) < 25;
+
+    int spacing = HISTORY_SPACING; // Small gap between boxes
+    int individualItemWidth = hideHexText ? 20 : itemWidth;
+    int finalPanelWidth = actualColumns * (individualItemWidth + spacing) - spacing + 8; // Include spacing and padding
+    int panelX = this.width - finalPanelWidth - panelMargin;
+    int panelY = 60;
+    int panelHeight = this.height - panelY - 20;
         
         // History panel item clicks
         if (!createdBlocksHistory.isEmpty() && mouseX >= panelX - 5 && mouseX <= panelX + finalPanelWidth + 5 && 
             mouseY >= panelY && mouseY <= panelY + panelHeight) {
             
-            int itemHeight = 20;
+            int itemHeight = HISTORY_ITEM_HEIGHT;
             int blocksPerRow = actualColumns;
             int maxVisibleRows = panelHeight / itemHeight;
             int maxVisibleItems = maxVisibleRows * blocksPerRow;
@@ -761,30 +782,37 @@ public class BlockEditorScreen extends Screen {
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
-        // Simple scroll for history panel - right side of screen
-        if (mouseX > this.width * 0.75 && !createdBlocksHistory.isEmpty()) {
-            // Calculate scroll parameters with same responsive logic as render method
-            int centerX = this.width / 2;
+        // Scroll for the history panel using unified geometry
+        if (!createdBlocksHistory.isEmpty()) {
+        int centerX = this.width / 2 - 40;
             int blockGridWidth = BLOCKS_PER_ROW * (BLOCK_SIZE + BLOCK_PADDING);
             int gridEndX = centerX + (blockGridWidth / 2);
-            int panelWidth = 120;
-            int panelMargin = 10;
-            boolean useSingleColumn = (this.width - panelWidth - panelMargin) < (gridEndX + 20);
-            
+
+            int availableWidth = this.width - gridEndX - HISTORY_PANEL_MARGIN - 20;
+            int actualColumns = getHistoryColumns();
+            boolean hideHexText = (availableWidth / Math.max(1, actualColumns)) < 25;
+
+            int individualItemWidth = hideHexText ? 20 : HISTORY_ITEM_WIDTH;
+            int finalPanelWidth = actualColumns * (individualItemWidth + HISTORY_SPACING) - HISTORY_SPACING + 8;
+            int panelX = this.width - finalPanelWidth - HISTORY_PANEL_MARGIN;
             int panelY = 60;
             int panelHeight = this.height - panelY - 20;
-            int itemHeight = 20;
-            int blocksPerRow = useSingleColumn ? 1 : 2;
-            int maxVisibleRows = panelHeight / itemHeight;
-            int maxVisibleItems = maxVisibleRows * blocksPerRow;
-            int maxScroll = Math.max(0, createdBlocksHistory.size() - maxVisibleItems);
-            
-            if (delta > 0 && historyScrollOffset > 0) {
-                historyScrollOffset = Math.max(0, historyScrollOffset - blocksPerRow); // Scroll by row
-                return true;
-            } else if (delta < 0 && historyScrollOffset < maxScroll) {
-                historyScrollOffset = Math.min(maxScroll, historyScrollOffset + blocksPerRow); // Scroll by row
-                return true;
+
+            boolean overPanel = mouseX >= panelX - 5 && mouseX <= panelX + finalPanelWidth + 5 &&
+                                mouseY >= panelY && mouseY <= panelY + panelHeight;
+            if (overPanel) {
+                int blocksPerRow = actualColumns;
+                int maxVisibleRows = panelHeight / HISTORY_ITEM_HEIGHT;
+                int maxVisibleItems = maxVisibleRows * blocksPerRow;
+                int maxScroll = Math.max(0, createdBlocksHistory.size() - maxVisibleItems);
+
+                if (delta > 0 && historyScrollOffset > 0) {
+                    historyScrollOffset = Math.max(0, historyScrollOffset - blocksPerRow); // Scroll by row
+                    return true;
+                } else if (delta < 0 && historyScrollOffset < maxScroll) {
+                    historyScrollOffset = Math.min(maxScroll, historyScrollOffset + blocksPerRow); // Scroll by row
+                    return true;
+                }
             }
         }
         

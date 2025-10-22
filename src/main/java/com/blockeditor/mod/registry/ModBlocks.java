@@ -266,4 +266,180 @@ public class ModBlocks {
     public static final RegistryObject<Block> USER_SMOOTH_STONE_18 = BLOCKS.register("u_smooth_stone18", () -> new UserBlock("smooth_stone"));
     public static final RegistryObject<Block> USER_SMOOTH_STONE_19 = BLOCKS.register("u_smooth_stone19", () -> new UserBlock("smooth_stone"));
     public static final RegistryObject<Block> USER_SMOOTH_STONE_20 = BLOCKS.register("u_smooth_stone20", () -> new UserBlock("smooth_stone"));
+    
+    // Terracotta blocks (up to 20 custom terracotta blocks)
+    public static final RegistryObject<Block> USER_TERRACOTTA_1 = BLOCKS.register("u_terracotta1", () -> new UserBlock("terracotta"));
+    public static final RegistryObject<Block> USER_TERRACOTTA_2 = BLOCKS.register("u_terracotta2", () -> new UserBlock("terracotta"));
+    public static final RegistryObject<Block> USER_TERRACOTTA_3 = BLOCKS.register("u_terracotta3", () -> new UserBlock("terracotta"));
+    public static final RegistryObject<Block> USER_TERRACOTTA_4 = BLOCKS.register("u_terracotta4", () -> new UserBlock("terracotta"));
+    public static final RegistryObject<Block> USER_TERRACOTTA_5 = BLOCKS.register("u_terracotta5", () -> new UserBlock("terracotta"));
+    public static final RegistryObject<Block> USER_TERRACOTTA_6 = BLOCKS.register("u_terracotta6", () -> new UserBlock("terracotta"));
+    public static final RegistryObject<Block> USER_TERRACOTTA_7 = BLOCKS.register("u_terracotta7", () -> new UserBlock("terracotta"));
+    public static final RegistryObject<Block> USER_TERRACOTTA_8 = BLOCKS.register("u_terracotta8", () -> new UserBlock("terracotta"));
+    public static final RegistryObject<Block> USER_TERRACOTTA_9 = BLOCKS.register("u_terracotta9", () -> new UserBlock("terracotta"));
+    public static final RegistryObject<Block> USER_TERRACOTTA_10 = BLOCKS.register("u_terracotta10", () -> new UserBlock("terracotta"));
+    public static final RegistryObject<Block> USER_TERRACOTTA_11 = BLOCKS.register("u_terracotta11", () -> new UserBlock("terracotta"));
+    public static final RegistryObject<Block> USER_TERRACOTTA_12 = BLOCKS.register("u_terracotta12", () -> new UserBlock("terracotta"));
+    public static final RegistryObject<Block> USER_TERRACOTTA_13 = BLOCKS.register("u_terracotta13", () -> new UserBlock("terracotta"));
+    public static final RegistryObject<Block> USER_TERRACOTTA_14 = BLOCKS.register("u_terracotta14", () -> new UserBlock("terracotta"));
+    public static final RegistryObject<Block> USER_TERRACOTTA_15 = BLOCKS.register("u_terracotta15", () -> new UserBlock("terracotta"));
+    public static final RegistryObject<Block> USER_TERRACOTTA_16 = BLOCKS.register("u_terracotta16", () -> new UserBlock("terracotta"));
+    public static final RegistryObject<Block> USER_TERRACOTTA_17 = BLOCKS.register("u_terracotta17", () -> new UserBlock("terracotta"));
+    public static final RegistryObject<Block> USER_TERRACOTTA_18 = BLOCKS.register("u_terracotta18", () -> new UserBlock("terracotta"));
+    public static final RegistryObject<Block> USER_TERRACOTTA_19 = BLOCKS.register("u_terracotta19", () -> new UserBlock("terracotta"));
+    public static final RegistryObject<Block> USER_TERRACOTTA_20 = BLOCKS.register("u_terracotta20", () -> new UserBlock("terracotta"));
+    
+    // Concrete Powder blocks (up to 20 custom concrete powder blocks)
+    public static final RegistryObject<Block> USER_CONCRETE_POWDER_1 = BLOCKS.register("u_concrete_powder1", () -> new UserBlock("concrete_powder"));
+    public static final RegistryObject<Block> USER_CONCRETE_POWDER_2 = BLOCKS.register("u_concrete_powder2", () -> new UserBlock("concrete_powder"));
+    public static final RegistryObject<Block> USER_CONCRETE_POWDER_3 = BLOCKS.register("u_concrete_powder3", () -> new UserBlock("concrete_powder"));
+    public static final RegistryObject<Block> USER_CONCRETE_POWDER_4 = BLOCKS.register("u_concrete_powder4", () -> new UserBlock("concrete_powder"));
+    public static final RegistryObject<Block> USER_CONCRETE_POWDER_5 = BLOCKS.register("u_concrete_powder5", () -> new UserBlock("concrete_powder"));
+    public static final RegistryObject<Block> USER_CONCRETE_POWDER_6 = BLOCKS.register("u_concrete_powder6", () -> new UserBlock("concrete_powder"));
+    public static final RegistryObject<Block> USER_CONCRETE_POWDER_7 = BLOCKS.register("u_concrete_powder7", () -> new UserBlock("concrete_powder"));
+    public static final RegistryObject<Block> USER_CONCRETE_POWDER_8 = BLOCKS.register("u_concrete_powder8", () -> new UserBlock("concrete_powder"));
+    public static final RegistryObject<Block> USER_CONCRETE_POWDER_9 = BLOCKS.register("u_concrete_powder9", () -> new UserBlock("concrete_powder"));
+    public static final RegistryObject<Block> USER_CONCRETE_POWDER_10 = BLOCKS.register("u_concrete_powder10", () -> new UserBlock("concrete_powder"));
+    public static final RegistryObject<Block> USER_CONCRETE_POWDER_11 = BLOCKS.register("u_concrete_powder11", () -> new UserBlock("concrete_powder"));
+    public static final RegistryObject<Block> USER_CONCRETE_POWDER_12 = BLOCKS.register("u_concrete_powder12", () -> new UserBlock("concrete_powder"));
+    public static final RegistryObject<Block> USER_CONCRETE_POWDER_13 = BLOCKS.register("u_concrete_powder13", () -> new UserBlock("concrete_powder"));
+    public static final RegistryObject<Block> USER_CONCRETE_POWDER_14 = BLOCKS.register("u_concrete_powder14", () -> new UserBlock("concrete_powder"));
+    public static final RegistryObject<Block> USER_CONCRETE_POWDER_15 = BLOCKS.register("u_concrete_powder15", () -> new UserBlock("concrete_powder"));
+    public static final RegistryObject<Block> USER_CONCRETE_POWDER_16 = BLOCKS.register("u_concrete_powder16", () -> new UserBlock("concrete_powder"));
+    public static final RegistryObject<Block> USER_CONCRETE_POWDER_17 = BLOCKS.register("u_concrete_powder17", () -> new UserBlock("concrete_powder"));
+    public static final RegistryObject<Block> USER_CONCRETE_POWDER_18 = BLOCKS.register("u_concrete_powder18", () -> new UserBlock("concrete_powder"));
+    public static final RegistryObject<Block> USER_CONCRETE_POWDER_19 = BLOCKS.register("u_concrete_powder19", () -> new UserBlock("concrete_powder"));
+    public static final RegistryObject<Block> USER_CONCRETE_POWDER_20 = BLOCKS.register("u_concrete_powder20", () -> new UserBlock("concrete_powder"));
+    
+    // Glass blocks (up to 20 custom glass blocks)
+    public static final RegistryObject<Block> USER_GLASS_1 = BLOCKS.register("u_glass1", () -> new UserBlock("glass"));
+    public static final RegistryObject<Block> USER_GLASS_2 = BLOCKS.register("u_glass2", () -> new UserBlock("glass"));
+    public static final RegistryObject<Block> USER_GLASS_3 = BLOCKS.register("u_glass3", () -> new UserBlock("glass"));
+    public static final RegistryObject<Block> USER_GLASS_4 = BLOCKS.register("u_glass4", () -> new UserBlock("glass"));
+    public static final RegistryObject<Block> USER_GLASS_5 = BLOCKS.register("u_glass5", () -> new UserBlock("glass"));
+    public static final RegistryObject<Block> USER_GLASS_6 = BLOCKS.register("u_glass6", () -> new UserBlock("glass"));
+    public static final RegistryObject<Block> USER_GLASS_7 = BLOCKS.register("u_glass7", () -> new UserBlock("glass"));
+    public static final RegistryObject<Block> USER_GLASS_8 = BLOCKS.register("u_glass8", () -> new UserBlock("glass"));
+    public static final RegistryObject<Block> USER_GLASS_9 = BLOCKS.register("u_glass9", () -> new UserBlock("glass"));
+    public static final RegistryObject<Block> USER_GLASS_10 = BLOCKS.register("u_glass10", () -> new UserBlock("glass"));
+    public static final RegistryObject<Block> USER_GLASS_11 = BLOCKS.register("u_glass11", () -> new UserBlock("glass"));
+    public static final RegistryObject<Block> USER_GLASS_12 = BLOCKS.register("u_glass12", () -> new UserBlock("glass"));
+    public static final RegistryObject<Block> USER_GLASS_13 = BLOCKS.register("u_glass13", () -> new UserBlock("glass"));
+    public static final RegistryObject<Block> USER_GLASS_14 = BLOCKS.register("u_glass14", () -> new UserBlock("glass"));
+    public static final RegistryObject<Block> USER_GLASS_15 = BLOCKS.register("u_glass15", () -> new UserBlock("glass"));
+    public static final RegistryObject<Block> USER_GLASS_16 = BLOCKS.register("u_glass16", () -> new UserBlock("glass"));
+    public static final RegistryObject<Block> USER_GLASS_17 = BLOCKS.register("u_glass17", () -> new UserBlock("glass"));
+    public static final RegistryObject<Block> USER_GLASS_18 = BLOCKS.register("u_glass18", () -> new UserBlock("glass"));
+    public static final RegistryObject<Block> USER_GLASS_19 = BLOCKS.register("u_glass19", () -> new UserBlock("glass"));
+    public static final RegistryObject<Block> USER_GLASS_20 = BLOCKS.register("u_glass20", () -> new UserBlock("glass"));
+    
+    // Diorite blocks (up to 20 custom diorite blocks)
+    public static final RegistryObject<Block> USER_DIORITE_1 = BLOCKS.register("u_diorite1", () -> new UserBlock("diorite"));
+    public static final RegistryObject<Block> USER_DIORITE_2 = BLOCKS.register("u_diorite2", () -> new UserBlock("diorite"));
+    public static final RegistryObject<Block> USER_DIORITE_3 = BLOCKS.register("u_diorite3", () -> new UserBlock("diorite"));
+    public static final RegistryObject<Block> USER_DIORITE_4 = BLOCKS.register("u_diorite4", () -> new UserBlock("diorite"));
+    public static final RegistryObject<Block> USER_DIORITE_5 = BLOCKS.register("u_diorite5", () -> new UserBlock("diorite"));
+    public static final RegistryObject<Block> USER_DIORITE_6 = BLOCKS.register("u_diorite6", () -> new UserBlock("diorite"));
+    public static final RegistryObject<Block> USER_DIORITE_7 = BLOCKS.register("u_diorite7", () -> new UserBlock("diorite"));
+    public static final RegistryObject<Block> USER_DIORITE_8 = BLOCKS.register("u_diorite8", () -> new UserBlock("diorite"));
+    public static final RegistryObject<Block> USER_DIORITE_9 = BLOCKS.register("u_diorite9", () -> new UserBlock("diorite"));
+    public static final RegistryObject<Block> USER_DIORITE_10 = BLOCKS.register("u_diorite10", () -> new UserBlock("diorite"));
+    public static final RegistryObject<Block> USER_DIORITE_11 = BLOCKS.register("u_diorite11", () -> new UserBlock("diorite"));
+    public static final RegistryObject<Block> USER_DIORITE_12 = BLOCKS.register("u_diorite12", () -> new UserBlock("diorite"));
+    public static final RegistryObject<Block> USER_DIORITE_13 = BLOCKS.register("u_diorite13", () -> new UserBlock("diorite"));
+    public static final RegistryObject<Block> USER_DIORITE_14 = BLOCKS.register("u_diorite14", () -> new UserBlock("diorite"));
+    public static final RegistryObject<Block> USER_DIORITE_15 = BLOCKS.register("u_diorite15", () -> new UserBlock("diorite"));
+    public static final RegistryObject<Block> USER_DIORITE_16 = BLOCKS.register("u_diorite16", () -> new UserBlock("diorite"));
+    public static final RegistryObject<Block> USER_DIORITE_17 = BLOCKS.register("u_diorite17", () -> new UserBlock("diorite"));
+    public static final RegistryObject<Block> USER_DIORITE_18 = BLOCKS.register("u_diorite18", () -> new UserBlock("diorite"));
+    public static final RegistryObject<Block> USER_DIORITE_19 = BLOCKS.register("u_diorite19", () -> new UserBlock("diorite"));
+    public static final RegistryObject<Block> USER_DIORITE_20 = BLOCKS.register("u_diorite20", () -> new UserBlock("diorite"));
+    
+    // Calcite blocks (up to 20 custom calcite blocks)
+    public static final RegistryObject<Block> USER_CALCITE_1 = BLOCKS.register("u_calcite1", () -> new UserBlock("calcite"));
+    public static final RegistryObject<Block> USER_CALCITE_2 = BLOCKS.register("u_calcite2", () -> new UserBlock("calcite"));
+    public static final RegistryObject<Block> USER_CALCITE_3 = BLOCKS.register("u_calcite3", () -> new UserBlock("calcite"));
+    public static final RegistryObject<Block> USER_CALCITE_4 = BLOCKS.register("u_calcite4", () -> new UserBlock("calcite"));
+    public static final RegistryObject<Block> USER_CALCITE_5 = BLOCKS.register("u_calcite5", () -> new UserBlock("calcite"));
+    public static final RegistryObject<Block> USER_CALCITE_6 = BLOCKS.register("u_calcite6", () -> new UserBlock("calcite"));
+    public static final RegistryObject<Block> USER_CALCITE_7 = BLOCKS.register("u_calcite7", () -> new UserBlock("calcite"));
+    public static final RegistryObject<Block> USER_CALCITE_8 = BLOCKS.register("u_calcite8", () -> new UserBlock("calcite"));
+    public static final RegistryObject<Block> USER_CALCITE_9 = BLOCKS.register("u_calcite9", () -> new UserBlock("calcite"));
+    public static final RegistryObject<Block> USER_CALCITE_10 = BLOCKS.register("u_calcite10", () -> new UserBlock("calcite"));
+    public static final RegistryObject<Block> USER_CALCITE_11 = BLOCKS.register("u_calcite11", () -> new UserBlock("calcite"));
+    public static final RegistryObject<Block> USER_CALCITE_12 = BLOCKS.register("u_calcite12", () -> new UserBlock("calcite"));
+    public static final RegistryObject<Block> USER_CALCITE_13 = BLOCKS.register("u_calcite13", () -> new UserBlock("calcite"));
+    public static final RegistryObject<Block> USER_CALCITE_14 = BLOCKS.register("u_calcite14", () -> new UserBlock("calcite"));
+    public static final RegistryObject<Block> USER_CALCITE_15 = BLOCKS.register("u_calcite15", () -> new UserBlock("calcite"));
+    public static final RegistryObject<Block> USER_CALCITE_16 = BLOCKS.register("u_calcite16", () -> new UserBlock("calcite"));
+    public static final RegistryObject<Block> USER_CALCITE_17 = BLOCKS.register("u_calcite17", () -> new UserBlock("calcite"));
+    public static final RegistryObject<Block> USER_CALCITE_18 = BLOCKS.register("u_calcite18", () -> new UserBlock("calcite"));
+    public static final RegistryObject<Block> USER_CALCITE_19 = BLOCKS.register("u_calcite19", () -> new UserBlock("calcite"));
+    public static final RegistryObject<Block> USER_CALCITE_20 = BLOCKS.register("u_calcite20", () -> new UserBlock("calcite"));
+    
+    // Mushroom Stem blocks (up to 20 custom mushroom stem blocks)
+    public static final RegistryObject<Block> USER_MUSHROOM_STEM_1 = BLOCKS.register("u_mushroom_stem1", () -> new UserBlock("mushroom_stem"));
+    public static final RegistryObject<Block> USER_MUSHROOM_STEM_2 = BLOCKS.register("u_mushroom_stem2", () -> new UserBlock("mushroom_stem"));
+    public static final RegistryObject<Block> USER_MUSHROOM_STEM_3 = BLOCKS.register("u_mushroom_stem3", () -> new UserBlock("mushroom_stem"));
+    public static final RegistryObject<Block> USER_MUSHROOM_STEM_4 = BLOCKS.register("u_mushroom_stem4", () -> new UserBlock("mushroom_stem"));
+    public static final RegistryObject<Block> USER_MUSHROOM_STEM_5 = BLOCKS.register("u_mushroom_stem5", () -> new UserBlock("mushroom_stem"));
+    public static final RegistryObject<Block> USER_MUSHROOM_STEM_6 = BLOCKS.register("u_mushroom_stem6", () -> new UserBlock("mushroom_stem"));
+    public static final RegistryObject<Block> USER_MUSHROOM_STEM_7 = BLOCKS.register("u_mushroom_stem7", () -> new UserBlock("mushroom_stem"));
+    public static final RegistryObject<Block> USER_MUSHROOM_STEM_8 = BLOCKS.register("u_mushroom_stem8", () -> new UserBlock("mushroom_stem"));
+    public static final RegistryObject<Block> USER_MUSHROOM_STEM_9 = BLOCKS.register("u_mushroom_stem9", () -> new UserBlock("mushroom_stem"));
+    public static final RegistryObject<Block> USER_MUSHROOM_STEM_10 = BLOCKS.register("u_mushroom_stem10", () -> new UserBlock("mushroom_stem"));
+    public static final RegistryObject<Block> USER_MUSHROOM_STEM_11 = BLOCKS.register("u_mushroom_stem11", () -> new UserBlock("mushroom_stem"));
+    public static final RegistryObject<Block> USER_MUSHROOM_STEM_12 = BLOCKS.register("u_mushroom_stem12", () -> new UserBlock("mushroom_stem"));
+    public static final RegistryObject<Block> USER_MUSHROOM_STEM_13 = BLOCKS.register("u_mushroom_stem13", () -> new UserBlock("mushroom_stem"));
+    public static final RegistryObject<Block> USER_MUSHROOM_STEM_14 = BLOCKS.register("u_mushroom_stem14", () -> new UserBlock("mushroom_stem"));
+    public static final RegistryObject<Block> USER_MUSHROOM_STEM_15 = BLOCKS.register("u_mushroom_stem15", () -> new UserBlock("mushroom_stem"));
+    public static final RegistryObject<Block> USER_MUSHROOM_STEM_16 = BLOCKS.register("u_mushroom_stem16", () -> new UserBlock("mushroom_stem"));
+    public static final RegistryObject<Block> USER_MUSHROOM_STEM_17 = BLOCKS.register("u_mushroom_stem17", () -> new UserBlock("mushroom_stem"));
+    public static final RegistryObject<Block> USER_MUSHROOM_STEM_18 = BLOCKS.register("u_mushroom_stem18", () -> new UserBlock("mushroom_stem"));
+    public static final RegistryObject<Block> USER_MUSHROOM_STEM_19 = BLOCKS.register("u_mushroom_stem19", () -> new UserBlock("mushroom_stem"));
+    public static final RegistryObject<Block> USER_MUSHROOM_STEM_20 = BLOCKS.register("u_mushroom_stem20", () -> new UserBlock("mushroom_stem"));
+    
+    // Dead Tube Coral blocks (up to 20 custom dead tube coral blocks)
+    public static final RegistryObject<Block> USER_DEAD_TUBE_CORAL_1 = BLOCKS.register("u_dead_tube_coral1", () -> new UserBlock("dead_tube_coral"));
+    public static final RegistryObject<Block> USER_DEAD_TUBE_CORAL_2 = BLOCKS.register("u_dead_tube_coral2", () -> new UserBlock("dead_tube_coral"));
+    public static final RegistryObject<Block> USER_DEAD_TUBE_CORAL_3 = BLOCKS.register("u_dead_tube_coral3", () -> new UserBlock("dead_tube_coral"));
+    public static final RegistryObject<Block> USER_DEAD_TUBE_CORAL_4 = BLOCKS.register("u_dead_tube_coral4", () -> new UserBlock("dead_tube_coral"));
+    public static final RegistryObject<Block> USER_DEAD_TUBE_CORAL_5 = BLOCKS.register("u_dead_tube_coral5", () -> new UserBlock("dead_tube_coral"));
+    public static final RegistryObject<Block> USER_DEAD_TUBE_CORAL_6 = BLOCKS.register("u_dead_tube_coral6", () -> new UserBlock("dead_tube_coral"));
+    public static final RegistryObject<Block> USER_DEAD_TUBE_CORAL_7 = BLOCKS.register("u_dead_tube_coral7", () -> new UserBlock("dead_tube_coral"));
+    public static final RegistryObject<Block> USER_DEAD_TUBE_CORAL_8 = BLOCKS.register("u_dead_tube_coral8", () -> new UserBlock("dead_tube_coral"));
+    public static final RegistryObject<Block> USER_DEAD_TUBE_CORAL_9 = BLOCKS.register("u_dead_tube_coral9", () -> new UserBlock("dead_tube_coral"));
+    public static final RegistryObject<Block> USER_DEAD_TUBE_CORAL_10 = BLOCKS.register("u_dead_tube_coral10", () -> new UserBlock("dead_tube_coral"));
+    public static final RegistryObject<Block> USER_DEAD_TUBE_CORAL_11 = BLOCKS.register("u_dead_tube_coral11", () -> new UserBlock("dead_tube_coral"));
+    public static final RegistryObject<Block> USER_DEAD_TUBE_CORAL_12 = BLOCKS.register("u_dead_tube_coral12", () -> new UserBlock("dead_tube_coral"));
+    public static final RegistryObject<Block> USER_DEAD_TUBE_CORAL_13 = BLOCKS.register("u_dead_tube_coral13", () -> new UserBlock("dead_tube_coral"));
+    public static final RegistryObject<Block> USER_DEAD_TUBE_CORAL_14 = BLOCKS.register("u_dead_tube_coral14", () -> new UserBlock("dead_tube_coral"));
+    public static final RegistryObject<Block> USER_DEAD_TUBE_CORAL_15 = BLOCKS.register("u_dead_tube_coral15", () -> new UserBlock("dead_tube_coral"));
+    public static final RegistryObject<Block> USER_DEAD_TUBE_CORAL_16 = BLOCKS.register("u_dead_tube_coral16", () -> new UserBlock("dead_tube_coral"));
+    public static final RegistryObject<Block> USER_DEAD_TUBE_CORAL_17 = BLOCKS.register("u_dead_tube_coral17", () -> new UserBlock("dead_tube_coral"));
+    public static final RegistryObject<Block> USER_DEAD_TUBE_CORAL_18 = BLOCKS.register("u_dead_tube_coral18", () -> new UserBlock("dead_tube_coral"));
+    public static final RegistryObject<Block> USER_DEAD_TUBE_CORAL_19 = BLOCKS.register("u_dead_tube_coral19", () -> new UserBlock("dead_tube_coral"));
+    public static final RegistryObject<Block> USER_DEAD_TUBE_CORAL_20 = BLOCKS.register("u_dead_tube_coral20", () -> new UserBlock("dead_tube_coral"));
+    
+    // Pearlescent Froglight blocks (up to 20 custom pearlescent froglight blocks)
+    public static final RegistryObject<Block> USER_PEARLESCENT_FROGLIGHT_1 = BLOCKS.register("u_pearlescent_froglight1", () -> new UserBlock("pearlescent_froglight"));
+    public static final RegistryObject<Block> USER_PEARLESCENT_FROGLIGHT_2 = BLOCKS.register("u_pearlescent_froglight2", () -> new UserBlock("pearlescent_froglight"));
+    public static final RegistryObject<Block> USER_PEARLESCENT_FROGLIGHT_3 = BLOCKS.register("u_pearlescent_froglight3", () -> new UserBlock("pearlescent_froglight"));
+    public static final RegistryObject<Block> USER_PEARLESCENT_FROGLIGHT_4 = BLOCKS.register("u_pearlescent_froglight4", () -> new UserBlock("pearlescent_froglight"));
+    public static final RegistryObject<Block> USER_PEARLESCENT_FROGLIGHT_5 = BLOCKS.register("u_pearlescent_froglight5", () -> new UserBlock("pearlescent_froglight"));
+    public static final RegistryObject<Block> USER_PEARLESCENT_FROGLIGHT_6 = BLOCKS.register("u_pearlescent_froglight6", () -> new UserBlock("pearlescent_froglight"));
+    public static final RegistryObject<Block> USER_PEARLESCENT_FROGLIGHT_7 = BLOCKS.register("u_pearlescent_froglight7", () -> new UserBlock("pearlescent_froglight"));
+    public static final RegistryObject<Block> USER_PEARLESCENT_FROGLIGHT_8 = BLOCKS.register("u_pearlescent_froglight8", () -> new UserBlock("pearlescent_froglight"));
+    public static final RegistryObject<Block> USER_PEARLESCENT_FROGLIGHT_9 = BLOCKS.register("u_pearlescent_froglight9", () -> new UserBlock("pearlescent_froglight"));
+    public static final RegistryObject<Block> USER_PEARLESCENT_FROGLIGHT_10 = BLOCKS.register("u_pearlescent_froglight10", () -> new UserBlock("pearlescent_froglight"));
+    public static final RegistryObject<Block> USER_PEARLESCENT_FROGLIGHT_11 = BLOCKS.register("u_pearlescent_froglight11", () -> new UserBlock("pearlescent_froglight"));
+    public static final RegistryObject<Block> USER_PEARLESCENT_FROGLIGHT_12 = BLOCKS.register("u_pearlescent_froglight12", () -> new UserBlock("pearlescent_froglight"));
+    public static final RegistryObject<Block> USER_PEARLESCENT_FROGLIGHT_13 = BLOCKS.register("u_pearlescent_froglight13", () -> new UserBlock("pearlescent_froglight"));
+    public static final RegistryObject<Block> USER_PEARLESCENT_FROGLIGHT_14 = BLOCKS.register("u_pearlescent_froglight14", () -> new UserBlock("pearlescent_froglight"));
+    public static final RegistryObject<Block> USER_PEARLESCENT_FROGLIGHT_15 = BLOCKS.register("u_pearlescent_froglight15", () -> new UserBlock("pearlescent_froglight"));
+    public static final RegistryObject<Block> USER_PEARLESCENT_FROGLIGHT_16 = BLOCKS.register("u_pearlescent_froglight16", () -> new UserBlock("pearlescent_froglight"));
+    public static final RegistryObject<Block> USER_PEARLESCENT_FROGLIGHT_17 = BLOCKS.register("u_pearlescent_froglight17", () -> new UserBlock("pearlescent_froglight"));
+    public static final RegistryObject<Block> USER_PEARLESCENT_FROGLIGHT_18 = BLOCKS.register("u_pearlescent_froglight18", () -> new UserBlock("pearlescent_froglight"));
+    public static final RegistryObject<Block> USER_PEARLESCENT_FROGLIGHT_19 = BLOCKS.register("u_pearlescent_froglight19", () -> new UserBlock("pearlescent_froglight"));
+    public static final RegistryObject<Block> USER_PEARLESCENT_FROGLIGHT_20 = BLOCKS.register("u_pearlescent_froglight20", () -> new UserBlock("pearlescent_froglight"));
 }

@@ -1,0 +1,7 @@
+{
+  "parent": "be:block/tinted_cube_all_translucent",
+  "render_type": "translucent",
+  "textures": {
+    "all": "minecraft:block/glass"
+  }
+}

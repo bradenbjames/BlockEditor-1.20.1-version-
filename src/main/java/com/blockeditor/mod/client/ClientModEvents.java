@@ -7,15 +7,48 @@ import com.blockeditor.mod.registry.ModBlocks;
 import com.blockeditor.mod.registry.ModItems;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.client.renderer.ItemBlockRenderTypes;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterColorHandlersEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 
 @Mod.EventBusSubscriber(modid = BlockEditorMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class ClientModEvents {
+
+    @SubscribeEvent
+    public static void onClientSetup(FMLClientSetupEvent event) {
+        event.enqueueWork(() -> {
+            // Set glass blocks to render as translucent
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.DYNAMIC_BLOCK_GLASS.get(), RenderType.translucent());
+            
+            // Set all 20 user glass blocks to translucent
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_GLASS_1.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_GLASS_2.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_GLASS_3.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_GLASS_4.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_GLASS_5.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_GLASS_6.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_GLASS_7.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_GLASS_8.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_GLASS_9.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_GLASS_10.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_GLASS_11.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_GLASS_12.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_GLASS_13.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_GLASS_14.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_GLASS_15.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_GLASS_16.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_GLASS_17.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_GLASS_18.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_GLASS_19.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_GLASS_20.get(), RenderType.translucent());
+        });
+    }
 
     @SubscribeEvent
     public static void onRegisterKeyMappings(RegisterKeyMappingsEvent event) {
@@ -101,7 +134,47 @@ public class ClientModEvents {
         ModBlocks.USER_SMOOTH_STONE_1.get(), ModBlocks.USER_SMOOTH_STONE_2.get(), ModBlocks.USER_SMOOTH_STONE_3.get(), ModBlocks.USER_SMOOTH_STONE_4.get(), ModBlocks.USER_SMOOTH_STONE_5.get(),
         ModBlocks.USER_SMOOTH_STONE_6.get(), ModBlocks.USER_SMOOTH_STONE_7.get(), ModBlocks.USER_SMOOTH_STONE_8.get(), ModBlocks.USER_SMOOTH_STONE_9.get(), ModBlocks.USER_SMOOTH_STONE_10.get(),
         ModBlocks.USER_SMOOTH_STONE_11.get(), ModBlocks.USER_SMOOTH_STONE_12.get(), ModBlocks.USER_SMOOTH_STONE_13.get(), ModBlocks.USER_SMOOTH_STONE_14.get(), ModBlocks.USER_SMOOTH_STONE_15.get(),
-        ModBlocks.USER_SMOOTH_STONE_16.get(), ModBlocks.USER_SMOOTH_STONE_17.get(), ModBlocks.USER_SMOOTH_STONE_18.get(), ModBlocks.USER_SMOOTH_STONE_19.get(), ModBlocks.USER_SMOOTH_STONE_20.get());
+        ModBlocks.USER_SMOOTH_STONE_16.get(), ModBlocks.USER_SMOOTH_STONE_17.get(), ModBlocks.USER_SMOOTH_STONE_18.get(), ModBlocks.USER_SMOOTH_STONE_19.get(), ModBlocks.USER_SMOOTH_STONE_20.get(),
+        // Terracotta blocks (1-20)
+        ModBlocks.USER_TERRACOTTA_1.get(), ModBlocks.USER_TERRACOTTA_2.get(), ModBlocks.USER_TERRACOTTA_3.get(), ModBlocks.USER_TERRACOTTA_4.get(), ModBlocks.USER_TERRACOTTA_5.get(),
+        ModBlocks.USER_TERRACOTTA_6.get(), ModBlocks.USER_TERRACOTTA_7.get(), ModBlocks.USER_TERRACOTTA_8.get(), ModBlocks.USER_TERRACOTTA_9.get(), ModBlocks.USER_TERRACOTTA_10.get(),
+        ModBlocks.USER_TERRACOTTA_11.get(), ModBlocks.USER_TERRACOTTA_12.get(), ModBlocks.USER_TERRACOTTA_13.get(), ModBlocks.USER_TERRACOTTA_14.get(), ModBlocks.USER_TERRACOTTA_15.get(),
+        ModBlocks.USER_TERRACOTTA_16.get(), ModBlocks.USER_TERRACOTTA_17.get(), ModBlocks.USER_TERRACOTTA_18.get(), ModBlocks.USER_TERRACOTTA_19.get(), ModBlocks.USER_TERRACOTTA_20.get(),
+        // Concrete Powder blocks (1-20)
+        ModBlocks.USER_CONCRETE_POWDER_1.get(), ModBlocks.USER_CONCRETE_POWDER_2.get(), ModBlocks.USER_CONCRETE_POWDER_3.get(), ModBlocks.USER_CONCRETE_POWDER_4.get(), ModBlocks.USER_CONCRETE_POWDER_5.get(),
+        ModBlocks.USER_CONCRETE_POWDER_6.get(), ModBlocks.USER_CONCRETE_POWDER_7.get(), ModBlocks.USER_CONCRETE_POWDER_8.get(), ModBlocks.USER_CONCRETE_POWDER_9.get(), ModBlocks.USER_CONCRETE_POWDER_10.get(),
+        ModBlocks.USER_CONCRETE_POWDER_11.get(), ModBlocks.USER_CONCRETE_POWDER_12.get(), ModBlocks.USER_CONCRETE_POWDER_13.get(), ModBlocks.USER_CONCRETE_POWDER_14.get(), ModBlocks.USER_CONCRETE_POWDER_15.get(),
+        ModBlocks.USER_CONCRETE_POWDER_16.get(), ModBlocks.USER_CONCRETE_POWDER_17.get(), ModBlocks.USER_CONCRETE_POWDER_18.get(), ModBlocks.USER_CONCRETE_POWDER_19.get(), ModBlocks.USER_CONCRETE_POWDER_20.get(),
+        // Glass blocks (1-20)
+        ModBlocks.USER_GLASS_1.get(), ModBlocks.USER_GLASS_2.get(), ModBlocks.USER_GLASS_3.get(), ModBlocks.USER_GLASS_4.get(), ModBlocks.USER_GLASS_5.get(),
+        ModBlocks.USER_GLASS_6.get(), ModBlocks.USER_GLASS_7.get(), ModBlocks.USER_GLASS_8.get(), ModBlocks.USER_GLASS_9.get(), ModBlocks.USER_GLASS_10.get(),
+        ModBlocks.USER_GLASS_11.get(), ModBlocks.USER_GLASS_12.get(), ModBlocks.USER_GLASS_13.get(), ModBlocks.USER_GLASS_14.get(), ModBlocks.USER_GLASS_15.get(),
+        ModBlocks.USER_GLASS_16.get(), ModBlocks.USER_GLASS_17.get(), ModBlocks.USER_GLASS_18.get(), ModBlocks.USER_GLASS_19.get(), ModBlocks.USER_GLASS_20.get(),
+        // Diorite blocks (1-20)
+        ModBlocks.USER_DIORITE_1.get(), ModBlocks.USER_DIORITE_2.get(), ModBlocks.USER_DIORITE_3.get(), ModBlocks.USER_DIORITE_4.get(), ModBlocks.USER_DIORITE_5.get(),
+        ModBlocks.USER_DIORITE_6.get(), ModBlocks.USER_DIORITE_7.get(), ModBlocks.USER_DIORITE_8.get(), ModBlocks.USER_DIORITE_9.get(), ModBlocks.USER_DIORITE_10.get(),
+        ModBlocks.USER_DIORITE_11.get(), ModBlocks.USER_DIORITE_12.get(), ModBlocks.USER_DIORITE_13.get(), ModBlocks.USER_DIORITE_14.get(), ModBlocks.USER_DIORITE_15.get(),
+        ModBlocks.USER_DIORITE_16.get(), ModBlocks.USER_DIORITE_17.get(), ModBlocks.USER_DIORITE_18.get(), ModBlocks.USER_DIORITE_19.get(), ModBlocks.USER_DIORITE_20.get(),
+        // Calcite blocks (1-20)
+        ModBlocks.USER_CALCITE_1.get(), ModBlocks.USER_CALCITE_2.get(), ModBlocks.USER_CALCITE_3.get(), ModBlocks.USER_CALCITE_4.get(), ModBlocks.USER_CALCITE_5.get(),
+        ModBlocks.USER_CALCITE_6.get(), ModBlocks.USER_CALCITE_7.get(), ModBlocks.USER_CALCITE_8.get(), ModBlocks.USER_CALCITE_9.get(), ModBlocks.USER_CALCITE_10.get(),
+        ModBlocks.USER_CALCITE_11.get(), ModBlocks.USER_CALCITE_12.get(), ModBlocks.USER_CALCITE_13.get(), ModBlocks.USER_CALCITE_14.get(), ModBlocks.USER_CALCITE_15.get(),
+        ModBlocks.USER_CALCITE_16.get(), ModBlocks.USER_CALCITE_17.get(), ModBlocks.USER_CALCITE_18.get(), ModBlocks.USER_CALCITE_19.get(), ModBlocks.USER_CALCITE_20.get(),
+        // Mushroom Stem blocks (1-20)
+        ModBlocks.USER_MUSHROOM_STEM_1.get(), ModBlocks.USER_MUSHROOM_STEM_2.get(), ModBlocks.USER_MUSHROOM_STEM_3.get(), ModBlocks.USER_MUSHROOM_STEM_4.get(), ModBlocks.USER_MUSHROOM_STEM_5.get(),
+        ModBlocks.USER_MUSHROOM_STEM_6.get(), ModBlocks.USER_MUSHROOM_STEM_7.get(), ModBlocks.USER_MUSHROOM_STEM_8.get(), ModBlocks.USER_MUSHROOM_STEM_9.get(), ModBlocks.USER_MUSHROOM_STEM_10.get(),
+        ModBlocks.USER_MUSHROOM_STEM_11.get(), ModBlocks.USER_MUSHROOM_STEM_12.get(), ModBlocks.USER_MUSHROOM_STEM_13.get(), ModBlocks.USER_MUSHROOM_STEM_14.get(), ModBlocks.USER_MUSHROOM_STEM_15.get(),
+        ModBlocks.USER_MUSHROOM_STEM_16.get(), ModBlocks.USER_MUSHROOM_STEM_17.get(), ModBlocks.USER_MUSHROOM_STEM_18.get(), ModBlocks.USER_MUSHROOM_STEM_19.get(), ModBlocks.USER_MUSHROOM_STEM_20.get(),
+        // Dead Tube Coral blocks (1-20)
+        ModBlocks.USER_DEAD_TUBE_CORAL_1.get(), ModBlocks.USER_DEAD_TUBE_CORAL_2.get(), ModBlocks.USER_DEAD_TUBE_CORAL_3.get(), ModBlocks.USER_DEAD_TUBE_CORAL_4.get(), ModBlocks.USER_DEAD_TUBE_CORAL_5.get(),
+        ModBlocks.USER_DEAD_TUBE_CORAL_6.get(), ModBlocks.USER_DEAD_TUBE_CORAL_7.get(), ModBlocks.USER_DEAD_TUBE_CORAL_8.get(), ModBlocks.USER_DEAD_TUBE_CORAL_9.get(), ModBlocks.USER_DEAD_TUBE_CORAL_10.get(),
+        ModBlocks.USER_DEAD_TUBE_CORAL_11.get(), ModBlocks.USER_DEAD_TUBE_CORAL_12.get(), ModBlocks.USER_DEAD_TUBE_CORAL_13.get(), ModBlocks.USER_DEAD_TUBE_CORAL_14.get(), ModBlocks.USER_DEAD_TUBE_CORAL_15.get(),
+        ModBlocks.USER_DEAD_TUBE_CORAL_16.get(), ModBlocks.USER_DEAD_TUBE_CORAL_17.get(), ModBlocks.USER_DEAD_TUBE_CORAL_18.get(), ModBlocks.USER_DEAD_TUBE_CORAL_19.get(), ModBlocks.USER_DEAD_TUBE_CORAL_20.get(),
+        // Pearlescent Froglight blocks (1-20)
+        ModBlocks.USER_PEARLESCENT_FROGLIGHT_1.get(), ModBlocks.USER_PEARLESCENT_FROGLIGHT_2.get(), ModBlocks.USER_PEARLESCENT_FROGLIGHT_3.get(), ModBlocks.USER_PEARLESCENT_FROGLIGHT_4.get(), ModBlocks.USER_PEARLESCENT_FROGLIGHT_5.get(),
+        ModBlocks.USER_PEARLESCENT_FROGLIGHT_6.get(), ModBlocks.USER_PEARLESCENT_FROGLIGHT_7.get(), ModBlocks.USER_PEARLESCENT_FROGLIGHT_8.get(), ModBlocks.USER_PEARLESCENT_FROGLIGHT_9.get(), ModBlocks.USER_PEARLESCENT_FROGLIGHT_10.get(),
+        ModBlocks.USER_PEARLESCENT_FROGLIGHT_11.get(), ModBlocks.USER_PEARLESCENT_FROGLIGHT_12.get(), ModBlocks.USER_PEARLESCENT_FROGLIGHT_13.get(), ModBlocks.USER_PEARLESCENT_FROGLIGHT_14.get(), ModBlocks.USER_PEARLESCENT_FROGLIGHT_15.get(),
+        ModBlocks.USER_PEARLESCENT_FROGLIGHT_16.get(), ModBlocks.USER_PEARLESCENT_FROGLIGHT_17.get(), ModBlocks.USER_PEARLESCENT_FROGLIGHT_18.get(), ModBlocks.USER_PEARLESCENT_FROGLIGHT_19.get(), ModBlocks.USER_PEARLESCENT_FROGLIGHT_20.get());
         
         System.out.println("=== FINISHED REGISTERING BLOCK COLORS - INCLUDING ALL USER BLOCKS ===");
     }
@@ -182,7 +255,47 @@ public class ClientModEvents {
         ModItems.USER_SMOOTH_STONE_1_ITEM.get(), ModItems.USER_SMOOTH_STONE_2_ITEM.get(), ModItems.USER_SMOOTH_STONE_3_ITEM.get(), ModItems.USER_SMOOTH_STONE_4_ITEM.get(), ModItems.USER_SMOOTH_STONE_5_ITEM.get(),
         ModItems.USER_SMOOTH_STONE_6_ITEM.get(), ModItems.USER_SMOOTH_STONE_7_ITEM.get(), ModItems.USER_SMOOTH_STONE_8_ITEM.get(), ModItems.USER_SMOOTH_STONE_9_ITEM.get(), ModItems.USER_SMOOTH_STONE_10_ITEM.get(),
         ModItems.USER_SMOOTH_STONE_11_ITEM.get(), ModItems.USER_SMOOTH_STONE_12_ITEM.get(), ModItems.USER_SMOOTH_STONE_13_ITEM.get(), ModItems.USER_SMOOTH_STONE_14_ITEM.get(), ModItems.USER_SMOOTH_STONE_15_ITEM.get(),
-        ModItems.USER_SMOOTH_STONE_16_ITEM.get(), ModItems.USER_SMOOTH_STONE_17_ITEM.get(), ModItems.USER_SMOOTH_STONE_18_ITEM.get(), ModItems.USER_SMOOTH_STONE_19_ITEM.get(), ModItems.USER_SMOOTH_STONE_20_ITEM.get());
+        ModItems.USER_SMOOTH_STONE_16_ITEM.get(), ModItems.USER_SMOOTH_STONE_17_ITEM.get(), ModItems.USER_SMOOTH_STONE_18_ITEM.get(), ModItems.USER_SMOOTH_STONE_19_ITEM.get(), ModItems.USER_SMOOTH_STONE_20_ITEM.get(),
+        // Terracotta items (1-20)
+        ModItems.USER_TERRACOTTA_1_ITEM.get(), ModItems.USER_TERRACOTTA_2_ITEM.get(), ModItems.USER_TERRACOTTA_3_ITEM.get(), ModItems.USER_TERRACOTTA_4_ITEM.get(), ModItems.USER_TERRACOTTA_5_ITEM.get(),
+        ModItems.USER_TERRACOTTA_6_ITEM.get(), ModItems.USER_TERRACOTTA_7_ITEM.get(), ModItems.USER_TERRACOTTA_8_ITEM.get(), ModItems.USER_TERRACOTTA_9_ITEM.get(), ModItems.USER_TERRACOTTA_10_ITEM.get(),
+        ModItems.USER_TERRACOTTA_11_ITEM.get(), ModItems.USER_TERRACOTTA_12_ITEM.get(), ModItems.USER_TERRACOTTA_13_ITEM.get(), ModItems.USER_TERRACOTTA_14_ITEM.get(), ModItems.USER_TERRACOTTA_15_ITEM.get(),
+        ModItems.USER_TERRACOTTA_16_ITEM.get(), ModItems.USER_TERRACOTTA_17_ITEM.get(), ModItems.USER_TERRACOTTA_18_ITEM.get(), ModItems.USER_TERRACOTTA_19_ITEM.get(), ModItems.USER_TERRACOTTA_20_ITEM.get(),
+        // Concrete Powder items (1-20)
+        ModItems.USER_CONCRETE_POWDER_1_ITEM.get(), ModItems.USER_CONCRETE_POWDER_2_ITEM.get(), ModItems.USER_CONCRETE_POWDER_3_ITEM.get(), ModItems.USER_CONCRETE_POWDER_4_ITEM.get(), ModItems.USER_CONCRETE_POWDER_5_ITEM.get(),
+        ModItems.USER_CONCRETE_POWDER_6_ITEM.get(), ModItems.USER_CONCRETE_POWDER_7_ITEM.get(), ModItems.USER_CONCRETE_POWDER_8_ITEM.get(), ModItems.USER_CONCRETE_POWDER_9_ITEM.get(), ModItems.USER_CONCRETE_POWDER_10_ITEM.get(),
+        ModItems.USER_CONCRETE_POWDER_11_ITEM.get(), ModItems.USER_CONCRETE_POWDER_12_ITEM.get(), ModItems.USER_CONCRETE_POWDER_13_ITEM.get(), ModItems.USER_CONCRETE_POWDER_14_ITEM.get(), ModItems.USER_CONCRETE_POWDER_15_ITEM.get(),
+        ModItems.USER_CONCRETE_POWDER_16_ITEM.get(), ModItems.USER_CONCRETE_POWDER_17_ITEM.get(), ModItems.USER_CONCRETE_POWDER_18_ITEM.get(), ModItems.USER_CONCRETE_POWDER_19_ITEM.get(), ModItems.USER_CONCRETE_POWDER_20_ITEM.get(),
+        // Glass items (1-20)
+        ModItems.USER_GLASS_1_ITEM.get(), ModItems.USER_GLASS_2_ITEM.get(), ModItems.USER_GLASS_3_ITEM.get(), ModItems.USER_GLASS_4_ITEM.get(), ModItems.USER_GLASS_5_ITEM.get(),
+        ModItems.USER_GLASS_6_ITEM.get(), ModItems.USER_GLASS_7_ITEM.get(), ModItems.USER_GLASS_8_ITEM.get(), ModItems.USER_GLASS_9_ITEM.get(), ModItems.USER_GLASS_10_ITEM.get(),
+        ModItems.USER_GLASS_11_ITEM.get(), ModItems.USER_GLASS_12_ITEM.get(), ModItems.USER_GLASS_13_ITEM.get(), ModItems.USER_GLASS_14_ITEM.get(), ModItems.USER_GLASS_15_ITEM.get(),
+        ModItems.USER_GLASS_16_ITEM.get(), ModItems.USER_GLASS_17_ITEM.get(), ModItems.USER_GLASS_18_ITEM.get(), ModItems.USER_GLASS_19_ITEM.get(), ModItems.USER_GLASS_20_ITEM.get(),
+        // Diorite items (1-20)
+        ModItems.USER_DIORITE_1_ITEM.get(), ModItems.USER_DIORITE_2_ITEM.get(), ModItems.USER_DIORITE_3_ITEM.get(), ModItems.USER_DIORITE_4_ITEM.get(), ModItems.USER_DIORITE_5_ITEM.get(),
+        ModItems.USER_DIORITE_6_ITEM.get(), ModItems.USER_DIORITE_7_ITEM.get(), ModItems.USER_DIORITE_8_ITEM.get(), ModItems.USER_DIORITE_9_ITEM.get(), ModItems.USER_DIORITE_10_ITEM.get(),
+        ModItems.USER_DIORITE_11_ITEM.get(), ModItems.USER_DIORITE_12_ITEM.get(), ModItems.USER_DIORITE_13_ITEM.get(), ModItems.USER_DIORITE_14_ITEM.get(), ModItems.USER_DIORITE_15_ITEM.get(),
+        ModItems.USER_DIORITE_16_ITEM.get(), ModItems.USER_DIORITE_17_ITEM.get(), ModItems.USER_DIORITE_18_ITEM.get(), ModItems.USER_DIORITE_19_ITEM.get(), ModItems.USER_DIORITE_20_ITEM.get(),
+        // Calcite items (1-20)
+        ModItems.USER_CALCITE_1_ITEM.get(), ModItems.USER_CALCITE_2_ITEM.get(), ModItems.USER_CALCITE_3_ITEM.get(), ModItems.USER_CALCITE_4_ITEM.get(), ModItems.USER_CALCITE_5_ITEM.get(),
+        ModItems.USER_CALCITE_6_ITEM.get(), ModItems.USER_CALCITE_7_ITEM.get(), ModItems.USER_CALCITE_8_ITEM.get(), ModItems.USER_CALCITE_9_ITEM.get(), ModItems.USER_CALCITE_10_ITEM.get(),
+        ModItems.USER_CALCITE_11_ITEM.get(), ModItems.USER_CALCITE_12_ITEM.get(), ModItems.USER_CALCITE_13_ITEM.get(), ModItems.USER_CALCITE_14_ITEM.get(), ModItems.USER_CALCITE_15_ITEM.get(),
+        ModItems.USER_CALCITE_16_ITEM.get(), ModItems.USER_CALCITE_17_ITEM.get(), ModItems.USER_CALCITE_18_ITEM.get(), ModItems.USER_CALCITE_19_ITEM.get(), ModItems.USER_CALCITE_20_ITEM.get(),
+        // Mushroom Stem items (1-20)
+        ModItems.USER_MUSHROOM_STEM_1_ITEM.get(), ModItems.USER_MUSHROOM_STEM_2_ITEM.get(), ModItems.USER_MUSHROOM_STEM_3_ITEM.get(), ModItems.USER_MUSHROOM_STEM_4_ITEM.get(), ModItems.USER_MUSHROOM_STEM_5_ITEM.get(),
+        ModItems.USER_MUSHROOM_STEM_6_ITEM.get(), ModItems.USER_MUSHROOM_STEM_7_ITEM.get(), ModItems.USER_MUSHROOM_STEM_8_ITEM.get(), ModItems.USER_MUSHROOM_STEM_9_ITEM.get(), ModItems.USER_MUSHROOM_STEM_10_ITEM.get(),
+        ModItems.USER_MUSHROOM_STEM_11_ITEM.get(), ModItems.USER_MUSHROOM_STEM_12_ITEM.get(), ModItems.USER_MUSHROOM_STEM_13_ITEM.get(), ModItems.USER_MUSHROOM_STEM_14_ITEM.get(), ModItems.USER_MUSHROOM_STEM_15_ITEM.get(),
+        ModItems.USER_MUSHROOM_STEM_16_ITEM.get(), ModItems.USER_MUSHROOM_STEM_17_ITEM.get(), ModItems.USER_MUSHROOM_STEM_18_ITEM.get(), ModItems.USER_MUSHROOM_STEM_19_ITEM.get(), ModItems.USER_MUSHROOM_STEM_20_ITEM.get(),
+        // Dead Tube Coral items (1-20)
+        ModItems.USER_DEAD_TUBE_CORAL_1_ITEM.get(), ModItems.USER_DEAD_TUBE_CORAL_2_ITEM.get(), ModItems.USER_DEAD_TUBE_CORAL_3_ITEM.get(), ModItems.USER_DEAD_TUBE_CORAL_4_ITEM.get(), ModItems.USER_DEAD_TUBE_CORAL_5_ITEM.get(),
+        ModItems.USER_DEAD_TUBE_CORAL_6_ITEM.get(), ModItems.USER_DEAD_TUBE_CORAL_7_ITEM.get(), ModItems.USER_DEAD_TUBE_CORAL_8_ITEM.get(), ModItems.USER_DEAD_TUBE_CORAL_9_ITEM.get(), ModItems.USER_DEAD_TUBE_CORAL_10_ITEM.get(),
+        ModItems.USER_DEAD_TUBE_CORAL_11_ITEM.get(), ModItems.USER_DEAD_TUBE_CORAL_12_ITEM.get(), ModItems.USER_DEAD_TUBE_CORAL_13_ITEM.get(), ModItems.USER_DEAD_TUBE_CORAL_14_ITEM.get(), ModItems.USER_DEAD_TUBE_CORAL_15_ITEM.get(),
+        ModItems.USER_DEAD_TUBE_CORAL_16_ITEM.get(), ModItems.USER_DEAD_TUBE_CORAL_17_ITEM.get(), ModItems.USER_DEAD_TUBE_CORAL_18_ITEM.get(), ModItems.USER_DEAD_TUBE_CORAL_19_ITEM.get(), ModItems.USER_DEAD_TUBE_CORAL_20_ITEM.get(),
+        // Pearlescent Froglight items (1-20)
+        ModItems.USER_PEARLESCENT_FROGLIGHT_1_ITEM.get(), ModItems.USER_PEARLESCENT_FROGLIGHT_2_ITEM.get(), ModItems.USER_PEARLESCENT_FROGLIGHT_3_ITEM.get(), ModItems.USER_PEARLESCENT_FROGLIGHT_4_ITEM.get(), ModItems.USER_PEARLESCENT_FROGLIGHT_5_ITEM.get(),
+        ModItems.USER_PEARLESCENT_FROGLIGHT_6_ITEM.get(), ModItems.USER_PEARLESCENT_FROGLIGHT_7_ITEM.get(), ModItems.USER_PEARLESCENT_FROGLIGHT_8_ITEM.get(), ModItems.USER_PEARLESCENT_FROGLIGHT_9_ITEM.get(), ModItems.USER_PEARLESCENT_FROGLIGHT_10_ITEM.get(),
+        ModItems.USER_PEARLESCENT_FROGLIGHT_11_ITEM.get(), ModItems.USER_PEARLESCENT_FROGLIGHT_12_ITEM.get(), ModItems.USER_PEARLESCENT_FROGLIGHT_13_ITEM.get(), ModItems.USER_PEARLESCENT_FROGLIGHT_14_ITEM.get(), ModItems.USER_PEARLESCENT_FROGLIGHT_15_ITEM.get(),
+        ModItems.USER_PEARLESCENT_FROGLIGHT_16_ITEM.get(), ModItems.USER_PEARLESCENT_FROGLIGHT_17_ITEM.get(), ModItems.USER_PEARLESCENT_FROGLIGHT_18_ITEM.get(), ModItems.USER_PEARLESCENT_FROGLIGHT_19_ITEM.get(), ModItems.USER_PEARLESCENT_FROGLIGHT_20_ITEM.get());
     }
 }
 

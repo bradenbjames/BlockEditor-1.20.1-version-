@@ -116,10 +116,20 @@ public class UserBlock extends DynamicBlock {
             case "wool" -> 0xFFFFFF; // White
             case "stone" -> 0x808080; // Gray
             case "concrete" -> 0xE0E0E0; // Light gray
+            case "concrete_powder" -> 0xE0E0E0; // Light gray
+            case "terracotta" -> 0xD2B1A1; // Light terracotta
+            case "glass" -> 0xFFFFFF; // White/Clear
+            case "diorite" -> 0xC4C4C4; // Light gray
+            case "calcite" -> 0xE3DDD4; // Off-white
+            case "mushroom_stem" -> 0xC9B8A1; // Tan
+            case "dead_tube_coral" -> 0x827E7E; // Gray
+            case "pearlescent_froglight" -> 0xE2C1D6; // Light purple
             case "wood" -> 0xD2B48C; // Tan
             case "dirt" -> 0x8B4513; // Saddle brown
             case "sand" -> 0xF4A460; // Sandy brown
             case "deepslate" -> 0x2F2F2F; // Dark gray
+            case "cobblestone" -> 0x7F7F7F; // Medium gray
+            case "smooth_stone" -> 0x9E9E9E; // Light gray
             default -> 0xFFFFFF; // White default
         };
     }
@@ -129,10 +139,20 @@ public class UserBlock extends DynamicBlock {
             case "wool" -> "minecraft:white_wool";
             case "stone" -> "minecraft:stone";
             case "concrete" -> "minecraft:white_concrete";
+            case "concrete_powder" -> "minecraft:white_concrete_powder";
+            case "terracotta" -> "minecraft:white_terracotta";
+            case "glass" -> "minecraft:glass";
+            case "diorite" -> "minecraft:diorite";
+            case "calcite" -> "minecraft:calcite";
+            case "mushroom_stem" -> "minecraft:mushroom_stem";
+            case "dead_tube_coral" -> "minecraft:dead_tube_coral_block";
+            case "pearlescent_froglight" -> "minecraft:pearlescent_froglight";
             case "wood" -> "minecraft:oak_planks";
             case "dirt" -> "minecraft:dirt";
             case "sand" -> "minecraft:sand";
             case "deepslate" -> "minecraft:deepslate";
+            case "cobblestone" -> "minecraft:cobblestone";
+            case "smooth_stone" -> "minecraft:smooth_stone";
             default -> "minecraft:stone";
         };
     }
@@ -183,5 +203,16 @@ public class UserBlock extends DynamicBlock {
         
         // Fallback to default behavior
         return super.getCloneItemStack(level, pos, state);
+    }
+    
+    // Make glass blocks transparent
+    @Override
+    public boolean propagatesSkylightDown(BlockState state, net.minecraft.world.level.BlockGetter level, BlockPos pos) {
+        return blockType.equals("glass");
+    }
+    
+    @Override
+    public float getShadeBrightness(BlockState state, net.minecraft.world.level.BlockGetter level, BlockPos pos) {
+        return blockType.equals("glass") ? 1.0F : 0.2F;
     }
 }

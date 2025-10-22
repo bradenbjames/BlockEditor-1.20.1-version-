@@ -62,7 +62,15 @@ public class CreateBlockPacket {
             String blockPath = blockId.getPath();
             String blockType = "stone"; // default
             if (blockPath.contains("wool")) blockType = "wool";
+            else if (blockPath.contains("concrete_powder")) blockType = "concrete_powder";
             else if (blockPath.contains("concrete")) blockType = "concrete";
+            else if (blockPath.contains("terracotta")) blockType = "terracotta";
+            else if (blockPath.contains("glass")) blockType = "glass";
+            else if (blockPath.contains("diorite")) blockType = "diorite";
+            else if (blockPath.contains("calcite")) blockType = "calcite";
+            else if (blockPath.contains("mushroom_stem")) blockType = "mushroom_stem";
+            else if (blockPath.contains("dead_tube_coral")) blockType = "dead_tube_coral";
+            else if (blockPath.contains("pearlescent_froglight")) blockType = "pearlescent_froglight";
             else if (blockPath.contains("wood")) blockType = "wood";
             else if (blockPath.contains("dirt")) blockType = "dirt";
             else if (blockPath.contains("sand")) blockType = "sand";
@@ -305,6 +313,182 @@ public class CreateBlockPacket {
             case "smooth_stone18" -> ModBlocks.USER_SMOOTH_STONE_18.get();
             case "smooth_stone19" -> ModBlocks.USER_SMOOTH_STONE_19.get();
             case "smooth_stone20" -> ModBlocks.USER_SMOOTH_STONE_20.get();
+            
+            // Terracotta blocks
+            case "terracotta1" -> ModBlocks.USER_TERRACOTTA_1.get();
+            case "terracotta2" -> ModBlocks.USER_TERRACOTTA_2.get();
+            case "terracotta3" -> ModBlocks.USER_TERRACOTTA_3.get();
+            case "terracotta4" -> ModBlocks.USER_TERRACOTTA_4.get();
+            case "terracotta5" -> ModBlocks.USER_TERRACOTTA_5.get();
+            case "terracotta6" -> ModBlocks.USER_TERRACOTTA_6.get();
+            case "terracotta7" -> ModBlocks.USER_TERRACOTTA_7.get();
+            case "terracotta8" -> ModBlocks.USER_TERRACOTTA_8.get();
+            case "terracotta9" -> ModBlocks.USER_TERRACOTTA_9.get();
+            case "terracotta10" -> ModBlocks.USER_TERRACOTTA_10.get();
+            case "terracotta11" -> ModBlocks.USER_TERRACOTTA_11.get();
+            case "terracotta12" -> ModBlocks.USER_TERRACOTTA_12.get();
+            case "terracotta13" -> ModBlocks.USER_TERRACOTTA_13.get();
+            case "terracotta14" -> ModBlocks.USER_TERRACOTTA_14.get();
+            case "terracotta15" -> ModBlocks.USER_TERRACOTTA_15.get();
+            case "terracotta16" -> ModBlocks.USER_TERRACOTTA_16.get();
+            case "terracotta17" -> ModBlocks.USER_TERRACOTTA_17.get();
+            case "terracotta18" -> ModBlocks.USER_TERRACOTTA_18.get();
+            case "terracotta19" -> ModBlocks.USER_TERRACOTTA_19.get();
+            case "terracotta20" -> ModBlocks.USER_TERRACOTTA_20.get();
+            
+            // Concrete Powder blocks
+            case "concrete_powder1" -> ModBlocks.USER_CONCRETE_POWDER_1.get();
+            case "concrete_powder2" -> ModBlocks.USER_CONCRETE_POWDER_2.get();
+            case "concrete_powder3" -> ModBlocks.USER_CONCRETE_POWDER_3.get();
+            case "concrete_powder4" -> ModBlocks.USER_CONCRETE_POWDER_4.get();
+            case "concrete_powder5" -> ModBlocks.USER_CONCRETE_POWDER_5.get();
+            case "concrete_powder6" -> ModBlocks.USER_CONCRETE_POWDER_6.get();
+            case "concrete_powder7" -> ModBlocks.USER_CONCRETE_POWDER_7.get();
+            case "concrete_powder8" -> ModBlocks.USER_CONCRETE_POWDER_8.get();
+            case "concrete_powder9" -> ModBlocks.USER_CONCRETE_POWDER_9.get();
+            case "concrete_powder10" -> ModBlocks.USER_CONCRETE_POWDER_10.get();
+            case "concrete_powder11" -> ModBlocks.USER_CONCRETE_POWDER_11.get();
+            case "concrete_powder12" -> ModBlocks.USER_CONCRETE_POWDER_12.get();
+            case "concrete_powder13" -> ModBlocks.USER_CONCRETE_POWDER_13.get();
+            case "concrete_powder14" -> ModBlocks.USER_CONCRETE_POWDER_14.get();
+            case "concrete_powder15" -> ModBlocks.USER_CONCRETE_POWDER_15.get();
+            case "concrete_powder16" -> ModBlocks.USER_CONCRETE_POWDER_16.get();
+            case "concrete_powder17" -> ModBlocks.USER_CONCRETE_POWDER_17.get();
+            case "concrete_powder18" -> ModBlocks.USER_CONCRETE_POWDER_18.get();
+            case "concrete_powder19" -> ModBlocks.USER_CONCRETE_POWDER_19.get();
+            case "concrete_powder20" -> ModBlocks.USER_CONCRETE_POWDER_20.get();
+            
+            // Glass blocks
+            case "glass1" -> ModBlocks.USER_GLASS_1.get();
+            case "glass2" -> ModBlocks.USER_GLASS_2.get();
+            case "glass3" -> ModBlocks.USER_GLASS_3.get();
+            case "glass4" -> ModBlocks.USER_GLASS_4.get();
+            case "glass5" -> ModBlocks.USER_GLASS_5.get();
+            case "glass6" -> ModBlocks.USER_GLASS_6.get();
+            case "glass7" -> ModBlocks.USER_GLASS_7.get();
+            case "glass8" -> ModBlocks.USER_GLASS_8.get();
+            case "glass9" -> ModBlocks.USER_GLASS_9.get();
+            case "glass10" -> ModBlocks.USER_GLASS_10.get();
+            case "glass11" -> ModBlocks.USER_GLASS_11.get();
+            case "glass12" -> ModBlocks.USER_GLASS_12.get();
+            case "glass13" -> ModBlocks.USER_GLASS_13.get();
+            case "glass14" -> ModBlocks.USER_GLASS_14.get();
+            case "glass15" -> ModBlocks.USER_GLASS_15.get();
+            case "glass16" -> ModBlocks.USER_GLASS_16.get();
+            case "glass17" -> ModBlocks.USER_GLASS_17.get();
+            case "glass18" -> ModBlocks.USER_GLASS_18.get();
+            case "glass19" -> ModBlocks.USER_GLASS_19.get();
+            case "glass20" -> ModBlocks.USER_GLASS_20.get();
+            
+            // Diorite blocks
+            case "diorite1" -> ModBlocks.USER_DIORITE_1.get();
+            case "diorite2" -> ModBlocks.USER_DIORITE_2.get();
+            case "diorite3" -> ModBlocks.USER_DIORITE_3.get();
+            case "diorite4" -> ModBlocks.USER_DIORITE_4.get();
+            case "diorite5" -> ModBlocks.USER_DIORITE_5.get();
+            case "diorite6" -> ModBlocks.USER_DIORITE_6.get();
+            case "diorite7" -> ModBlocks.USER_DIORITE_7.get();
+            case "diorite8" -> ModBlocks.USER_DIORITE_8.get();
+            case "diorite9" -> ModBlocks.USER_DIORITE_9.get();
+            case "diorite10" -> ModBlocks.USER_DIORITE_10.get();
+            case "diorite11" -> ModBlocks.USER_DIORITE_11.get();
+            case "diorite12" -> ModBlocks.USER_DIORITE_12.get();
+            case "diorite13" -> ModBlocks.USER_DIORITE_13.get();
+            case "diorite14" -> ModBlocks.USER_DIORITE_14.get();
+            case "diorite15" -> ModBlocks.USER_DIORITE_15.get();
+            case "diorite16" -> ModBlocks.USER_DIORITE_16.get();
+            case "diorite17" -> ModBlocks.USER_DIORITE_17.get();
+            case "diorite18" -> ModBlocks.USER_DIORITE_18.get();
+            case "diorite19" -> ModBlocks.USER_DIORITE_19.get();
+            case "diorite20" -> ModBlocks.USER_DIORITE_20.get();
+            
+            // Calcite blocks
+            case "calcite1" -> ModBlocks.USER_CALCITE_1.get();
+            case "calcite2" -> ModBlocks.USER_CALCITE_2.get();
+            case "calcite3" -> ModBlocks.USER_CALCITE_3.get();
+            case "calcite4" -> ModBlocks.USER_CALCITE_4.get();
+            case "calcite5" -> ModBlocks.USER_CALCITE_5.get();
+            case "calcite6" -> ModBlocks.USER_CALCITE_6.get();
+            case "calcite7" -> ModBlocks.USER_CALCITE_7.get();
+            case "calcite8" -> ModBlocks.USER_CALCITE_8.get();
+            case "calcite9" -> ModBlocks.USER_CALCITE_9.get();
+            case "calcite10" -> ModBlocks.USER_CALCITE_10.get();
+            case "calcite11" -> ModBlocks.USER_CALCITE_11.get();
+            case "calcite12" -> ModBlocks.USER_CALCITE_12.get();
+            case "calcite13" -> ModBlocks.USER_CALCITE_13.get();
+            case "calcite14" -> ModBlocks.USER_CALCITE_14.get();
+            case "calcite15" -> ModBlocks.USER_CALCITE_15.get();
+            case "calcite16" -> ModBlocks.USER_CALCITE_16.get();
+            case "calcite17" -> ModBlocks.USER_CALCITE_17.get();
+            case "calcite18" -> ModBlocks.USER_CALCITE_18.get();
+            case "calcite19" -> ModBlocks.USER_CALCITE_19.get();
+            case "calcite20" -> ModBlocks.USER_CALCITE_20.get();
+            
+            // Mushroom Stem blocks
+            case "mushroom_stem1" -> ModBlocks.USER_MUSHROOM_STEM_1.get();
+            case "mushroom_stem2" -> ModBlocks.USER_MUSHROOM_STEM_2.get();
+            case "mushroom_stem3" -> ModBlocks.USER_MUSHROOM_STEM_3.get();
+            case "mushroom_stem4" -> ModBlocks.USER_MUSHROOM_STEM_4.get();
+            case "mushroom_stem5" -> ModBlocks.USER_MUSHROOM_STEM_5.get();
+            case "mushroom_stem6" -> ModBlocks.USER_MUSHROOM_STEM_6.get();
+            case "mushroom_stem7" -> ModBlocks.USER_MUSHROOM_STEM_7.get();
+            case "mushroom_stem8" -> ModBlocks.USER_MUSHROOM_STEM_8.get();
+            case "mushroom_stem9" -> ModBlocks.USER_MUSHROOM_STEM_9.get();
+            case "mushroom_stem10" -> ModBlocks.USER_MUSHROOM_STEM_10.get();
+            case "mushroom_stem11" -> ModBlocks.USER_MUSHROOM_STEM_11.get();
+            case "mushroom_stem12" -> ModBlocks.USER_MUSHROOM_STEM_12.get();
+            case "mushroom_stem13" -> ModBlocks.USER_MUSHROOM_STEM_13.get();
+            case "mushroom_stem14" -> ModBlocks.USER_MUSHROOM_STEM_14.get();
+            case "mushroom_stem15" -> ModBlocks.USER_MUSHROOM_STEM_15.get();
+            case "mushroom_stem16" -> ModBlocks.USER_MUSHROOM_STEM_16.get();
+            case "mushroom_stem17" -> ModBlocks.USER_MUSHROOM_STEM_17.get();
+            case "mushroom_stem18" -> ModBlocks.USER_MUSHROOM_STEM_18.get();
+            case "mushroom_stem19" -> ModBlocks.USER_MUSHROOM_STEM_19.get();
+            case "mushroom_stem20" -> ModBlocks.USER_MUSHROOM_STEM_20.get();
+            
+            // Dead Tube Coral blocks
+            case "dead_tube_coral1" -> ModBlocks.USER_DEAD_TUBE_CORAL_1.get();
+            case "dead_tube_coral2" -> ModBlocks.USER_DEAD_TUBE_CORAL_2.get();
+            case "dead_tube_coral3" -> ModBlocks.USER_DEAD_TUBE_CORAL_3.get();
+            case "dead_tube_coral4" -> ModBlocks.USER_DEAD_TUBE_CORAL_4.get();
+            case "dead_tube_coral5" -> ModBlocks.USER_DEAD_TUBE_CORAL_5.get();
+            case "dead_tube_coral6" -> ModBlocks.USER_DEAD_TUBE_CORAL_6.get();
+            case "dead_tube_coral7" -> ModBlocks.USER_DEAD_TUBE_CORAL_7.get();
+            case "dead_tube_coral8" -> ModBlocks.USER_DEAD_TUBE_CORAL_8.get();
+            case "dead_tube_coral9" -> ModBlocks.USER_DEAD_TUBE_CORAL_9.get();
+            case "dead_tube_coral10" -> ModBlocks.USER_DEAD_TUBE_CORAL_10.get();
+            case "dead_tube_coral11" -> ModBlocks.USER_DEAD_TUBE_CORAL_11.get();
+            case "dead_tube_coral12" -> ModBlocks.USER_DEAD_TUBE_CORAL_12.get();
+            case "dead_tube_coral13" -> ModBlocks.USER_DEAD_TUBE_CORAL_13.get();
+            case "dead_tube_coral14" -> ModBlocks.USER_DEAD_TUBE_CORAL_14.get();
+            case "dead_tube_coral15" -> ModBlocks.USER_DEAD_TUBE_CORAL_15.get();
+            case "dead_tube_coral16" -> ModBlocks.USER_DEAD_TUBE_CORAL_16.get();
+            case "dead_tube_coral17" -> ModBlocks.USER_DEAD_TUBE_CORAL_17.get();
+            case "dead_tube_coral18" -> ModBlocks.USER_DEAD_TUBE_CORAL_18.get();
+            case "dead_tube_coral19" -> ModBlocks.USER_DEAD_TUBE_CORAL_19.get();
+            case "dead_tube_coral20" -> ModBlocks.USER_DEAD_TUBE_CORAL_20.get();
+            
+            // Pearlescent Froglight blocks
+            case "pearlescent_froglight1" -> ModBlocks.USER_PEARLESCENT_FROGLIGHT_1.get();
+            case "pearlescent_froglight2" -> ModBlocks.USER_PEARLESCENT_FROGLIGHT_2.get();
+            case "pearlescent_froglight3" -> ModBlocks.USER_PEARLESCENT_FROGLIGHT_3.get();
+            case "pearlescent_froglight4" -> ModBlocks.USER_PEARLESCENT_FROGLIGHT_4.get();
+            case "pearlescent_froglight5" -> ModBlocks.USER_PEARLESCENT_FROGLIGHT_5.get();
+            case "pearlescent_froglight6" -> ModBlocks.USER_PEARLESCENT_FROGLIGHT_6.get();
+            case "pearlescent_froglight7" -> ModBlocks.USER_PEARLESCENT_FROGLIGHT_7.get();
+            case "pearlescent_froglight8" -> ModBlocks.USER_PEARLESCENT_FROGLIGHT_8.get();
+            case "pearlescent_froglight9" -> ModBlocks.USER_PEARLESCENT_FROGLIGHT_9.get();
+            case "pearlescent_froglight10" -> ModBlocks.USER_PEARLESCENT_FROGLIGHT_10.get();
+            case "pearlescent_froglight11" -> ModBlocks.USER_PEARLESCENT_FROGLIGHT_11.get();
+            case "pearlescent_froglight12" -> ModBlocks.USER_PEARLESCENT_FROGLIGHT_12.get();
+            case "pearlescent_froglight13" -> ModBlocks.USER_PEARLESCENT_FROGLIGHT_13.get();
+            case "pearlescent_froglight14" -> ModBlocks.USER_PEARLESCENT_FROGLIGHT_14.get();
+            case "pearlescent_froglight15" -> ModBlocks.USER_PEARLESCENT_FROGLIGHT_15.get();
+            case "pearlescent_froglight16" -> ModBlocks.USER_PEARLESCENT_FROGLIGHT_16.get();
+            case "pearlescent_froglight17" -> ModBlocks.USER_PEARLESCENT_FROGLIGHT_17.get();
+            case "pearlescent_froglight18" -> ModBlocks.USER_PEARLESCENT_FROGLIGHT_18.get();
+            case "pearlescent_froglight19" -> ModBlocks.USER_PEARLESCENT_FROGLIGHT_19.get();
+            case "pearlescent_froglight20" -> ModBlocks.USER_PEARLESCENT_FROGLIGHT_20.get();
             
             default -> null;
         };

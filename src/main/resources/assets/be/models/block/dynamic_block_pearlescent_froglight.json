@@ -1,0 +1,6 @@
+{
+  "parent": "be:block/tinted_cube_all",
+  "textures": {
+    "all": "minecraft:block/pearlescent_froglight_side"
+  }
+}
