@@ -3,6 +3,7 @@ package com.blockeditor.mod.registry;
 import com.blockeditor.mod.BlockEditorMod;
 import com.blockeditor.mod.content.DynamicBlock;
 import com.blockeditor.mod.content.UserBlock;
+import com.blockeditor.mod.content.TransparentDynamicBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -51,7 +52,7 @@ public class ModBlocks {
         () -> new DynamicBlock());
 
     public static final RegistryObject<Block> DYNAMIC_BLOCK_GLASS = BLOCKS.register("dynamic_block_glass",
-        () -> new DynamicBlock());
+        TransparentDynamicBlock::new);
 
     public static final RegistryObject<Block> DYNAMIC_BLOCK_DIORITE = BLOCKS.register("dynamic_block_diorite",
         () -> new DynamicBlock());

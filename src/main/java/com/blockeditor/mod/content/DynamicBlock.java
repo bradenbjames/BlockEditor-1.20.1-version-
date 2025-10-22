@@ -28,11 +28,19 @@ public class DynamicBlock extends Block implements EntityBlock {
     private static final Logger LOGGER = LogUtils.getLogger();
 
     public DynamicBlock() {
-        super(BlockBehaviour.Properties.of()
+        this(BlockBehaviour.Properties.of()
             .mapColor(MapColor.STONE)
             .strength(1.5f, 6.0f)
             .requiresCorrectToolForDrops()
             .sound(SoundType.STONE));
+    }
+
+    /**
+     * Advanced constructor so subclasses (or special cases like glass) can customize properties
+     * such as noOcclusion without duplicating logic.
+     */
+    protected DynamicBlock(BlockBehaviour.Properties properties) {
+        super(properties);
     }
 
     @Override

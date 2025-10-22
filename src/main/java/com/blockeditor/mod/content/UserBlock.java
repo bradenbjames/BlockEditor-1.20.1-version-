@@ -4,10 +4,12 @@ import com.blockeditor.mod.client.ClientColorManager;
 import com.blockeditor.mod.registry.UserBlockRegistry;
 import com.mojang.logging.LogUtils;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -23,8 +25,22 @@ public class UserBlock extends DynamicBlock {
     private final String blockType;
 
     public UserBlock(String blockType) {
-        super();
+        super(createProperties(blockType));
         this.blockType = blockType;
+    }
+
+    private static BlockBehaviour.Properties createProperties(String blockType) {
+        if ("glass".equalsIgnoreCase(blockType)) {
+            return BlockBehaviour.Properties.of()
+                .noOcclusion()
+                .strength(0.3f)
+                .sound(SoundType.GLASS);
+        }
+        // default solid-like behavior for other user blocks
+        return BlockBehaviour.Properties.of()
+            .strength(1.5f, 6.0f)
+            .sound(SoundType.STONE)
+            .requiresCorrectToolForDrops();
     }
 
     public String getBlockType() {
