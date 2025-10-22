@@ -142,7 +142,7 @@
 **Storage**: NBT-based persistence with automatic file management
 **Memory**: Efficient history management with 500-item circular buffer
 
-**Installation**: Drop `be-1.0.0.jar` into your mods folder and launch Minecraft
+**Installation**: Drop `be-1.0.2.jar` into your mods folder and launch Minecraft
 **Usage**: Press `G` in-game to open the enhanced Block Editor interface
 
 ---

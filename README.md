@@ -1,12 +1,13 @@
 # BlockEditor - Custom Block Creator
 
 [![Minecraft](https://img.shields.io/badge/Minecraft-1.20.1-brightgreen.svg)](https://minecraft.net/)
+[![Version](https://img.shields.io/badge/Version-1.0.2-informational.svg)](#)
 [![Forge](https://img.shields.io/badge/Forge-47.3.0+-orange.svg)](https://files.minecraftforge.net/)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 Create and customize blocks with any color, texture, and **custom names** in Minecraft! Now with enhanced WorldEdit integration and smart UI features.
 
-![Block Editor Interface](./images/image-1760931259480.png)
+![Block Editor Interface](./images/1.0.2/Screenshot%202025-10-21%20192157.png)
 *Enhanced Block Editor interface with custom naming, recent blocks history, and middle-click shortcuts*
 
 ## ✨ New Features (v1.0.2)
