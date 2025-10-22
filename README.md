@@ -10,6 +10,9 @@ Create and customize blocks with any color, texture, and **custom names** in Min
 ![Block Editor Interface](./images/1.0.2/Screenshot%202025-10-21%20192157.png)
 *Enhanced Block Editor interface with custom naming, recent blocks history, and middle-click shortcuts*
 
+![Block Selection](./images/1.0.2/Screenshot%202025-10-21%20192346.png)
+*Choose from 17 different block textures with full color customization*
+
 ## ✨ New Features (v1.0.2)
 
 ### 🏷️ **Custom Block Naming**
@@ -38,12 +41,12 @@ Create and customize blocks with any color, texture, and **custom names** in Min
 
 ## 🌈 Unlimited Color & Texture Combinations
 
-**16.7 Million Colors × 9 Textures × Custom Names = Infinite Building Possibilities**
+**16.7 Million Colors × 17 Textures × Custom Names = Infinite Building Possibilities**
 
 ### 🎨 **Full RGB Spectrum with Smart Storage**
 - **Any Color**: Full hex color support from `#000000` to `#FFFFFF` (16,777,216 colors)
-- **9 Base Textures**: Wool, Stone, Dirt, Sand, Concrete, Deepslate, Wood, Smooth Stone, Cobblestone
-- **20 Slots Per Type**: 180 total custom block slots with persistent storage
+- **17 Base Textures**: Wool, Stone, Dirt, Sand, Concrete, Deepslate, Wood, Smooth Stone, Cobblestone, Terracotta, Concrete Powder, Glass, Diorite, Calcite, Mushroom Stem, Dead Tube Coral, Pearlescent Froglight
+- **20 Slots Per Type**: 340 total custom block slots with persistent storage
 - **Custom Names**: Each block can have a unique, memorable name
 
 ### 🔥 **Why BlockEditor is Different**
