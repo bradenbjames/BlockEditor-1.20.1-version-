@@ -98,20 +98,44 @@ public class CreateBlockPacket {
             
             // Try to assign the custom block
             String internalId = registry.assignUserBlockWithCustomName(blockType, color, packet.mimicBlockId, cleanCustomName);
+            String effectiveName = cleanCustomName;
             if (internalId == null) {
-                // Check if it's a duplicate name or no slots available
+                // If duplicate name, auto-increment deterministically: base, base_2, base_3, ...
                 if (registry.getAllCustomNames().contains(cleanCustomName)) {
-                    player.displayClientMessage(
-                        net.minecraft.network.chat.Component.literal("§cError: Block name '" + cleanCustomName + "' already exists! Try clearing the registry or use a different name."),
-                        false
-                    );
+                    String base = cleanCustomName.replaceAll("_(?:\\d+)$", "");
+                    java.util.Set<String> names = registry.getAllCustomNames();
+                    int n = 2;
+                    String candidate = base + "_" + n;
+                    // Find next available suffix
+                    while (names.contains(candidate) && n < 1000) {
+                        n++;
+                        candidate = base + "_" + n;
+                    }
+                    // Try assigning with the new name
+                    String autoId = registry.assignUserBlockWithCustomName(blockType, color, packet.mimicBlockId, candidate);
+                    if (autoId == null) {
+                        // Could be out of slots now
+                        player.displayClientMessage(
+                            net.minecraft.network.chat.Component.literal("§cError: No more slots available for " + blockType + " blocks!"),
+                            false
+                        );
+                        return;
+                    } else {
+                        internalId = autoId;
+                        effectiveName = candidate;
+                        player.displayClientMessage(
+                            net.minecraft.network.chat.Component.literal("§eName in use. Using '" + effectiveName + "'"),
+                            false
+                        );
+                    }
                 } else {
+                    // No more slots available
                     player.displayClientMessage(
                         net.minecraft.network.chat.Component.literal("§cError: No more slots available for " + blockType + " blocks!"),
                         false
                     );
+                    return;
                 }
-                return;
             }
             
             // Update WorldEdit integration with the new custom block mapping
@@ -127,30 +151,13 @@ public class CreateBlockPacket {
                 return;
             }
 
-            // Create the item stack
-            ItemStack coloredBlock = new ItemStack(userBlock);
-
-            // Create NBT data
-            CompoundTag customData = new CompoundTag();
-            customData.putString("Color", packet.hexColor);
-            customData.putString("OriginalBlock", packet.mimicBlockId);
-            customData.putString("CustomName", cleanCustomName);
-
-            // Parse color to RGB (reuse the already parsed color variable)
-            int red = (color >> 16) & 0xFF;
-            int green = (color >> 8) & 0xFF;
-            int blue = color & 0xFF;
-            customData.putInt("Red", red);
-            customData.putInt("Green", green);
-            customData.putInt("Blue", blue);
-
-            // Set NBT tag for 1.20.1
-            coloredBlock.setTag(customData);
-
-            // Set display name using custom name
-            coloredBlock.setHoverName(
-                net.minecraft.network.chat.Component.literal("§r" + cleanCustomName + " §7(#" + packet.hexColor + ")")
+            // Create the item stack with the correct custom name
+            ItemStack coloredBlock = com.blockeditor.mod.client.ClientColorManager.createUserBlockItem(
+                userBlock, blockType, packet.customName
             );
+
+            // Create NBT data (already handled in createUserBlockItem)
+            // ...existing code...
 
             // Improved inventory management - always try to put in hand first
             boolean itemPlaced = false;
@@ -164,11 +171,43 @@ public class CreateBlockPacket {
                 // Force the player to select this slot (redundant but ensures it's active)
                 player.getInventory().selected = selectedSlot;
                 itemPlaced = true;
-            } 
-            // Strategy 2: Try to find any empty hotbar slot (0-8) and switch to it
-            else {
+            } else {
+                // Strategy 1.5: If selected slot is occupied, try to move that item to an empty slot first,
+                // then place the new block in the selected slot so it's immediately in hand
+                ItemStack selectedStackBeforeMove = player.getInventory().getItem(selectedSlot);
+                int emptyTarget = -1;
+                int containerSize = player.getInventory().getContainerSize();
+                // Prefer moving into main inventory (slots 9..end) to keep hotbar layout
+                for (int i = 9; i < containerSize; i++) {
+                    if (i == selectedSlot) continue;
+                    if (player.getInventory().getItem(i).isEmpty()) {
+                        emptyTarget = i;
+                        break;
+                    }
+                }
+                // If none in main inventory, allow moving into any other empty hotbar slot
+                if (emptyTarget == -1) {
+                    for (int i = 0; i < 9; i++) {
+                        if (i == selectedSlot) continue;
+                        if (player.getInventory().getItem(i).isEmpty()) {
+                            emptyTarget = i;
+                            break;
+                        }
+                    }
+                }
+
+                if (emptyTarget != -1) {
+                    // Move currently selected item to the empty slot
+                    player.getInventory().setItem(emptyTarget, selectedStackBeforeMove);
+                    // Place the new item in hand
+                    player.getInventory().setItem(selectedSlot, coloredBlock);
+                    player.getInventory().selected = selectedSlot;
+                    itemPlaced = true;
+                }
+
+                // Strategy 2: If we couldn't move the selected item, try to find any empty hotbar slot (0-8) and switch to it
                 boolean foundEmptyHotbarSlot = false;
-                for (int hotbarSlot = 0; hotbarSlot < 9; hotbarSlot++) {
+                if (!itemPlaced) for (int hotbarSlot = 0; hotbarSlot < 9; hotbarSlot++) {
                     if (player.getInventory().getItem(hotbarSlot).isEmpty()) {
                         player.getInventory().setItem(hotbarSlot, coloredBlock);
                         player.getInventory().selected = hotbarSlot; // Switch to this slot
@@ -179,7 +218,7 @@ public class CreateBlockPacket {
                 }
                 
                 // Strategy 3: If no empty hotbar slots, try general inventory
-                if (!foundEmptyHotbarSlot) {
+                if (!foundEmptyHotbarSlot && !itemPlaced) {
                     if (player.getInventory().add(coloredBlock)) {
                         itemPlaced = true;
                         // Try to move it to the selected slot if possible
@@ -187,9 +226,9 @@ public class CreateBlockPacket {
                             ItemStack stackInSlot = player.getInventory().getItem(slot);
                             if (stackInSlot == coloredBlock) {
                                 // Found our block in inventory, try to swap it to selected slot
-                                ItemStack currentSelected = player.getInventory().getItem(selectedSlot);
+                                ItemStack currentlySelected = player.getInventory().getItem(selectedSlot);
                                 player.getInventory().setItem(selectedSlot, coloredBlock);
-                                player.getInventory().setItem(slot, currentSelected);
+                                player.getInventory().setItem(slot, currentlySelected);
                                 break;
                             }
                         }
@@ -207,7 +246,7 @@ public class CreateBlockPacket {
             // Send success notification
             if (itemPlaced) {
                 player.displayClientMessage(
-                    net.minecraft.network.chat.Component.literal("§a§lBlock Created! §r§f" + cleanCustomName + " §7in your hand"), 
+                    net.minecraft.network.chat.Component.literal("§a§lBlock Created! §r§f" + effectiveName + " §7in your hand"), 
                     true // Show as action bar message
                 );
             }
@@ -494,3 +533,4 @@ public class CreateBlockPacket {
         };
     }
 }
+

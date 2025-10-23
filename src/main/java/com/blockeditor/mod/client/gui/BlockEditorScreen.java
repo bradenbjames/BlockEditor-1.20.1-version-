@@ -4,6 +4,7 @@ import com.blockeditor.mod.network.CreateBlockPacket;
 import com.blockeditor.mod.network.ClearRegistryPacket;
 import com.blockeditor.mod.network.ModNetworking;
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
@@ -62,18 +63,18 @@ public class BlockEditorScreen extends Screen {
     private static final int HISTORY_PANEL_MARGIN = 10;
 
     // Inner class to store created block info
-    private static class CreatedBlockInfo {
-        Block originalBlock;
-        String hexColor;
-        int color;
-        String blockName;
-        long timestamp;
+    public static class CreatedBlockInfo {
+        public Block originalBlock;
+        public String hexColor;
+        public int color;
+        public String blockName;
+        public long timestamp;
 
         CreatedBlockInfo(Block block, String hex, int color) {
             this(block, hex, color, null);
         }
 
-        CreatedBlockInfo(Block block, String hex, int color, String customName) {
+        public CreatedBlockInfo(Block block, String hex, int color, String customName) {
             this.originalBlock = block;
             this.hexColor = hex;
             this.color = color;
@@ -681,7 +682,7 @@ public class BlockEditorScreen extends Screen {
                 CreatedBlockInfo info = createdBlocksHistory.get(clickedIndex);
                 
                 if (button == 2) { // Middle click - find and equip the block
-                    findAndEquipBlock(info);
+                    BlockEditorScreen.findAndEquipBlock(info);
                     return true;
                 } else { // Left/right click - set as template
                     selectedBlock = info.originalBlock;
@@ -1288,7 +1289,7 @@ public class BlockEditorScreen extends Screen {
     }
 
     // Helper method to determine which block type to use based on the selected block
-    private Block getBlockTypeForTexture(Block selectedBlock) {
+    private static Block getBlockTypeForTexture(Block selectedBlock) {
         ResourceLocation blockId = BuiltInRegistries.BLOCK.getKey(selectedBlock);
         String blockName = blockId.getPath().toLowerCase();
 
@@ -1358,8 +1359,9 @@ public class BlockEditorScreen extends Screen {
         super.setFocused(focused);
     }
 
-    private void findAndEquipBlock(CreatedBlockInfo blockInfo) {
-        if (this.minecraft == null || this.minecraft.player == null) {
+    public static void findAndEquipBlock(CreatedBlockInfo blockInfo) {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft == null || minecraft.player == null) {
             return;
         }
         
@@ -1367,7 +1369,7 @@ public class BlockEditorScreen extends Screen {
         String targetCustomName = blockInfo.blockName;
         
         // Search through player's inventory for a matching block
-        var inventory = this.minecraft.player.getInventory();
+        net.minecraft.world.entity.player.Inventory inventory = minecraft.player.getInventory();
         
         // Debug: Log what we're searching for
         System.out.println("[BlockEditor] Searching for block: '" + targetCustomName + "' with color: '" + targetColor + "'");
@@ -1378,115 +1380,51 @@ public class BlockEditorScreen extends Screen {
             if (stack.isEmpty()) continue;
             
             // Check if this item is one of our custom blocks (both DynamicBlockItem and UserBlock items)
-            if (stack.getItem() instanceof com.blockeditor.mod.content.DynamicBlockItem) {
-                var tag = stack.getTag();
-                if (tag != null && tag.contains("Color") && tag.contains("CustomName")) {
-                    String stackColor = tag.getString("Color").toUpperCase();
-                    String stackCustomName = tag.getString("CustomName");
+            CompoundTag tag = stack.getTag();
+            if (tag != null && tag.contains("Color") && tag.contains("CustomName")) {
+                String stackColor = tag.getString("Color").toUpperCase();
+                String stackCustomName = tag.getString("CustomName");
+                
+                // Debug: Log each block we find
+                System.out.println("[BlockEditor] Found custom block in slot " + slot + ": '" + stackCustomName + "' with color: '" + stackColor + "'");
+                
+                // Check if this matches the block we're looking for (by color and name)
+                if (stackColor.equals(targetColor) && stackCustomName.equals(targetCustomName)) {
                     
-                    // Debug: Log each block we find
-                    System.out.println("[BlockEditor] Found custom block in slot " + slot + ": '" + stackCustomName + "' with color: '" + stackColor + "'");
+                    System.out.println("[BlockEditor] Match found! Moving to hotbar slot");
                     
-                    // Check if this matches the block we're looking for (by color and name)
-                    if (stackColor.equals(targetColor) && stackCustomName.equals(targetCustomName)) {
-                        
-                        System.out.println("[BlockEditor] Match found! Moving to hotbar slot 0");
-                        
-                        // Found the matching block! 
-                        // Strategy: Find the best hotbar slot to place it in
-                        int targetSlot = findBestHotbarSlot(inventory);
-                        
-                        // Move the block to the target hotbar slot
-                        ItemStack currentItem = inventory.getItem(targetSlot);
-                        inventory.setItem(targetSlot, stack.copy());
-                        inventory.setItem(slot, currentItem);
-                        
-                        // Set the player's selected slot to the target slot
-                        inventory.selected = targetSlot;
-                        
-                        // Show success message
-                        this.minecraft.player.displayClientMessage(
-                            net.minecraft.network.chat.Component.literal("§a✓ Found and equipped: §f" + targetCustomName + " §7(#" + targetColor + ")"),
-                            true // Action bar
-                        );
-                        
-                        // Close the screen
-                        this.onClose();
-                        return;
+                    // Found the matching block! 
+                    // Strategy: Find the best hotbar slot to place it in
+                    int targetSlot = findBestHotbarSlot(inventory);
+                    
+                    // Move the block to the target hotbar slot
+                    ItemStack currentItem = inventory.getItem(targetSlot);
+                    inventory.setItem(targetSlot, stack.copy());
+                    inventory.setItem(slot, currentItem);
+                    
+                    // Set the player's selected slot to the target slot
+                    inventory.selected = targetSlot;
+                    
+                    // Show success message
+                    minecraft.player.displayClientMessage(
+                        net.minecraft.network.chat.Component.literal("§a✓ Found and equipped: §f" + targetCustomName + " §7(#" + targetColor + ")"),
+                        true // Action bar
+                    );
+                    
+                    // Close the screen if we're in one
+                    if (minecraft.screen instanceof BlockEditorScreen) {
+                        minecraft.screen.onClose();
                     }
+                    return;
                 }
             }
         }
         
-        System.out.println("[BlockEditor] Block not found in inventory, creating new one");
+        System.out.println("[BlockEditor] Block not found in inventory: '" + targetCustomName + "' with color: '" + targetColor + "'");
         
-        // Block not found in inventory - create a new one exactly like it
-        try {
-            // Get the block type for the target texture
-            Block targetBlockType = getBlockTypeForTexture(blockInfo.originalBlock);
-            ResourceLocation blockId = BuiltInRegistries.BLOCK.getKey(targetBlockType);
-            ResourceLocation mimicBlockId = BuiltInRegistries.BLOCK.getKey(blockInfo.originalBlock);
-            
-            // Generate a more unique name by combining timestamp + random element
-            // This approach is more likely to avoid server-side conflicts
-            long timestamp = System.currentTimeMillis();
-            int randomComponent = (int) (timestamp % 9999); // Use last 4 digits for uniqueness
-            
-            // Try different strategies for unique naming
-            String finalCustomName;
-            
-            // Strategy 1: Try original name first
-            finalCustomName = targetCustomName;
-            
-            // Strategy 2: If we know this might conflict, start with a more unique approach
-            boolean likelyToConflict = false;
-            for (CreatedBlockInfo historyBlock : createdBlocksHistory) {
-                if (historyBlock.blockName.startsWith(targetCustomName)) {
-                    likelyToConflict = true;
-                    break;
-                }
-            }
-            
-            if (likelyToConflict) {
-                // Use timestamp-based naming for higher success rate
-                finalCustomName = targetCustomName + "_" + randomComponent;
-            }
-            
-            // Send the packet to create the block with the unique name
-            CreateBlockPacket packet = new CreateBlockPacket(
-                targetColor,
-                mimicBlockId.toString(),
-                blockId.toString(),
-                finalCustomName
-            );
-            
-            // Send the packet to the server to register the block
-            ModNetworking.sendToServer(packet);
-            
-            // Show success message that the block will be created
-            String displayName = finalCustomName.equals(targetCustomName) ? 
-                finalCustomName : finalCustomName + " (auto-named)";
-            
-            this.minecraft.player.displayClientMessage(
-                net.minecraft.network.chat.Component.literal("§a✓ Creating: §f" + displayName + " §7(#" + targetColor + ")"),
-                true // Action bar
-            );
-            
-            // Close the screen
-            this.onClose();
-            return;
-            
-        } catch (Exception e) {
-            // If creation fails, show error
-            this.minecraft.player.displayClientMessage(
-                net.minecraft.network.chat.Component.literal("§cFailed to create block: §f" + targetCustomName),
-                true // Action bar
-            );
-        }
-        
-        // If we get here, something went wrong
-        this.minecraft.player.displayClientMessage(
-            net.minecraft.network.chat.Component.literal("§cUnable to find or create block: §f" + targetCustomName + " §7(#" + targetColor + ")"),
+        // Block not found in inventory - show message
+        minecraft.player.displayClientMessage(
+            net.minecraft.network.chat.Component.literal("§c✗ Block not found in inventory: §f" + targetCustomName + " §7(#" + targetColor + ")"),
             true // Action bar
         );
     }
@@ -1495,7 +1433,7 @@ public class BlockEditorScreen extends Screen {
      * Find the best hotbar slot to place a block in.
      * Priority: Currently selected slot if empty > First empty slot > Currently selected slot (replace)
      */
-    private int findBestHotbarSlot(net.minecraft.world.entity.player.Inventory inventory) {
+    private static int findBestHotbarSlot(net.minecraft.world.entity.player.Inventory inventory) {
         int currentSlot = inventory.selected;
         
         // First choice: Use currently selected slot if it's empty

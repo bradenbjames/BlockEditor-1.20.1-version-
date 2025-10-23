@@ -110,24 +110,28 @@ public class DynamicBlockEntity extends BlockEntity {
     
     @Override
     public void handleUpdateTag(CompoundTag tag) {
+        // Apply server-sent data to the client-side BE immediately
         super.handleUpdateTag(tag);
-        // Force client-side refresh after receiving update
+
+        if (tag.contains("MimicBlock")) {
+            this.mimicBlock = tag.getString("MimicBlock");
+        }
+        if (tag.contains("Color")) {
+            this.color = tag.getInt("Color");
+        }
+
+        // Request a re-render/model refresh on client so tint updates without flicker
         if (getLevel() != null && getLevel().isClientSide) {
-            // Request updated data from server if we don't have valid color data
-            if (color == 0xFFFFFF && getBlockState().getBlock() instanceof com.blockeditor.mod.content.UserBlock) {
-                // Schedule a delayed request for server data
-                java.util.concurrent.CompletableFuture.runAsync(() -> {
-                    try {
-                        Thread.sleep(100); // Small delay
-                        // Force a model data refresh and re-render
-                        if (getLevel() != null) {
-                            getLevel().sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 8);
-                        }
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                    }
-                });
-            }
+            getLevel().sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 8);
+        }
+    }
+
+    @Override
+    public void onDataPacket(net.minecraft.network.Connection net, ClientboundBlockEntityDataPacket pkt) {
+        // Ensure packet data applies to client BE state
+        CompoundTag tag = pkt.getTag();
+        if (tag != null) {
+            handleUpdateTag(tag);
         }
     }
     

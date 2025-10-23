@@ -38,42 +38,35 @@ public class ClientColorManager {
     }
     
     /**
-     * Creates a user block item with the saved color and mimic block
+     * Creates a user block item with the saved color, mimic block, and custom name
      */
-    public static ItemStack createUserBlockItem(Block userBlock, String blockType) {
+    public static ItemStack createUserBlockItem(Block userBlock, String blockType, String customName) {
         ItemStack stack = new ItemStack(userBlock);
         
         Integer savedColor = getSavedColor(blockType);
         String savedMimicBlock = getSavedMimicBlock(blockType);
-        
-        if (savedColor != null || savedMimicBlock != null) {
-            CompoundTag tag = new CompoundTag();
-            
-            if (savedColor != null) {
-                tag.putString("Color", String.format("%06X", savedColor));
-                
-                // Parse color to RGB for backwards compatibility
-                int red = (savedColor >> 16) & 0xFF;
-                int green = (savedColor >> 8) & 0xFF;
-                int blue = savedColor & 0xFF;
-                tag.putInt("Red", red);
-                tag.putInt("Green", green);
-                tag.putInt("Blue", blue);
-            }
-            
-            if (savedMimicBlock != null) {
-                tag.putString("OriginalBlock", savedMimicBlock);
-            }
-            
-            stack.setTag(tag);
-            
-            // Set display name to show the color and type
-            String hexColor = savedColor != null ? String.format("%06X", savedColor) : "FFFFFF";
-            stack.setHoverName(net.minecraft.network.chat.Component.literal(
-                "§6USER_" + blockType.toUpperCase() + " §7(#" + hexColor + ")"
-            ));
+        CompoundTag tag = new CompoundTag();
+        if (savedColor != null) {
+            tag.putString("Color", String.format("%06X", savedColor));
+
+            // Parse color to RGB for backwards compatibility
+            int red = (savedColor >> 16) & 0xFF;
+            int green = (savedColor >> 8) & 0xFF;
+            int blue = savedColor & 0xFF;
+            tag.putInt("Red", red);
+            tag.putInt("Green", green);
+            tag.putInt("Blue", blue);
         }
-        
+        if (savedMimicBlock != null) {
+            tag.putString("OriginalBlock", savedMimicBlock);
+        }
+        // Store custom name in NBT and set display name
+        if (customName != null && !customName.isEmpty()) {
+            tag.putString("CustomName", customName);
+            stack.setHoverName(net.minecraft.network.chat.Component.literal(customName));
+        }
+        stack.setTag(tag);
+
         return stack;
     }
     

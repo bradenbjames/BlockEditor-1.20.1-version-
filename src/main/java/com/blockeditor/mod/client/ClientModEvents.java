@@ -183,7 +183,7 @@ public class ClientModEvents {
     public static void registerItemColors(RegisterColorHandlersEvent.Item event) {
         event.register((stack, tintIndex) -> {
             CompoundTag tag = stack.getTag();
-            if (tag != null && tag.contains("Color")) {
+            if (tintIndex == 0 && tag != null && tag.contains("Color")) {
                 String hexColor = tag.getString("Color");
                 try {
                     return Integer.parseInt(hexColor, 16);
@@ -191,6 +191,7 @@ public class ClientModEvents {
             }
             return 0xFFFFFF; // Default white
         },
+        // Dynamic blocks
         ModBlocks.DYNAMIC_BLOCK.get(),
         ModBlocks.DYNAMIC_BLOCK_DIRT.get(),
         ModBlocks.DYNAMIC_BLOCK_SAND.get(),
@@ -198,104 +199,18 @@ public class ClientModEvents {
         ModBlocks.DYNAMIC_BLOCK_CONCRETE.get(),
         ModBlocks.DYNAMIC_BLOCK_DEEPSLATE.get(),
         ModBlocks.DYNAMIC_BLOCK_WOOD.get(),
-        ModBlocks.DYNAMIC_BLOCK_STONE.get(),
-        ModBlocks.DYNAMIC_BLOCK_COBBLESTONE.get(),
-        ModBlocks.DYNAMIC_BLOCK_SMOOTH_STONE.get(),
-        ModBlocks.DYNAMIC_BLOCK_TERRACOTTA.get(),
-        ModBlocks.DYNAMIC_BLOCK_CONCRETE_POWDER.get(),
-        ModBlocks.DYNAMIC_BLOCK_GLASS.get(),
-        ModBlocks.DYNAMIC_BLOCK_DIORITE.get(),
-        ModBlocks.DYNAMIC_BLOCK_CALCITE.get(),
-        ModBlocks.DYNAMIC_BLOCK_MUSHROOM_STEM.get(),
-        ModBlocks.DYNAMIC_BLOCK_DEAD_TUBE_CORAL.get(),
-        ModBlocks.DYNAMIC_BLOCK_PEARLESCENT_FROGLIGHT.get(),
-        
-        // User block items - ALL of them need color registration! (1-20 for each type)
-        // Wool items (1-20)
-        ModItems.USER_WOOL_1_ITEM.get(), ModItems.USER_WOOL_2_ITEM.get(), ModItems.USER_WOOL_3_ITEM.get(), ModItems.USER_WOOL_4_ITEM.get(), ModItems.USER_WOOL_5_ITEM.get(),
-        ModItems.USER_WOOL_6_ITEM.get(), ModItems.USER_WOOL_7_ITEM.get(), ModItems.USER_WOOL_8_ITEM.get(), ModItems.USER_WOOL_9_ITEM.get(), ModItems.USER_WOOL_10_ITEM.get(),
-        ModItems.USER_WOOL_11_ITEM.get(), ModItems.USER_WOOL_12_ITEM.get(), ModItems.USER_WOOL_13_ITEM.get(), ModItems.USER_WOOL_14_ITEM.get(), ModItems.USER_WOOL_15_ITEM.get(),
-        ModItems.USER_WOOL_16_ITEM.get(), ModItems.USER_WOOL_17_ITEM.get(), ModItems.USER_WOOL_18_ITEM.get(), ModItems.USER_WOOL_19_ITEM.get(), ModItems.USER_WOOL_20_ITEM.get(),
-        // Stone items (1-20)
-        ModItems.USER_STONE_1_ITEM.get(), ModItems.USER_STONE_2_ITEM.get(), ModItems.USER_STONE_3_ITEM.get(), ModItems.USER_STONE_4_ITEM.get(), ModItems.USER_STONE_5_ITEM.get(),
-        ModItems.USER_STONE_6_ITEM.get(), ModItems.USER_STONE_7_ITEM.get(), ModItems.USER_STONE_8_ITEM.get(), ModItems.USER_STONE_9_ITEM.get(), ModItems.USER_STONE_10_ITEM.get(),
-        ModItems.USER_STONE_11_ITEM.get(), ModItems.USER_STONE_12_ITEM.get(), ModItems.USER_STONE_13_ITEM.get(), ModItems.USER_STONE_14_ITEM.get(), ModItems.USER_STONE_15_ITEM.get(),
-        ModItems.USER_STONE_16_ITEM.get(), ModItems.USER_STONE_17_ITEM.get(), ModItems.USER_STONE_18_ITEM.get(), ModItems.USER_STONE_19_ITEM.get(), ModItems.USER_STONE_20_ITEM.get(),
-        // Concrete items (1-20)
-        ModItems.USER_CONCRETE_1_ITEM.get(), ModItems.USER_CONCRETE_2_ITEM.get(), ModItems.USER_CONCRETE_3_ITEM.get(), ModItems.USER_CONCRETE_4_ITEM.get(), ModItems.USER_CONCRETE_5_ITEM.get(),
-        ModItems.USER_CONCRETE_6_ITEM.get(), ModItems.USER_CONCRETE_7_ITEM.get(), ModItems.USER_CONCRETE_8_ITEM.get(), ModItems.USER_CONCRETE_9_ITEM.get(), ModItems.USER_CONCRETE_10_ITEM.get(),
-        ModItems.USER_CONCRETE_11_ITEM.get(), ModItems.USER_CONCRETE_12_ITEM.get(), ModItems.USER_CONCRETE_13_ITEM.get(), ModItems.USER_CONCRETE_14_ITEM.get(), ModItems.USER_CONCRETE_15_ITEM.get(),
-        ModItems.USER_CONCRETE_16_ITEM.get(), ModItems.USER_CONCRETE_17_ITEM.get(), ModItems.USER_CONCRETE_18_ITEM.get(), ModItems.USER_CONCRETE_19_ITEM.get(), ModItems.USER_CONCRETE_20_ITEM.get(),
-        // Wood items (1-20)
-        ModItems.USER_WOOD_1_ITEM.get(), ModItems.USER_WOOD_2_ITEM.get(), ModItems.USER_WOOD_3_ITEM.get(), ModItems.USER_WOOD_4_ITEM.get(), ModItems.USER_WOOD_5_ITEM.get(),
-        ModItems.USER_WOOD_6_ITEM.get(), ModItems.USER_WOOD_7_ITEM.get(), ModItems.USER_WOOD_8_ITEM.get(), ModItems.USER_WOOD_9_ITEM.get(), ModItems.USER_WOOD_10_ITEM.get(),
-        ModItems.USER_WOOD_11_ITEM.get(), ModItems.USER_WOOD_12_ITEM.get(), ModItems.USER_WOOD_13_ITEM.get(), ModItems.USER_WOOD_14_ITEM.get(), ModItems.USER_WOOD_15_ITEM.get(),
-        ModItems.USER_WOOD_16_ITEM.get(), ModItems.USER_WOOD_17_ITEM.get(), ModItems.USER_WOOD_18_ITEM.get(), ModItems.USER_WOOD_19_ITEM.get(), ModItems.USER_WOOD_20_ITEM.get(),
-        // Dirt items (1-20)
-        ModItems.USER_DIRT_1_ITEM.get(), ModItems.USER_DIRT_2_ITEM.get(), ModItems.USER_DIRT_3_ITEM.get(), ModItems.USER_DIRT_4_ITEM.get(), ModItems.USER_DIRT_5_ITEM.get(),
-        ModItems.USER_DIRT_6_ITEM.get(), ModItems.USER_DIRT_7_ITEM.get(), ModItems.USER_DIRT_8_ITEM.get(), ModItems.USER_DIRT_9_ITEM.get(), ModItems.USER_DIRT_10_ITEM.get(),
-        ModItems.USER_DIRT_11_ITEM.get(), ModItems.USER_DIRT_12_ITEM.get(), ModItems.USER_DIRT_13_ITEM.get(), ModItems.USER_DIRT_14_ITEM.get(), ModItems.USER_DIRT_15_ITEM.get(),
-        ModItems.USER_DIRT_16_ITEM.get(), ModItems.USER_DIRT_17_ITEM.get(), ModItems.USER_DIRT_18_ITEM.get(), ModItems.USER_DIRT_19_ITEM.get(), ModItems.USER_DIRT_20_ITEM.get(),
-        // Sand items (1-20)
-        ModItems.USER_SAND_1_ITEM.get(), ModItems.USER_SAND_2_ITEM.get(), ModItems.USER_SAND_3_ITEM.get(), ModItems.USER_SAND_4_ITEM.get(), ModItems.USER_SAND_5_ITEM.get(),
-        ModItems.USER_SAND_6_ITEM.get(), ModItems.USER_SAND_7_ITEM.get(), ModItems.USER_SAND_8_ITEM.get(), ModItems.USER_SAND_9_ITEM.get(), ModItems.USER_SAND_10_ITEM.get(),
-        ModItems.USER_SAND_11_ITEM.get(), ModItems.USER_SAND_12_ITEM.get(), ModItems.USER_SAND_13_ITEM.get(), ModItems.USER_SAND_14_ITEM.get(), ModItems.USER_SAND_15_ITEM.get(),
-        ModItems.USER_SAND_16_ITEM.get(), ModItems.USER_SAND_17_ITEM.get(), ModItems.USER_SAND_18_ITEM.get(), ModItems.USER_SAND_19_ITEM.get(), ModItems.USER_SAND_20_ITEM.get(),
-        // Deepslate items (1-20)
-        ModItems.USER_DEEPSLATE_1_ITEM.get(), ModItems.USER_DEEPSLATE_2_ITEM.get(), ModItems.USER_DEEPSLATE_3_ITEM.get(), ModItems.USER_DEEPSLATE_4_ITEM.get(), ModItems.USER_DEEPSLATE_5_ITEM.get(),
-        ModItems.USER_DEEPSLATE_6_ITEM.get(), ModItems.USER_DEEPSLATE_7_ITEM.get(), ModItems.USER_DEEPSLATE_8_ITEM.get(), ModItems.USER_DEEPSLATE_9_ITEM.get(), ModItems.USER_DEEPSLATE_10_ITEM.get(),
-        ModItems.USER_DEEPSLATE_11_ITEM.get(), ModItems.USER_DEEPSLATE_12_ITEM.get(), ModItems.USER_DEEPSLATE_13_ITEM.get(), ModItems.USER_DEEPSLATE_14_ITEM.get(), ModItems.USER_DEEPSLATE_15_ITEM.get(),
-        ModItems.USER_DEEPSLATE_16_ITEM.get(), ModItems.USER_DEEPSLATE_17_ITEM.get(), ModItems.USER_DEEPSLATE_18_ITEM.get(), ModItems.USER_DEEPSLATE_19_ITEM.get(), ModItems.USER_DEEPSLATE_20_ITEM.get(),
-        // Cobblestone items (1-20)
-        ModItems.USER_COBBLESTONE_1_ITEM.get(), ModItems.USER_COBBLESTONE_2_ITEM.get(), ModItems.USER_COBBLESTONE_3_ITEM.get(), ModItems.USER_COBBLESTONE_4_ITEM.get(), ModItems.USER_COBBLESTONE_5_ITEM.get(),
-        ModItems.USER_COBBLESTONE_6_ITEM.get(), ModItems.USER_COBBLESTONE_7_ITEM.get(), ModItems.USER_COBBLESTONE_8_ITEM.get(), ModItems.USER_COBBLESTONE_9_ITEM.get(), ModItems.USER_COBBLESTONE_10_ITEM.get(),
-        ModItems.USER_COBBLESTONE_11_ITEM.get(), ModItems.USER_COBBLESTONE_12_ITEM.get(), ModItems.USER_COBBLESTONE_13_ITEM.get(), ModItems.USER_COBBLESTONE_14_ITEM.get(), ModItems.USER_COBBLESTONE_15_ITEM.get(),
-        ModItems.USER_COBBLESTONE_16_ITEM.get(), ModItems.USER_COBBLESTONE_17_ITEM.get(), ModItems.USER_COBBLESTONE_18_ITEM.get(), ModItems.USER_COBBLESTONE_19_ITEM.get(), ModItems.USER_COBBLESTONE_20_ITEM.get(),
-        // Smooth Stone items (1-20)
-        ModItems.USER_SMOOTH_STONE_1_ITEM.get(), ModItems.USER_SMOOTH_STONE_2_ITEM.get(), ModItems.USER_SMOOTH_STONE_3_ITEM.get(), ModItems.USER_SMOOTH_STONE_4_ITEM.get(), ModItems.USER_SMOOTH_STONE_5_ITEM.get(),
-        ModItems.USER_SMOOTH_STONE_6_ITEM.get(), ModItems.USER_SMOOTH_STONE_7_ITEM.get(), ModItems.USER_SMOOTH_STONE_8_ITEM.get(), ModItems.USER_SMOOTH_STONE_9_ITEM.get(), ModItems.USER_SMOOTH_STONE_10_ITEM.get(),
-        ModItems.USER_SMOOTH_STONE_11_ITEM.get(), ModItems.USER_SMOOTH_STONE_12_ITEM.get(), ModItems.USER_SMOOTH_STONE_13_ITEM.get(), ModItems.USER_SMOOTH_STONE_14_ITEM.get(), ModItems.USER_SMOOTH_STONE_15_ITEM.get(),
-        ModItems.USER_SMOOTH_STONE_16_ITEM.get(), ModItems.USER_SMOOTH_STONE_17_ITEM.get(), ModItems.USER_SMOOTH_STONE_18_ITEM.get(), ModItems.USER_SMOOTH_STONE_19_ITEM.get(), ModItems.USER_SMOOTH_STONE_20_ITEM.get(),
-        // Terracotta items (1-20)
-        ModItems.USER_TERRACOTTA_1_ITEM.get(), ModItems.USER_TERRACOTTA_2_ITEM.get(), ModItems.USER_TERRACOTTA_3_ITEM.get(), ModItems.USER_TERRACOTTA_4_ITEM.get(), ModItems.USER_TERRACOTTA_5_ITEM.get(),
-        ModItems.USER_TERRACOTTA_6_ITEM.get(), ModItems.USER_TERRACOTTA_7_ITEM.get(), ModItems.USER_TERRACOTTA_8_ITEM.get(), ModItems.USER_TERRACOTTA_9_ITEM.get(), ModItems.USER_TERRACOTTA_10_ITEM.get(),
-        ModItems.USER_TERRACOTTA_11_ITEM.get(), ModItems.USER_TERRACOTTA_12_ITEM.get(), ModItems.USER_TERRACOTTA_13_ITEM.get(), ModItems.USER_TERRACOTTA_14_ITEM.get(), ModItems.USER_TERRACOTTA_15_ITEM.get(),
-        ModItems.USER_TERRACOTTA_16_ITEM.get(), ModItems.USER_TERRACOTTA_17_ITEM.get(), ModItems.USER_TERRACOTTA_18_ITEM.get(), ModItems.USER_TERRACOTTA_19_ITEM.get(), ModItems.USER_TERRACOTTA_20_ITEM.get(),
-        // Concrete Powder items (1-20)
-        ModItems.USER_CONCRETE_POWDER_1_ITEM.get(), ModItems.USER_CONCRETE_POWDER_2_ITEM.get(), ModItems.USER_CONCRETE_POWDER_3_ITEM.get(), ModItems.USER_CONCRETE_POWDER_4_ITEM.get(), ModItems.USER_CONCRETE_POWDER_5_ITEM.get(),
-        ModItems.USER_CONCRETE_POWDER_6_ITEM.get(), ModItems.USER_CONCRETE_POWDER_7_ITEM.get(), ModItems.USER_CONCRETE_POWDER_8_ITEM.get(), ModItems.USER_CONCRETE_POWDER_9_ITEM.get(), ModItems.USER_CONCRETE_POWDER_10_ITEM.get(),
-        ModItems.USER_CONCRETE_POWDER_11_ITEM.get(), ModItems.USER_CONCRETE_POWDER_12_ITEM.get(), ModItems.USER_CONCRETE_POWDER_13_ITEM.get(), ModItems.USER_CONCRETE_POWDER_14_ITEM.get(), ModItems.USER_CONCRETE_POWDER_15_ITEM.get(),
-        ModItems.USER_CONCRETE_POWDER_16_ITEM.get(), ModItems.USER_CONCRETE_POWDER_17_ITEM.get(), ModItems.USER_CONCRETE_POWDER_18_ITEM.get(), ModItems.USER_CONCRETE_POWDER_19_ITEM.get(), ModItems.USER_CONCRETE_POWDER_20_ITEM.get(),
-        // Glass items (1-20)
-        ModItems.USER_GLASS_1_ITEM.get(), ModItems.USER_GLASS_2_ITEM.get(), ModItems.USER_GLASS_3_ITEM.get(), ModItems.USER_GLASS_4_ITEM.get(), ModItems.USER_GLASS_5_ITEM.get(),
-        ModItems.USER_GLASS_6_ITEM.get(), ModItems.USER_GLASS_7_ITEM.get(), ModItems.USER_GLASS_8_ITEM.get(), ModItems.USER_GLASS_9_ITEM.get(), ModItems.USER_GLASS_10_ITEM.get(),
-        ModItems.USER_GLASS_11_ITEM.get(), ModItems.USER_GLASS_12_ITEM.get(), ModItems.USER_GLASS_13_ITEM.get(), ModItems.USER_GLASS_14_ITEM.get(), ModItems.USER_GLASS_15_ITEM.get(),
-        ModItems.USER_GLASS_16_ITEM.get(), ModItems.USER_GLASS_17_ITEM.get(), ModItems.USER_GLASS_18_ITEM.get(), ModItems.USER_GLASS_19_ITEM.get(), ModItems.USER_GLASS_20_ITEM.get(),
-        // Diorite items (1-20)
-        ModItems.USER_DIORITE_1_ITEM.get(), ModItems.USER_DIORITE_2_ITEM.get(), ModItems.USER_DIORITE_3_ITEM.get(), ModItems.USER_DIORITE_4_ITEM.get(), ModItems.USER_DIORITE_5_ITEM.get(),
-        ModItems.USER_DIORITE_6_ITEM.get(), ModItems.USER_DIORITE_7_ITEM.get(), ModItems.USER_DIORITE_8_ITEM.get(), ModItems.USER_DIORITE_9_ITEM.get(), ModItems.USER_DIORITE_10_ITEM.get(),
-        ModItems.USER_DIORITE_11_ITEM.get(), ModItems.USER_DIORITE_12_ITEM.get(), ModItems.USER_DIORITE_13_ITEM.get(), ModItems.USER_DIORITE_14_ITEM.get(), ModItems.USER_DIORITE_15_ITEM.get(),
-        ModItems.USER_DIORITE_16_ITEM.get(), ModItems.USER_DIORITE_17_ITEM.get(), ModItems.USER_DIORITE_18_ITEM.get(), ModItems.USER_DIORITE_19_ITEM.get(), ModItems.USER_DIORITE_20_ITEM.get(),
-        // Calcite items (1-20)
-        ModItems.USER_CALCITE_1_ITEM.get(), ModItems.USER_CALCITE_2_ITEM.get(), ModItems.USER_CALCITE_3_ITEM.get(), ModItems.USER_CALCITE_4_ITEM.get(), ModItems.USER_CALCITE_5_ITEM.get(),
-        ModItems.USER_CALCITE_6_ITEM.get(), ModItems.USER_CALCITE_7_ITEM.get(), ModItems.USER_CALCITE_8_ITEM.get(), ModItems.USER_CALCITE_9_ITEM.get(), ModItems.USER_CALCITE_10_ITEM.get(),
-        ModItems.USER_CALCITE_11_ITEM.get(), ModItems.USER_CALCITE_12_ITEM.get(), ModItems.USER_CALCITE_13_ITEM.get(), ModItems.USER_CALCITE_14_ITEM.get(), ModItems.USER_CALCITE_15_ITEM.get(),
-        ModItems.USER_CALCITE_16_ITEM.get(), ModItems.USER_CALCITE_17_ITEM.get(), ModItems.USER_CALCITE_18_ITEM.get(), ModItems.USER_CALCITE_19_ITEM.get(), ModItems.USER_CALCITE_20_ITEM.get(),
-        // Mushroom Stem items (1-20)
-        ModItems.USER_MUSHROOM_STEM_1_ITEM.get(), ModItems.USER_MUSHROOM_STEM_2_ITEM.get(), ModItems.USER_MUSHROOM_STEM_3_ITEM.get(), ModItems.USER_MUSHROOM_STEM_4_ITEM.get(), ModItems.USER_MUSHROOM_STEM_5_ITEM.get(),
-        ModItems.USER_MUSHROOM_STEM_6_ITEM.get(), ModItems.USER_MUSHROOM_STEM_7_ITEM.get(), ModItems.USER_MUSHROOM_STEM_8_ITEM.get(), ModItems.USER_MUSHROOM_STEM_9_ITEM.get(), ModItems.USER_MUSHROOM_STEM_10_ITEM.get(),
-        ModItems.USER_MUSHROOM_STEM_11_ITEM.get(), ModItems.USER_MUSHROOM_STEM_12_ITEM.get(), ModItems.USER_MUSHROOM_STEM_13_ITEM.get(), ModItems.USER_MUSHROOM_STEM_14_ITEM.get(), ModItems.USER_MUSHROOM_STEM_15_ITEM.get(),
-        ModItems.USER_MUSHROOM_STEM_16_ITEM.get(), ModItems.USER_MUSHROOM_STEM_17_ITEM.get(), ModItems.USER_MUSHROOM_STEM_18_ITEM.get(), ModItems.USER_MUSHROOM_STEM_19_ITEM.get(), ModItems.USER_MUSHROOM_STEM_20_ITEM.get(),
-        // Dead Tube Coral items (1-20)
-        ModItems.USER_DEAD_TUBE_CORAL_1_ITEM.get(), ModItems.USER_DEAD_TUBE_CORAL_2_ITEM.get(), ModItems.USER_DEAD_TUBE_CORAL_3_ITEM.get(), ModItems.USER_DEAD_TUBE_CORAL_4_ITEM.get(), ModItems.USER_DEAD_TUBE_CORAL_5_ITEM.get(),
-        ModItems.USER_DEAD_TUBE_CORAL_6_ITEM.get(), ModItems.USER_DEAD_TUBE_CORAL_7_ITEM.get(), ModItems.USER_DEAD_TUBE_CORAL_8_ITEM.get(), ModItems.USER_DEAD_TUBE_CORAL_9_ITEM.get(), ModItems.USER_DEAD_TUBE_CORAL_10_ITEM.get(),
-        ModItems.USER_DEAD_TUBE_CORAL_11_ITEM.get(), ModItems.USER_DEAD_TUBE_CORAL_12_ITEM.get(), ModItems.USER_DEAD_TUBE_CORAL_13_ITEM.get(), ModItems.USER_DEAD_TUBE_CORAL_14_ITEM.get(), ModItems.USER_DEAD_TUBE_CORAL_15_ITEM.get(),
-        ModItems.USER_DEAD_TUBE_CORAL_16_ITEM.get(), ModItems.USER_DEAD_TUBE_CORAL_17_ITEM.get(), ModItems.USER_DEAD_TUBE_CORAL_18_ITEM.get(), ModItems.USER_DEAD_TUBE_CORAL_19_ITEM.get(), ModItems.USER_DEAD_TUBE_CORAL_20_ITEM.get(),
-        // Pearlescent Froglight items (1-20)
-        ModItems.USER_PEARLESCENT_FROGLIGHT_1_ITEM.get(), ModItems.USER_PEARLESCENT_FROGLIGHT_2_ITEM.get(), ModItems.USER_PEARLESCENT_FROGLIGHT_3_ITEM.get(), ModItems.USER_PEARLESCENT_FROGLIGHT_4_ITEM.get(), ModItems.USER_PEARLESCENT_FROGLIGHT_5_ITEM.get(),
-        ModItems.USER_PEARLESCENT_FROGLIGHT_6_ITEM.get(), ModItems.USER_PEARLESCENT_FROGLIGHT_7_ITEM.get(), ModItems.USER_PEARLESCENT_FROGLIGHT_8_ITEM.get(), ModItems.USER_PEARLESCENT_FROGLIGHT_9_ITEM.get(), ModItems.USER_PEARLESCENT_FROGLIGHT_10_ITEM.get(),
-        ModItems.USER_PEARLESCENT_FROGLIGHT_11_ITEM.get(), ModItems.USER_PEARLESCENT_FROGLIGHT_12_ITEM.get(), ModItems.USER_PEARLESCENT_FROGLIGHT_13_ITEM.get(), ModItems.USER_PEARLESCENT_FROGLIGHT_14_ITEM.get(), ModItems.USER_PEARLESCENT_FROGLIGHT_15_ITEM.get(),
-        ModItems.USER_PEARLESCENT_FROGLIGHT_16_ITEM.get(), ModItems.USER_PEARLESCENT_FROGLIGHT_17_ITEM.get(), ModItems.USER_PEARLESCENT_FROGLIGHT_18_ITEM.get(), ModItems.USER_PEARLESCENT_FROGLIGHT_19_ITEM.get(), ModItems.USER_PEARLESCENT_FROGLIGHT_20_ITEM.get());
+        // User blocks (add all USER_* blocks here)
+        ModBlocks.USER_WOOL_1.get(), ModBlocks.USER_WOOL_2.get(), ModBlocks.USER_WOOL_3.get(), ModBlocks.USER_WOOL_4.get(), ModBlocks.USER_WOOL_5.get(),
+        ModBlocks.USER_STONE_1.get(), ModBlocks.USER_STONE_2.get(), ModBlocks.USER_STONE_3.get(), ModBlocks.USER_STONE_4.get(), ModBlocks.USER_STONE_5.get(),
+        ModBlocks.USER_CONCRETE_1.get(), ModBlocks.USER_CONCRETE_2.get(), ModBlocks.USER_CONCRETE_3.get(), ModBlocks.USER_CONCRETE_4.get(), ModBlocks.USER_CONCRETE_5.get(),
+        ModBlocks.USER_SAND_1.get(), ModBlocks.USER_SAND_2.get(), ModBlocks.USER_SAND_3.get(), ModBlocks.USER_SAND_4.get(), ModBlocks.USER_SAND_5.get(),
+        ModBlocks.USER_DEEPSLATE_1.get(), ModBlocks.USER_DEEPSLATE_2.get(), ModBlocks.USER_DEEPSLATE_3.get(), ModBlocks.USER_DEEPSLATE_4.get(), ModBlocks.USER_DEEPSLATE_5.get(),
+        ModBlocks.USER_WOOD_1.get(), ModBlocks.USER_WOOD_2.get(), ModBlocks.USER_WOOD_3.get(), ModBlocks.USER_WOOD_4.get(), ModBlocks.USER_WOOD_5.get(),
+        ModBlocks.USER_DIRT_1.get(), ModBlocks.USER_DIRT_2.get(), ModBlocks.USER_DIRT_3.get(), ModBlocks.USER_DIRT_4.get(), ModBlocks.USER_DIRT_5.get(),
+        ModBlocks.USER_COBBLESTONE_1.get(), ModBlocks.USER_COBBLESTONE_2.get(), ModBlocks.USER_COBBLESTONE_3.get(), ModBlocks.USER_COBBLESTONE_4.get(), ModBlocks.USER_COBBLESTONE_5.get(),
+        ModBlocks.USER_SMOOTH_STONE_1.get(), ModBlocks.USER_SMOOTH_STONE_2.get(), ModBlocks.USER_SMOOTH_STONE_3.get(), ModBlocks.USER_SMOOTH_STONE_4.get(), ModBlocks.USER_SMOOTH_STONE_5.get()
+        // ...add any other USER_* blocks you have...
+        );
     }
 }
 
