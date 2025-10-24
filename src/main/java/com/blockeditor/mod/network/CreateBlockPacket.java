@@ -2,7 +2,6 @@ package com.blockeditor.mod.network;
 
 import com.blockeditor.mod.registry.ModBlocks;
 import com.blockeditor.mod.registry.UserBlockRegistry;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
@@ -36,8 +35,7 @@ public class CreateBlockPacket {
     }
 
     public static CreateBlockPacket decode(FriendlyByteBuf buf) {
-        CreateBlockPacket packet = new CreateBlockPacket(buf.readUtf(), buf.readUtf(), buf.readUtf(), buf.readUtf());
-        return packet;
+        return new CreateBlockPacket(buf.readUtf(), buf.readUtf(), buf.readUtf(), buf.readUtf());
     }
 
     public static void handle(CreateBlockPacket packet, Supplier<NetworkEvent.Context> contextSupplier) {
@@ -78,71 +76,87 @@ public class CreateBlockPacket {
             else if (blockPath.contains("cobblestone")) blockType = "cobblestone";
             else if (blockPath.contains("smooth_stone")) blockType = "smooth_stone";
             
-            // Parse color
+            // Parse and normalize color (used if creating a new mapping)
+            String normalizedHex = normalizeHex(packet.hexColor);
             int color;
             try {
-                color = Integer.parseInt(packet.hexColor, 16);
+                color = Integer.parseInt(normalizedHex, 16);
             } catch (NumberFormatException e) {
                 return;
             }
             
-            // Clean up custom name (make it command-safe)
+            // Clean up custom name for internal registry/aliases only
             String cleanCustomName = packet.customName.toLowerCase()
-                .replaceAll("[^a-z0-9_]", "_") // Replace invalid chars with underscore
-                .replaceAll("_{2,}", "_") // Replace multiple underscores with single
-                .replaceAll("^_|_$", ""); // Remove leading/trailing underscores
-            
-            if (cleanCustomName.isEmpty()) {
-                cleanCustomName = "block"; // fallback name
-            }
-            
-            // Try to assign the custom block
-            String internalId = registry.assignUserBlockWithCustomName(blockType, color, packet.mimicBlockId, cleanCustomName);
+                .replaceAll("[^a-z0-9_]", "_")
+                .replaceAll("_{2,}", "_")
+                .replaceAll("^_|_$", "");
+
+            // If a non-empty custom name already exists, REUSE it instead of creating a new mapping
+            String internalId = null;
             String effectiveName = cleanCustomName;
+            boolean reusedExisting = false;
+            if (!cleanCustomName.isBlank()) {
+                String existing = registry.getInternalIdentifier(cleanCustomName);
+                if (existing != null) {
+                    internalId = existing; // reuse
+                    reusedExisting = true;
+                }
+            }
+
             if (internalId == null) {
-                // If duplicate name, auto-increment deterministically: base, base_2, base_3, ...
-                if (registry.getAllCustomNames().contains(cleanCustomName)) {
-                    String base = cleanCustomName.replaceAll("_(?:\\d+)$", "");
-                    java.util.Set<String> names = registry.getAllCustomNames();
-                    int n = 2;
-                    String candidate = base + "_" + n;
-                    // Find next available suffix
-                    while (names.contains(candidate) && n < 1000) {
-                        n++;
-                        candidate = base + "_" + n;
-                    }
-                    // Try assigning with the new name
-                    String autoId = registry.assignUserBlockWithCustomName(blockType, color, packet.mimicBlockId, candidate);
-                    if (autoId == null) {
-                        // Could be out of slots now
+                if (cleanCustomName.isEmpty()) {
+                    cleanCustomName = "block"; // fallback name
+                }
+                // Try to assign the custom block internally
+                internalId = registry.assignUserBlockWithCustomName(blockType, color, packet.mimicBlockId, cleanCustomName);
+                effectiveName = cleanCustomName;
+                if (internalId == null) {
+                    // If duplicate name, auto-increment deterministically: base, base_2, base_3, ...
+                    if (registry.getAllCustomNames().contains(cleanCustomName)) {
+                        String base = cleanCustomName.replaceAll("_(?:\\d+)$", "");
+                        java.util.Set<String> names = registry.getAllCustomNames();
+                        int n = 2;
+                        String candidate = base + "_" + n;
+                        // Find next available suffix
+                        while (names.contains(candidate) && n < 1000) {
+                            n++;
+                            candidate = base + "_" + n;
+                        }
+                        // Try assigning with the new name
+                        String autoId = registry.assignUserBlockWithCustomName(blockType, color, packet.mimicBlockId, candidate);
+                        if (autoId == null) {
+                            player.displayClientMessage(
+                                net.minecraft.network.chat.Component.literal("§cError: No more slots available for " + blockType + " blocks!"),
+                                false
+                            );
+                            return;
+                        } else {
+                            internalId = autoId;
+                            effectiveName = candidate;
+                            player.displayClientMessage(
+                                net.minecraft.network.chat.Component.literal("§eName in use. Using '" + effectiveName + "'"),
+                                false
+                            );
+                        }
+                    } else {
+                        // No more slots available
                         player.displayClientMessage(
                             net.minecraft.network.chat.Component.literal("§cError: No more slots available for " + blockType + " blocks!"),
                             false
                         );
                         return;
-                    } else {
-                        internalId = autoId;
-                        effectiveName = candidate;
-                        player.displayClientMessage(
-                            net.minecraft.network.chat.Component.literal("§eName in use. Using '" + effectiveName + "'"),
-                            false
-                        );
                     }
-                } else {
-                    // No more slots available
-                    player.displayClientMessage(
-                        net.minecraft.network.chat.Component.literal("§cError: No more slots available for " + blockType + " blocks!"),
-                        false
-                    );
-                    return;
                 }
+            } else {
+                // We are reusing an existing mapping. Keep effectiveName as cleanCustomName.
+                effectiveName = cleanCustomName;
             }
             
-            // Update WorldEdit integration with the new custom block mapping
+            // Update WorldEdit integration with the custom block mapping (idempotent if already mapped)
             try {
-                com.blockeditor.mod.integration.WorldEditIntegration.updateCustomBlockMapping(cleanCustomName, internalId);
+                com.blockeditor.mod.integration.WorldEditIntegration.updateCustomBlockMapping(effectiveName, internalId);
             } catch (Exception e) {
-                e.printStackTrace();
+                System.out.println("[BlockEditor] WorldEdit mapping update error: " + e.getMessage());
             }
             
             // Get the actual user block from ModBlocks
@@ -151,33 +165,50 @@ public class CreateBlockPacket {
                 return;
             }
 
-            // Create the item stack with the correct custom name
-            ItemStack coloredBlock = com.blockeditor.mod.client.ClientColorManager.createUserBlockItem(
-                userBlock, blockType, packet.customName
-            );
+            // === Build the ItemStack using registry-stored data to ensure consistency ===
+            UserBlockRegistry.UserBlockData data = registry.getUserBlockData(internalId);
+            if (data == null) {
+                return;
+            }
+            int storedColor = data.color();
+            String storedHex = String.format("%06X", storedColor);
+            String storedMimic = data.mimicBlock();
 
-            // Create NBT data (already handled in createUserBlockItem)
-            // ...existing code...
+            ItemStack coloredBlock = new ItemStack(userBlock);
+            CompoundTag tag = new CompoundTag();
+            tag.putString("Color", storedHex);
+            tag.putString("OriginalBlock", storedMimic);
+            // Also store RGB for backwards compatibility with any client logic
+            int red = (storedColor >> 16) & 0xFF;
+            int green = (storedColor >> 8) & 0xFF;
+            int blue = storedColor & 0xFF;
+            tag.putInt("Red", red);
+            tag.putInt("Green", green);
+            tag.putInt("Blue", blue);
+
+            // Store the pretty/custom name for later reads
+            if (!effectiveName.isBlank()) {
+                tag.putString("CustomName", effectiveName);
+            }
+            // IMPORTANT: set the tag first, then apply hover name to avoid it being wiped by setTag
+            coloredBlock.setTag(tag);
+            if (!effectiveName.isBlank()) {
+                coloredBlock.setHoverName(net.minecraft.network.chat.Component.literal(effectiveName));
+            }
 
             // Improved inventory management - always try to put in hand first
             boolean itemPlaced = false;
             
-            // Get the currently selected hotbar slot (0-8)
             int selectedSlot = player.getInventory().selected;
             
-            // Strategy 1: If the selected slot is empty, place it there and ensure it's selected
             if (player.getInventory().getItem(selectedSlot).isEmpty()) {
                 player.getInventory().setItem(selectedSlot, coloredBlock);
-                // Force the player to select this slot (redundant but ensures it's active)
                 player.getInventory().selected = selectedSlot;
                 itemPlaced = true;
             } else {
-                // Strategy 1.5: If selected slot is occupied, try to move that item to an empty slot first,
-                // then place the new block in the selected slot so it's immediately in hand
                 ItemStack selectedStackBeforeMove = player.getInventory().getItem(selectedSlot);
                 int emptyTarget = -1;
                 int containerSize = player.getInventory().getContainerSize();
-                // Prefer moving into main inventory (slots 9..end) to keep hotbar layout
                 for (int i = 9; i < containerSize; i++) {
                     if (i == selectedSlot) continue;
                     if (player.getInventory().getItem(i).isEmpty()) {
@@ -185,7 +216,6 @@ public class CreateBlockPacket {
                         break;
                     }
                 }
-                // If none in main inventory, allow moving into any other empty hotbar slot
                 if (emptyTarget == -1) {
                     for (int i = 0; i < 9; i++) {
                         if (i == selectedSlot) continue;
@@ -197,35 +227,29 @@ public class CreateBlockPacket {
                 }
 
                 if (emptyTarget != -1) {
-                    // Move currently selected item to the empty slot
                     player.getInventory().setItem(emptyTarget, selectedStackBeforeMove);
-                    // Place the new item in hand
                     player.getInventory().setItem(selectedSlot, coloredBlock);
                     player.getInventory().selected = selectedSlot;
                     itemPlaced = true;
                 }
 
-                // Strategy 2: If we couldn't move the selected item, try to find any empty hotbar slot (0-8) and switch to it
                 boolean foundEmptyHotbarSlot = false;
                 if (!itemPlaced) for (int hotbarSlot = 0; hotbarSlot < 9; hotbarSlot++) {
                     if (player.getInventory().getItem(hotbarSlot).isEmpty()) {
                         player.getInventory().setItem(hotbarSlot, coloredBlock);
-                        player.getInventory().selected = hotbarSlot; // Switch to this slot
+                        player.getInventory().selected = hotbarSlot;
                         foundEmptyHotbarSlot = true;
                         itemPlaced = true;
                         break;
                     }
                 }
                 
-                // Strategy 3: If no empty hotbar slots, try general inventory
                 if (!foundEmptyHotbarSlot && !itemPlaced) {
                     if (player.getInventory().add(coloredBlock)) {
                         itemPlaced = true;
-                        // Try to move it to the selected slot if possible
                         for (int slot = 9; slot < player.getInventory().getContainerSize(); slot++) {
                             ItemStack stackInSlot = player.getInventory().getItem(slot);
                             if (stackInSlot == coloredBlock) {
-                                // Found our block in inventory, try to swap it to selected slot
                                 ItemStack currentlySelected = player.getInventory().getItem(selectedSlot);
                                 player.getInventory().setItem(selectedSlot, coloredBlock);
                                 player.getInventory().setItem(slot, currentlySelected);
@@ -233,7 +257,6 @@ public class CreateBlockPacket {
                             }
                         }
                     } else {
-                        // Strategy 4: If inventory is completely full, drop the item
                         player.drop(coloredBlock, false);
                         player.displayClientMessage(
                             net.minecraft.network.chat.Component.literal("§c§lInventory Full! §r§7Block dropped on ground"), 
@@ -243,11 +266,13 @@ public class CreateBlockPacket {
                 }
             }
             
-            // Send success notification
             if (itemPlaced) {
+                String shownName = !effectiveName.isBlank() ? effectiveName : ("#" + storedHex);
+                // Show appropriate message depending on whether we reused or created
+                String action = reusedExisting ? "Ready" : "Created";
                 player.displayClientMessage(
-                    net.minecraft.network.chat.Component.literal("§a§lBlock Created! §r§f" + effectiveName + " §7in your hand"), 
-                    true // Show as action bar message
+                    net.minecraft.network.chat.Component.literal("§a§lBlock " + action + "! §r§f" + shownName + " §7in your hand"),
+                    true
                 );
             }
         });
@@ -255,6 +280,20 @@ public class CreateBlockPacket {
         context.setPacketHandled(true);
     }
     
+    private static String normalizeHex(String raw) {
+        if (raw == null) return "FFFFFF";
+        String s = raw.trim();
+        if (s.startsWith("#")) s = s.substring(1);
+        if (s.startsWith("0x") || s.startsWith("0X")) s = s.substring(2);
+        // Keep only hex chars
+        s = s.replaceAll("[^0-9A-Fa-f]", "");
+        if (s.isEmpty()) return "FFFFFF";
+        // Trim or pad to 6 chars
+        if (s.length() > 6) s = s.substring(s.length() - 6);
+        if (s.length() < 6) s = ("000000" + s).substring(s.length());
+        return s.toUpperCase();
+    }
+
     /**
      * Gets a user block by its internal identifier (e.g., "wool1" -> USER_WOOL_1)
      */

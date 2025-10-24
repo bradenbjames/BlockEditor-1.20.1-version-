@@ -31,6 +31,12 @@ public class ModNetworking {
             ClearRegistryPacket::handle
         );
 
+        INSTANCE.registerMessage(2, GivePickedBlockPacket.class,
+            GivePickedBlockPacket::encode,
+            GivePickedBlockPacket::decode,
+            GivePickedBlockPacket::handle
+        );
+
         System.out.println("ModNetworking.register completed - packets registered");
     }
 
