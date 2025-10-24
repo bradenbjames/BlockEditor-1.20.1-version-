@@ -95,12 +95,12 @@ public class BlockEditorScreen extends Screen {
         int hexY = 30;
 
         // Custom hex input box
-        int hexX = gridStartX + 16;
+        int hexX = gridStartX; // align exactly with the grid's left edge
         hexBox = BlockEditorWidgets.createHexBox(this.font, hexX, hexY, hexColor);
         this.addRenderableWidget(hexBox);
 
         // Custom name input box - placed with consistent gap after hex box
-        int gap = 12; // visual breathing room between fields
+        int gap = 10; // slightly thinner gap
         int nameX = hexX + hexBox.getWidth() + gap;
         nameBox = BlockEditorWidgets.createNameBox(this.font, nameX, hexY);
         this.addRenderableWidget(nameBox);
@@ -124,7 +124,7 @@ public class BlockEditorScreen extends Screen {
         this.addRenderableWidget(clearRegistryButton);
 
         // Constrain history panel so it doesn't overlap the main grid or fields; let it shrink to fit
-        int historyLeftBound = gridStartX + blockGridWidth + 12; // right edge of grid + gutter
+        int historyLeftBound = gridStartX + blockGridWidth + 8; // right edge of grid + thinner gutter
         historyPanel.setLeftBoundX(historyLeftBound);
 
         // Wire history panel item click behavior
@@ -745,4 +745,3 @@ public class BlockEditorScreen extends Screen {
 
     // Removed local drawRoundedRect; HistoryPanel now handles its own rounded rect rendering via GuiRenderUtil.
 }
-

@@ -12,14 +12,14 @@ import java.util.function.BiConsumer;
 public final class HistoryPanel {
     // Layout constants
     private static final int PANEL_MARGIN = 10;
-    private static final int ITEM_HEIGHT = 18; // keep compact height
-    private static final int ITEM_WIDTH = 54;  // about half of original; icon + tight text
-    private static final int ITEM_SPACING = 3;
+    private static final int ITEM_HEIGHT = 18; // compact height
+    private static final int ITEM_WIDTH = 50;  // slightly narrower than before to fit more columns
+    private static final int ITEM_SPACING = 2; // tighter spacing
     private static final int TITLE_BAR_HEIGHT = 16;
 
     // Text scales for compact entries
-    private static final float NAME_TEXT_SCALE = 0.85f;
-    private static final float HEX_TEXT_SCALE = 0.75f;
+    private static final float NAME_TEXT_SCALE = 0.76f; // even smaller
+    private static final float HEX_TEXT_SCALE = 0.50f;  // much smaller
 
     private int scrollOffset = 0; // in items
     private BiConsumer<CreatedBlockInfo, Integer> onItemClick;
@@ -95,17 +95,17 @@ public final class HistoryPanel {
                 (info.color & 0xFF) / 255.0f,
                 1.0f
             );
-            graphics.renderItem(info.originalBlock.asItem().getDefaultInstance(), itemX + 2, itemY + 1);
+            graphics.renderItem(info.originalBlock.asItem().getDefaultInstance(), itemX + 1, itemY + 1);
             RenderSystem.setShaderColor(1, 1, 1, 1);
             pose.popPose();
 
             // Text area (scaled)
             String name = info.blockName != null ? info.blockName : "";
             String hexText = "(#" + info.hexColor + ")";
-            int textLeft = itemX + 20; // leave space for icon
-            int textAvail = ITEM_WIDTH - 22;
+            int textLeft = itemX + 18; // thinner left padding
+            int textAvail = ITEM_WIDTH - 20; // balance margins left/right
 
-            // Name (slightly larger)
+            // Name (smaller)
             String trimmedName = trimToWidthScaled(font, name, textAvail, NAME_TEXT_SCALE);
             drawScaledString(graphics, font, trimmedName, textLeft, itemY + 2, NAME_TEXT_SCALE, 0xFFFFFF);
 
@@ -230,14 +230,13 @@ public final class HistoryPanel {
             available = screen.width / 4; // fallback heuristic when no bound provided
         }
         int max = 300;
-        int panelWidth = Math.min(max, Math.max(ITEM_WIDTH, available)); // allow shrinking to 1,2,3 columns
-        return panelWidth;
+        return Math.min(max, Math.max(ITEM_WIDTH, available));
     }
 
     private static int computeColumns(int panelWidth) {
-        // Dynamically compute how many ITEM_WIDTH cells fit into the panel, capped at 3 columns
+        // Dynamically compute how many ITEM_WIDTH cells fit into the panel, capped at 4 columns for readability
         int computed = Math.max(1, (panelWidth + ITEM_SPACING) / (ITEM_WIDTH + ITEM_SPACING));
-        return Math.min(3, computed);
+        return Math.min(4, computed);
     }
 
     private Bounds computeBounds(Screen screen, int panelWidth) {
