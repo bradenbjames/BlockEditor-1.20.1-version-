@@ -94,12 +94,14 @@ public class BlockEditorScreen extends Screen {
         // Hex color input box - positioned to align with block grid
         int hexY = 30;
 
-        // Custom hex input box with integrated # symbol and two-tone background
-        hexBox = BlockEditorWidgets.createHexBox(this.font, gridStartX + 16, hexY, hexColor);
+        // Custom hex input box
+        int hexX = gridStartX + 16;
+        hexBox = BlockEditorWidgets.createHexBox(this.font, hexX, hexY, hexColor);
         this.addRenderableWidget(hexBox);
 
-        // Custom name input box - positioned after hex box with clear placeholder
-        int nameX = gridStartX + 90 + 15; // After hex box + gap (updated for 90px hex box)
+        // Custom name input box - placed with consistent gap after hex box
+        int gap = 12; // visual breathing room between fields
+        int nameX = hexX + hexBox.getWidth() + gap;
         nameBox = BlockEditorWidgets.createNameBox(this.font, nameX, hexY);
         this.addRenderableWidget(nameBox);
 
@@ -120,6 +122,10 @@ public class BlockEditorScreen extends Screen {
         // Clear Registry button - positioned below other buttons
         clearRegistryButton = BlockEditorWidgets.createButton("Clear Registry", buttonStartX, buttonY + 25, buttonWidth, this::handleClearRegistryClick);
         this.addRenderableWidget(clearRegistryButton);
+
+        // Constrain history panel so it doesn't overlap the main grid or fields; let it shrink to fit
+        int historyLeftBound = gridStartX + blockGridWidth + 12; // right edge of grid + gutter
+        historyPanel.setLeftBoundX(historyLeftBound);
 
         // Wire history panel item click behavior
         historyPanel.setOnItemClick((info, mouseButton) -> {
@@ -294,42 +300,37 @@ public class BlockEditorScreen extends Screen {
         // Check if clicking on text boxes for special handling
         boolean clickedOnTextBox = false;
         
-        // Check hex box click
+        // Check hex box click: select all on click
         if (hexBox != null) {
-            int centerX = this.width / 2 - 40;
-            int blockGridWidth = BLOCKS_PER_ROW * (BLOCK_SIZE + BLOCK_PADDING);
-            int hexX = centerX - (blockGridWidth / 2); // Match the position (already shifted)
-            int hexY = 30;
-            int hexWidth = 90; // Updated width
-            int hexHeight = 20;
-            
-            if (mouseX >= hexX && mouseX < hexX + hexWidth && mouseY >= hexY && mouseY < hexY + hexHeight) {
+            int hx = hexBox.getX();
+            int hy = hexBox.getY();
+            int hw = hexBox.getWidth();
+            int hh = hexBox.getHeight();
+            if (mouseX >= hx && mouseX < hx + hw && mouseY >= hy && mouseY < hy + hh) {
                 clickedOnTextBox = true;
+                boolean result = super.mouseClicked(mouseX, mouseY, button);
+                if (hexBox.isFocused()) {
+                    hexBox.setHighlightPos(0);
+                    hexBox.setCursorPosition(hexBox.getValue().length());
+                }
+                return result;
             }
         }
         
-        // Check name box click - select all text when clicked (if it has placeholder text)
+        // Check name box click - select all text when clicked only if it has placeholder or any text? Keep current behavior
         if (nameBox != null) {
-            int centerX = this.width / 2 - 40;
-            int blockGridWidth = BLOCKS_PER_ROW * (BLOCK_SIZE + BLOCK_PADDING);
-            int nameX = centerX - (blockGridWidth / 2) + 90 + 15; // Calculate nameBox X position (already shifted)
-            int nameY = 30;
-            int nameWidth = 140;
-            int nameHeight = 20;
-            
-            if (mouseX >= nameX && mouseX < nameX + nameWidth && mouseY >= nameY && mouseY < nameY + nameHeight) {
+            int nx = nameBox.getX();
+            int ny = nameBox.getY();
+            int nw = nameBox.getWidth();
+            int nh = nameBox.getHeight();
+            if (mouseX >= nx && mouseX < nx + nw && mouseY >= ny && mouseY < ny + nh) {
                 clickedOnTextBox = true;
-                // If nameBox is empty or contains the placeholder-style text, select all when clicked
-                if (nameBox.getValue().trim().isEmpty()) {
-                    // Let the EditBox handle the click first
-                    boolean result = super.mouseClicked(mouseX, mouseY, button);
-                    // Then select all text if it gets focus
-                    if (nameBox.isFocused()) {
-                        nameBox.setHighlightPos(0);
-                        nameBox.setCursorPosition(nameBox.getValue().length());
-                    }
-                    return result;
+                boolean result = super.mouseClicked(mouseX, mouseY, button);
+                if (nameBox.isFocused() && nameBox.getValue().trim().isEmpty()) {
+                    nameBox.setHighlightPos(0);
+                    nameBox.setCursorPosition(nameBox.getValue().length());
                 }
+                return result;
             }
         }
         
@@ -365,13 +366,13 @@ public class BlockEditorScreen extends Screen {
         }
         
         // Check if mouse is over main block grid area
-        int startX = (this.width / 2 - 40) - (BLOCKS_PER_ROW * (BLOCK_SIZE + BLOCK_PADDING)) / 2;
-        int startY = 55;
+        int startX2 = (this.width / 2 - 40) - (BLOCKS_PER_ROW * (BLOCK_SIZE + BLOCK_PADDING)) / 2;
+        int startY2 = 55;
         int gridWidth = BLOCKS_PER_ROW * (BLOCK_SIZE + BLOCK_PADDING);
         int gridHeight = 4 * (BLOCK_SIZE + BLOCK_PADDING);
         
-        if (mouseX >= startX && mouseX <= startX + gridWidth && 
-            mouseY >= startY && mouseY <= startY + gridHeight) {
+        if (mouseX >= startX2 && mouseX <= startX2 + gridWidth &&
+            mouseY >= startY2 && mouseY <= startY2 + gridHeight) {
             // Scroll in main block grid
             int maxScroll = Math.max(0, (filteredBlocks.size() / BLOCKS_PER_ROW) - 4);
             int oldOffset = scrollOffset;

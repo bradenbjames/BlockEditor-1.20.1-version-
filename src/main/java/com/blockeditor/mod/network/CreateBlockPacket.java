@@ -56,7 +56,7 @@ public class CreateBlockPacket {
             if (blockId == null) {
                 return;
             }
-            
+
             String blockPath = blockId.getPath();
             String blockType = "stone"; // default
             if (blockPath.contains("wool")) blockType = "wool";
@@ -75,7 +75,7 @@ public class CreateBlockPacket {
             else if (blockPath.contains("deepslate")) blockType = "deepslate";
             else if (blockPath.contains("cobblestone")) blockType = "cobblestone";
             else if (blockPath.contains("smooth_stone")) blockType = "smooth_stone";
-            
+
             // Parse and normalize color (used if creating a new mapping)
             String normalizedHex = normalizeHex(packet.hexColor);
             int color;
@@ -196,82 +196,64 @@ public class CreateBlockPacket {
                 coloredBlock.setHoverName(net.minecraft.network.chat.Component.literal(effectiveName));
             }
 
-            // Improved inventory management - always try to put in hand first
-            boolean itemPlaced = false;
-            
-            int selectedSlot = player.getInventory().selected;
-            
-            if (player.getInventory().getItem(selectedSlot).isEmpty()) {
-                player.getInventory().setItem(selectedSlot, coloredBlock);
-                player.getInventory().selected = selectedSlot;
-                itemPlaced = true;
-            } else {
-                ItemStack selectedStackBeforeMove = player.getInventory().getItem(selectedSlot);
-                int emptyTarget = -1;
-                int containerSize = player.getInventory().getContainerSize();
+            // === Inventory placement policy ===
+            // 1) Try to place in an open hotbar slot (0..8) and select it
+            // 2) If none, try to place in an empty main inventory slot (9..containerSize-1)
+            // 3) If none, replace a non-hotbar inventory slot (drop the replaced stack) and do not touch the hotbar
+            boolean placed = false;
+            int containerSize = player.getInventory().getContainerSize();
+
+            // Step 1: empty hotbar slot
+            for (int i = 0; i < 9; i++) {
+                if (player.getInventory().getItem(i).isEmpty()) {
+                    player.getInventory().setItem(i, coloredBlock);
+                    player.getInventory().selected = i;
+                    placed = true;
+                    break;
+                }
+            }
+
+            // Step 2: empty main inventory slot
+            if (!placed) {
                 for (int i = 9; i < containerSize; i++) {
-                    if (i == selectedSlot) continue;
                     if (player.getInventory().getItem(i).isEmpty()) {
-                        emptyTarget = i;
+                        player.getInventory().setItem(i, coloredBlock);
+                        placed = true;
                         break;
-                    }
-                }
-                if (emptyTarget == -1) {
-                    for (int i = 0; i < 9; i++) {
-                        if (i == selectedSlot) continue;
-                        if (player.getInventory().getItem(i).isEmpty()) {
-                            emptyTarget = i;
-                            break;
-                        }
-                    }
-                }
-
-                if (emptyTarget != -1) {
-                    player.getInventory().setItem(emptyTarget, selectedStackBeforeMove);
-                    player.getInventory().setItem(selectedSlot, coloredBlock);
-                    player.getInventory().selected = selectedSlot;
-                    itemPlaced = true;
-                }
-
-                boolean foundEmptyHotbarSlot = false;
-                if (!itemPlaced) for (int hotbarSlot = 0; hotbarSlot < 9; hotbarSlot++) {
-                    if (player.getInventory().getItem(hotbarSlot).isEmpty()) {
-                        player.getInventory().setItem(hotbarSlot, coloredBlock);
-                        player.getInventory().selected = hotbarSlot;
-                        foundEmptyHotbarSlot = true;
-                        itemPlaced = true;
-                        break;
-                    }
-                }
-                
-                if (!foundEmptyHotbarSlot && !itemPlaced) {
-                    if (player.getInventory().add(coloredBlock)) {
-                        itemPlaced = true;
-                        for (int slot = 9; slot < player.getInventory().getContainerSize(); slot++) {
-                            ItemStack stackInSlot = player.getInventory().getItem(slot);
-                            if (stackInSlot == coloredBlock) {
-                                ItemStack currentlySelected = player.getInventory().getItem(selectedSlot);
-                                player.getInventory().setItem(selectedSlot, coloredBlock);
-                                player.getInventory().setItem(slot, currentlySelected);
-                                break;
-                            }
-                        }
-                    } else {
-                        player.drop(coloredBlock, false);
-                        player.displayClientMessage(
-                            net.minecraft.network.chat.Component.literal("§c§lInventory Full! §r§7Block dropped on ground"), 
-                            true
-                        );
                     }
                 }
             }
-            
-            if (itemPlaced) {
+
+            // Step 3: replace a non-hotbar slot (drop previous stack)
+            if (!placed) {
+                // Prefer the last slot (from end to start) to minimize disruption
+                for (int i = containerSize - 1; i >= 9; i--) {
+                    ItemStack toReplace = player.getInventory().getItem(i);
+                    if (!toReplace.isEmpty()) {
+                        // Drop the replaced stack near the player to avoid silent loss
+                        ItemStack dropCopy = toReplace.copy();
+                        player.getInventory().setItem(i, ItemStack.EMPTY);
+                        player.drop(dropCopy, false);
+
+                        player.getInventory().setItem(i, coloredBlock);
+                        placed = true;
+                        break;
+                    }
+                }
+            }
+
+            if (placed) {
                 String shownName = !effectiveName.isBlank() ? effectiveName : ("#" + storedHex);
-                // Show appropriate message depending on whether we reused or created
                 String action = reusedExisting ? "Ready" : "Created";
                 player.displayClientMessage(
-                    net.minecraft.network.chat.Component.literal("§a§lBlock " + action + "! §r§f" + shownName + " §7in your hand"),
+                    net.minecraft.network.chat.Component.literal("§a§lBlock " + action + "! §r§f" + shownName + (player.getInventory().selected < 9 && player.getInventory().getItem(player.getInventory().selected) == coloredBlock ? " §7(in your hand)" : " §7(in inventory)")),
+                    true
+                );
+            } else {
+                // This should never happen, but add a safe fallback
+                player.drop(coloredBlock, false);
+                player.displayClientMessage(
+                    net.minecraft.network.chat.Component.literal("§c§lInventory Full! §r§7Block dropped on ground"),
                     true
                 );
             }
@@ -279,7 +261,7 @@ public class CreateBlockPacket {
 
         context.setPacketHandled(true);
     }
-    
+
     private static String normalizeHex(String raw) {
         if (raw == null) return "FFFFFF";
         String s = raw.trim();

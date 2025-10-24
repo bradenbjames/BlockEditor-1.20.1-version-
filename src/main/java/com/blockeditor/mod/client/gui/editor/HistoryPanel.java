@@ -24,8 +24,17 @@ public final class HistoryPanel {
     private int scrollOffset = 0; // in items
     private BiConsumer<CreatedBlockInfo, Integer> onItemClick;
 
+    // New: left bound X that the panel should not cross (to avoid overlapping main content)
+    // If < 0, the panel will use full available screen width up to margin.
+    private int leftBoundX = -1;
+
     public void setOnItemClick(BiConsumer<CreatedBlockInfo, Integer> onItemClick) {
         this.onItemClick = onItemClick;
+    }
+
+    // Allow the screen to constrain the panel to the right side of a given X
+    public void setLeftBoundX(int x) {
+        this.leftBoundX = x;
     }
 
     public void render(Screen screen, GuiGraphics graphics, Font font, int mouseX, int mouseY) {
@@ -33,9 +42,10 @@ public final class HistoryPanel {
 
         int panelWidth = computePanelWidth(screen);
         int cols = computeColumns(panelWidth);
-        int panelX = screen.width - panelWidth - PANEL_MARGIN;
-        int panelY = 60;
-        int panelHeight = screen.height - panelY - 20;
+        Bounds bounds = computeBounds(screen, panelWidth);
+        int panelX = bounds.x;
+        int panelY = bounds.y;
+        int panelHeight = bounds.height;
 
         // Background and title bar
         graphics.fill(panelX - 5, panelY - TITLE_BAR_HEIGHT, panelX + panelWidth + 5, panelY + panelHeight + 5, 0xE0000000);
@@ -124,7 +134,7 @@ public final class HistoryPanel {
         List<CreatedBlockInfo> history = BlockEditorHistory.getHistory();
         if (history.isEmpty()) return false;
 
-        Bounds b = computeBounds(screen);
+        Bounds b = computeBounds(screen, computePanelWidth(screen));
         if (!b.contains(mouseX, mouseY)) return false;
 
         int cols = computeColumns(b.width);
@@ -154,7 +164,7 @@ public final class HistoryPanel {
         List<CreatedBlockInfo> history = BlockEditorHistory.getHistory();
         if (history.isEmpty()) return false;
 
-        Bounds b = computeBounds(screen);
+        Bounds b = computeBounds(screen, computePanelWidth(screen));
         if (!b.contains(mouseX, mouseY)) return false;
 
         int cols = computeColumns(b.width);
@@ -171,7 +181,7 @@ public final class HistoryPanel {
     }
 
     public boolean isMouseOver(Screen screen, double mouseX, double mouseY) {
-        Bounds b = computeBounds(screen);
+        Bounds b = computeBounds(screen, computePanelWidth(screen));
         return b.contains(mouseX, mouseY);
     }
 
@@ -210,23 +220,34 @@ public final class HistoryPanel {
         return text;
     }
 
-    private static int computePanelWidth(Screen screen) {
-        // Keep same overall panel size; more columns will fit due to smaller items
-        int base = 180;
-        int max = Math.max(base, screen.width / 4);
-        return Math.min(max, 300);
+    private int computePanelWidth(Screen screen) {
+        // Compute available width to the right of leftBoundX (if provided), up to a max
+        int rightMargin = PANEL_MARGIN;
+        int available;
+        if (leftBoundX >= 0) {
+            available = Math.max(0, screen.width - leftBoundX - rightMargin);
+        } else {
+            available = screen.width / 4; // fallback heuristic when no bound provided
+        }
+        int max = 300;
+        int panelWidth = Math.min(max, Math.max(ITEM_WIDTH, available)); // allow shrinking to 1,2,3 columns
+        return panelWidth;
     }
 
     private static int computeColumns(int panelWidth) {
-        // Dynamically compute how many ITEM_WIDTH cells fit into the panel
-        return Math.max(1, (panelWidth + ITEM_SPACING) / (ITEM_WIDTH + ITEM_SPACING));
+        // Dynamically compute how many ITEM_WIDTH cells fit into the panel, capped at 3 columns
+        int computed = Math.max(1, (panelWidth + ITEM_SPACING) / (ITEM_WIDTH + ITEM_SPACING));
+        return Math.min(3, computed);
     }
 
-    private Bounds computeBounds(Screen screen) {
-        int panelWidth = computePanelWidth(screen);
+    private Bounds computeBounds(Screen screen, int panelWidth) {
         int panelX = screen.width - panelWidth - PANEL_MARGIN;
         int panelY = 60;
         int panelHeight = screen.height - panelY - 20;
+        // Ensure we don't cross the left bound if provided
+        if (leftBoundX >= 0 && panelX < leftBoundX) {
+            panelX = leftBoundX;
+        }
         return new Bounds(panelX, panelY, panelWidth, panelHeight);
     }
 

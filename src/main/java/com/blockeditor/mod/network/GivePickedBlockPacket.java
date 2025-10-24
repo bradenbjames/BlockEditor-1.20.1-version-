@@ -154,60 +154,60 @@ public class GivePickedBlockPacket {
                 return;
             }
 
-            // Not found: give/add the stack
-            // If creative, ensure only one is ever present by setting count=1
+            // Not found: give/add the stack following placement policy
             if (isCreative) stack.setCount(1);
 
-            int selectedSlot = player.getInventory().selected;
             boolean placed = false;
+            int containerSize = player.getInventory().getContainerSize();
 
-            // Prefer selected slot if empty
-            if (player.getInventory().getItem(selectedSlot).isEmpty()) {
-                player.getInventory().setItem(selectedSlot, stack);
-                placed = true;
-            } else {
-                // Try empty hotbar slot
-                for (int i = 0; i < 9; i++) {
+            // 1) Try an empty hotbar slot and select it
+            for (int i = 0; i < 9; i++) {
+                if (player.getInventory().getItem(i).isEmpty()) {
+                    player.getInventory().setItem(i, stack);
+                    player.getInventory().selected = i;
+                    placed = true;
+                    break;
+                }
+            }
+
+            // 2) Try an empty main inventory slot
+            if (!placed) {
+                for (int i = 9; i < containerSize; i++) {
                     if (player.getInventory().getItem(i).isEmpty()) {
                         player.getInventory().setItem(i, stack);
-                        player.getInventory().selected = i;
                         placed = true;
                         break;
                     }
                 }
-                // Try empty main inventory slot
-                if (!placed) {
-                    for (int i = 9; i < player.getInventory().getContainerSize(); i++) {
-                        if (player.getInventory().getItem(i).isEmpty()) {
-                            player.getInventory().setItem(i, stack);
-                            // Move it to selected
-                            ItemStack curSel = player.getInventory().getItem(selectedSlot);
-                            player.getInventory().setItem(selectedSlot, stack);
-                            player.getInventory().setItem(i, curSel);
-                            placed = true;
-                            break;
-                        }
-                    }
-                }
-                // As a last resort, try add() which stacks if possible
-                if (!placed) {
-                    if (player.getInventory().add(stack)) {
+            }
+
+            // 3) Replace a non-hotbar slot: drop replaced stack, insert new one; keep hotbar untouched
+            if (!placed) {
+                for (int i = containerSize - 1; i >= 9; i--) {
+                    ItemStack toReplace = player.getInventory().getItem(i);
+                    if (!toReplace.isEmpty()) {
+                        ItemStack dropCopy = toReplace.copy();
+                        player.getInventory().setItem(i, ItemStack.EMPTY);
+                        player.drop(dropCopy, false);
+                        player.getInventory().setItem(i, stack);
                         placed = true;
-                    } else {
-                        // Drop on ground if no space
-                        player.drop(stack, false);
-                        player.displayClientMessage(
-                            net.minecraft.network.chat.Component.literal("§c§lInventory Full! §r§7Block dropped on ground"),
-                            true
-                        );
+                        break;
                     }
                 }
             }
 
             if (placed) {
                 String show = (maybeCustomName != null && !maybeCustomName.isBlank()) ? maybeCustomName : ("#" + hex);
+                boolean inHand = player.getInventory().selected < 9 && player.getInventory().getItem(player.getInventory().selected) == stack;
                 player.displayClientMessage(
-                    net.minecraft.network.chat.Component.literal("§a§lPicked! §r§f" + show + " §7in your hand"),
+                    net.minecraft.network.chat.Component.literal("§a§lPicked! §r§f" + show + (inHand ? " §7(in your hand)" : " §7(in inventory)")),
+                    true
+                );
+            } else {
+                // Fallback (should not happen): drop
+                player.drop(stack, false);
+                player.displayClientMessage(
+                    net.minecraft.network.chat.Component.literal("§c§lInventory Full! §r§7Block dropped on ground"),
                     true
                 );
             }

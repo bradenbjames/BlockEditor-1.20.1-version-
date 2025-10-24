@@ -36,7 +36,7 @@ public final class InventoryHelper {
         }
 
         if (foundSlot != -1) {
-            // If the item exists in the hotbar, just select it. Do NOT mutate inventory contents client-side.
+            // If the item exists in the hotbar, just select it.
             if (foundSlot < 9) {
                 inventory.selected = foundSlot;
                 minecraft.player.displayClientMessage(
@@ -48,11 +48,22 @@ public final class InventoryHelper {
                 }
                 return;
             }
-            // If it's in the main inventory (slot >= 9), avoid client-only swaps.
-            // Fall through to request the server to provide an item in hand instead.
+            // Found in main inventory: request server-authoritative move into the hotbar (swaps if hotbar is full)
+            if (minecraft.gameMode != null) {
+                minecraft.gameMode.handlePickItem(foundSlot);
+                minecraft.player.displayClientMessage(
+                    net.minecraft.network.chat.Component.literal("§a✓ Equipped from inventory: §f" + targetCustomName + " §7(#" + targetColor + ")"),
+                    true
+                );
+                if (minecraft.screen != null) {
+                    minecraft.screen.onClose();
+                }
+                return;
+            }
+            // If gameMode is unexpectedly null, fall through to server creation as a safe fallback.
         }
 
-        // Not found in hotbar (or only found in main inventory): request server to recreate and give the item based on history entry
+        // Not found in hotbar or gameMode unavailable: request server to recreate and give the item based on history entry
         try {
             // Determine mimic block id and dynamic block type id
             var mimicKey = net.minecraftforge.registries.ForgeRegistries.BLOCKS.getKey(blockInfo.originalBlock);
