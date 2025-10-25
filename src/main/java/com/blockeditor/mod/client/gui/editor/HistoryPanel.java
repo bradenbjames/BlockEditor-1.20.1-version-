@@ -8,18 +8,26 @@ import net.minecraft.client.gui.screens.Screen;
 
 import java.util.List;
 import java.util.function.BiConsumer;
+import com.mojang.logging.LogUtils;
+import org.slf4j.Logger;
 
 public final class HistoryPanel {
     // Layout constants
     private static final int PANEL_MARGIN = 10;
+    private static final int INNER_PADDING = 8; // equal space on left/right inside the panel
     private static final int ITEM_HEIGHT = 18; // compact height
-    private static final int ITEM_WIDTH = 50;  // slightly narrower than before to fit more columns
+    private static final int ITEM_WIDTH = 46;  // slightly narrower to allow more columns on wide panels
     private static final int ITEM_SPACING = 2; // tighter spacing
     private static final int TITLE_BAR_HEIGHT = 16;
+    // Increase top padding so there is a visible gap under the "Recent Blocks" header
+    private static final int CONTENT_TOP_PADDING = 10; // space between title bar and first row of items
+    // Larger bottom inset to avoid the panel overlapping bottom-aligned buttons/widgets
+    private static final int BOTTOM_INSET = 6; // small inset so panel doesn't overlap bottom-aligned widgets
+    private static final int SCROLLBAR_WIDTH = 6; // width reserved for the external scrollbar
 
     // Text scales for compact entries
-    private static final float NAME_TEXT_SCALE = 0.76f; // even smaller
-    private static final float HEX_TEXT_SCALE = 0.50f;  // much smaller
+    private static final float NAME_TEXT_SCALE = 0.65f; // even smaller
+    private static final float HEX_TEXT_SCALE = 0.40f;  // much smaller
 
     private int scrollOffset = 0; // in items
     private BiConsumer<CreatedBlockInfo, Integer> onItemClick;
@@ -27,6 +35,12 @@ public final class HistoryPanel {
     // New: left bound X that the panel should not cross (to avoid overlapping main content)
     // If < 0, the panel will use full available screen width up to margin.
     private int leftBoundX = -1;
+    // Optional vertical constraints so the screen can align the panel with other UI elements
+    // If topBoundY or bottomBoundY < 0 they are ignored and defaults are used
+    private int topBoundY = -1;
+    private int bottomBoundY = -1;
+
+    private static final Logger LOGGER = LogUtils.getLogger();
 
     public void setOnItemClick(BiConsumer<CreatedBlockInfo, Integer> onItemClick) {
         this.onItemClick = onItemClick;
@@ -37,19 +51,29 @@ public final class HistoryPanel {
         this.leftBoundX = x;
     }
 
+    // Allow the screen to specify exact vertical bounds for the panel (top and bottom Y coordinates)
+    public void setVerticalBounds(int topY, int bottomY) {
+        this.topBoundY = topY;
+        this.bottomBoundY = bottomY;
+    }
+
     public void render(Screen screen, GuiGraphics graphics, Font font, int mouseX, int mouseY) {
         List<CreatedBlockInfo> history = BlockEditorHistory.getHistory();
 
         int panelWidth = computePanelWidth(screen);
-        int cols = computeColumns(panelWidth);
+        // Compute effective content width accounting for symmetric inner padding and the
+        // internal scrollbar width so items never draw under the rail.
+        int contentWidth = Math.max(0, panelWidth - (INNER_PADDING * 2) - SCROLLBAR_WIDTH);
+
+        int cols = computeColumns(contentWidth);
         Bounds bounds = computeBounds(screen, panelWidth);
         int panelX = bounds.x;
         int panelY = bounds.y;
         int panelHeight = bounds.height;
 
-        // Background and title bar
-        graphics.fill(panelX - 5, panelY - TITLE_BAR_HEIGHT, panelX + panelWidth + 5, panelY + panelHeight + 5, 0xE0000000);
-        graphics.fill(panelX - 5, panelY - TITLE_BAR_HEIGHT, panelX + panelWidth + 5, panelY - 5, 0xFF333333);
+        // Background and title bar (use exact panel bounds so we don't overlap the external scrollbar)
+        graphics.fill(panelX, panelY - TITLE_BAR_HEIGHT, panelX + panelWidth, panelY + panelHeight, 0xE0000000);
+        graphics.fill(panelX, panelY - TITLE_BAR_HEIGHT, panelX + panelWidth, panelY, 0xFF333333);
 
         // Title centered and slightly scaled
         var pose = graphics.pose();
@@ -64,12 +88,19 @@ public final class HistoryPanel {
             return;
         }
 
-        int rowsVisible = Math.max(1, panelHeight / (ITEM_HEIGHT + ITEM_SPACING));
+        // Compute visible rows and scrolling using the padded content height so layout, scrollbar
+        // and interaction all agree about where items are placed.
+        int effectivePanelHeight = Math.max(0, panelHeight - CONTENT_TOP_PADDING);
+        int rowsVisible = Math.max(1, effectivePanelHeight / (ITEM_HEIGHT + ITEM_SPACING));
         int maxVisible = rowsVisible * cols;
         int maxScroll = Math.max(0, history.size() - maxVisible);
         scrollOffset = Math.max(0, Math.min(scrollOffset, maxScroll));
 
-        graphics.enableScissor(panelX - 5, panelY, panelX + panelWidth + 5, panelY + panelHeight);
+        // Use exact panel bounds for scissor to avoid drawing under the external scrollbar
+        graphics.enableScissor(panelX, panelY, panelX + panelWidth, panelY + panelHeight);
+
+        // Account for top padding inside the panel so there is space between the title and the first row
+        // (variables computed above are reused here)
 
         for (int visibleIndex = 0; visibleIndex < maxVisible; visibleIndex++) {
             int dataIndex = scrollOffset + visibleIndex;
@@ -79,8 +110,10 @@ public final class HistoryPanel {
             int row = visibleIndex / cols;
             int col = visibleIndex % cols;
 
-            int itemX = panelX + 4 + col * (ITEM_WIDTH + ITEM_SPACING);
-            int itemY = panelY + row * (ITEM_HEIGHT + ITEM_SPACING);
+            // No extra per-item shift here: panelX is already adjusted in computeBounds when constrained.
+            int itemX = panelX + INNER_PADDING + col * (ITEM_WIDTH + ITEM_SPACING);
+            // Add top padding so the first row is offset from the title bar
+            int itemY = panelY + CONTENT_TOP_PADDING + row * (ITEM_HEIGHT + ITEM_SPACING);
 
             boolean hovered = mouseX >= itemX && mouseX < itemX + ITEM_WIDTH && mouseY >= itemY && mouseY < itemY + ITEM_HEIGHT;
             int bg = hovered ? 0x80CCCCCC : ((row % 2 == 0) ? 0x40FFFFFF : 0x20FFFFFF);
@@ -116,17 +149,29 @@ public final class HistoryPanel {
 
         graphics.disableScissor();
 
-        // Optional scrollbar when overflow
+        // Optional scrollbar when overflow (use the padded rows count for consistent sizing)
         int totalRows = (int) Math.ceil(history.size() / (double) cols);
-        if (totalRows > rowsVisible) {
-            int scrollBarX = panelX + panelWidth + 2;
-            graphics.fill(scrollBarX, panelY, scrollBarX + 3, panelY + panelHeight, 0xFF666666);
+        // Place the scrollbar rail flush with the panel's right edge so it visually aligns
+        // with the content area; we've reserved SCROLLBAR_WIDTH from contentWidth above.
+        int scrollBarX = panelX + panelWidth - SCROLLBAR_WIDTH;
 
-            int thumbHeight = Math.max(10, (rowsVisible * panelHeight) / totalRows);
-            int scrollRowOffset = scrollOffset / cols;
+        // Draw rail constrained to the item area (exclude the title bar). This keeps the rail and
+        // thumb visually aligned with the rows they control.
+        int railTop = panelY + CONTENT_TOP_PADDING;
+        int railBottom = panelY + panelHeight;
+        graphics.fill(scrollBarX, railTop, scrollBarX + SCROLLBAR_WIDTH, railBottom, 0xFF666666);
+
+        if (totalRows <= rowsVisible) {
+            // No overflow: thumb fills the rail height
+            int thumbHeight = Math.max(10, effectivePanelHeight);
+            graphics.fill(scrollBarX, railTop, scrollBarX + SCROLLBAR_WIDTH, railTop + thumbHeight, 0xFF4D4D4D);
+        } else {
+            // Normal overflow case: draw proportional thumb using the padded rows and height
+            int thumbHeight = Math.max(10, (rowsVisible * effectivePanelHeight) / totalRows);
+            int scrollRowOffset = scrollOffset / cols; // convert item offset to row offset
             int maxScrollRows = Math.max(1, totalRows - rowsVisible);
-            int thumbY = panelY + (scrollRowOffset * (panelHeight - thumbHeight)) / maxScrollRows;
-            graphics.fill(scrollBarX, thumbY, scrollBarX + 3, thumbY + thumbHeight, 0xFFCCCCCC);
+            int thumbY = railTop + (scrollRowOffset * (effectivePanelHeight - thumbHeight)) / maxScrollRows;
+            graphics.fill(scrollBarX, thumbY, scrollBarX + SCROLLBAR_WIDTH, thumbY + thumbHeight, 0xFFCCCCCC);
         }
     }
 
@@ -138,15 +183,20 @@ public final class HistoryPanel {
         if (!b.contains(mouseX, mouseY)) return false;
 
         int cols = computeColumns(b.width);
-        int rowsVisible = Math.max(1, b.height / (ITEM_HEIGHT + ITEM_SPACING));
+        // Account for the top padding when computing visible rows for hit detection
+        int rowsVisible = Math.max(1, Math.max(0, b.height - CONTENT_TOP_PADDING) / (ITEM_HEIGHT + ITEM_SPACING));
         int maxVisible = rowsVisible * cols;
 
         int relX = (int) (mouseX - b.x);
         int relY = (int) (mouseY - b.y);
 
+        // Subtract the content top padding so clicks above the first row are ignored
+        relY -= CONTENT_TOP_PADDING;
+        if (relY < 0) return false;
+
         int col = relX / (ITEM_WIDTH + ITEM_SPACING);
         int row = relY / (ITEM_HEIGHT + ITEM_SPACING);
-        if (col < 0 || col >= cols || row < 0) return false;
+        if (col < 0 || col >= cols) return false;
 
         int visibleIndex = row * cols + col;
         if (visibleIndex < 0 || visibleIndex >= maxVisible) return false;
@@ -168,7 +218,8 @@ public final class HistoryPanel {
         if (!b.contains(mouseX, mouseY)) return false;
 
         int cols = computeColumns(b.width);
-        int rowsVisible = Math.max(1, b.height / (ITEM_HEIGHT + ITEM_SPACING));
+        // Use padded rows for scroll calculations so scroll amount matches visible items
+        int rowsVisible = Math.max(1, Math.max(0, b.height - CONTENT_TOP_PADDING) / (ITEM_HEIGHT + ITEM_SPACING));
         int maxVisible = rowsVisible * cols;
         int maxScroll = Math.max(0, history.size() - maxVisible);
 
@@ -222,37 +273,75 @@ public final class HistoryPanel {
 
     private int computePanelWidth(Screen screen) {
         // Compute available width to the right of leftBoundX (if provided), up to a max
-        int rightMargin = PANEL_MARGIN;
         int available;
         if (leftBoundX >= 0) {
-            available = Math.max(0, screen.width - leftBoundX - rightMargin);
+            // Allow the panel to expand all the way to the right (we will render the scrollbar
+            // inside the panel itself). Don't reserve extra space for an external scrollbar.
+            available = Math.max(0, screen.width - leftBoundX - PANEL_MARGIN);
         } else {
             available = screen.width / 4; // fallback heuristic when no bound provided
         }
-        int max = 300;
-        return Math.min(max, Math.max(ITEM_WIDTH, available));
+        // Use the available space (right half) directly so the panel naturally fills the right side.
+        // Ensure at least ITEM_WIDTH plus inner padding is returned.
+        return Math.max(ITEM_WIDTH + INNER_PADDING * 2 + 6, available);
     }
 
-    private static int computeColumns(int panelWidth) {
-        // Dynamically compute how many ITEM_WIDTH cells fit into the panel, capped at 4 columns for readability
-        int computed = Math.max(1, (panelWidth + ITEM_SPACING) / (ITEM_WIDTH + ITEM_SPACING));
-        return Math.min(4, computed);
+    private int computeColumns(int contentWidth) {
+        // contentWidth is already panelWidth minus inner padding; compute how many cells fit
+        int computed = Math.max(1, (contentWidth + ITEM_SPACING) / (ITEM_WIDTH + ITEM_SPACING));
+        // If the panel is constrained (we'll place the scrollbar at the far right), allow one
+        // additional column to use the freed-up layout on wide displays. Keep an upper cap.
+        if (this.leftBoundX >= 0) {
+            computed = computed + 1;
+        }
+        int upperCap = 8; // allow up to 8 columns on very wide panels
+        return Math.min(computed, upperCap);
     }
 
     private Bounds computeBounds(Screen screen, int panelWidth) {
-        int panelX = screen.width - panelWidth - PANEL_MARGIN;
-        int panelY = 60;
-        int panelHeight = screen.height - panelY - 20;
-        // Ensure we don't cross the left bound if provided
-        if (leftBoundX >= 0 && panelX < leftBoundX) {
-            panelX = leftBoundX;
+        int panelX;
+        if (leftBoundX >= 0) {
+            // If constrained, place the panel so its right edge sits directly left of the scrollbar rail.
+            panelX = screen.width - panelWidth - PANEL_MARGIN;
+            // Ensure we still respect the provided left bound. If our computed X would start left of the
+            // requested leftBoundX, clamp the X to leftBoundX and expand the width so the panel still
+            // reaches the scrollbar rail if possible.
+            if (panelX < leftBoundX) {
+                panelX = leftBoundX;
+                // Recompute panelWidth so the panel extends to the scrollbar rail (no gap)
+                panelWidth = Math.max(ITEM_WIDTH + INNER_PADDING * 2 + 6,
+                        Math.max(0, screen.width - panelX - PANEL_MARGIN));
+            }
+        } else {
+            panelX = screen.width - panelWidth - PANEL_MARGIN;
+        }
+        int panelY;
+        int panelHeight;
+        if (this.topBoundY >= 0 && this.bottomBoundY > this.topBoundY) {
+            // Interpret provided topBoundY as the top of the title bar (so callers can align the
+            // title bar with other UI elements). Compute the actual content Y (panelY) by
+            // shifting down by TITLE_BAR_HEIGHT. Clamp to the screen and compute the height so
+            // the panel's bottom matches bottomBoundY.
+            int requestedTitleTop = Math.max(0, Math.min(this.topBoundY, screen.height - 1));
+            panelY = Math.max(0, requestedTitleTop + TITLE_BAR_HEIGHT);
+            // Ensure we don't produce a negative height; bottomBoundY is expected to be the
+            // absolute bottom coordinate (e.g., bottom of the buttons). Compute height as
+            // bottomBoundY - panelY clamped to screen, and subtract a small BOTTOM_INSET
+            // to avoid overlapping bottom-aligned widgets.
+            panelHeight = Math.max(ITEM_HEIGHT, Math.min(screen.height - panelY, this.bottomBoundY - panelY - BOTTOM_INSET));
+            LOGGER.info("HistoryPanel.computeBounds: requestedTitleTop={}, panelY={}, panelHeight={}, bottomBoundY={}", requestedTitleTop, panelY, panelHeight, this.bottomBoundY);
+        } else {
+            panelY = 60;
+            // Subtract a small bottom inset so the panel doesn't reach all the way to the screen bottom
+            panelHeight = screen.height - panelY - 20 - BOTTOM_INSET;
         }
         return new Bounds(panelX, panelY, panelWidth, panelHeight);
     }
 
     private record Bounds(int x, int y, int width, int height) {
         boolean contains(double mx, double my) {
-            return mx >= x - 5 && mx <= x + width + 5 && my >= y && my <= y + height;
+            // Use exact panel bounds so clicks on the external scrollbar are not treated as panel clicks
+            return mx >= x && mx <= x + width && my >= y && my <= y + height;
         }
     }
 }

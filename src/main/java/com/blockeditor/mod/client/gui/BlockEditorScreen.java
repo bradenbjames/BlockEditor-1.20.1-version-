@@ -21,18 +21,23 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
-import net.minecraftforge.registries.ForgeRegistries;
-
-import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.ArrayList;
+import java.io.File;
+import net.minecraftforge.registries.ForgeRegistries;
 
 public class BlockEditorScreen extends Screen {
 
     // Layout constants for main grid
-    private static final int BLOCKS_PER_ROW = 8;
+    private static final int DEFAULT_BLOCKS_PER_ROW = 6; // default columns for most screens
+    private static final int LARGE_SCREEN_BLOCKS = 7; // extra column for large displays
+    private static final int LARGE_SCREEN_WIDTH_THRESHOLD = 1920; // px threshold to use extra column
     private static final int BLOCK_SIZE = 32;
     private static final int BLOCK_PADDING = 4;
+    private static final int GRID_MAX_ROWS = 4; // number of visible rows in the grid
+    private static final int HISTORY_GUTTER = 12; // horizontal gap between grid and history panel
+    // How many pixels to shift the main content left to give more room to the history panel
+    // private static final int MAIN_CONTENT_SHIFT = 30; // further reduced to keep the custom-panel on-screen
 
     private static final Logger LOGGER = LogUtils.getLogger();
 
@@ -44,6 +49,7 @@ public class BlockEditorScreen extends Screen {
     private EditBox searchBox;
     private EditBox nameBox;
     private Button createButton;
+    private Button cancelButton;
     private Button clearRegistryButton;
 
     // Confirmation dialog state
@@ -54,6 +60,21 @@ public class BlockEditorScreen extends Screen {
 
     // New: encapsulated history UI/logic
     private final HistoryPanel historyPanel = new HistoryPanel();
+
+    // Helper to compute grid and history layout so the left half of the screen is the grid
+    private int computeGridStartX(int blockGridWidth) {
+        // Reserve the left half of the screen for the custom grid (minus a small margin)
+        int leftAreaMargin = 20;
+        // Use a larger reserved area on large screens to make room for an extra column
+        int reservedPercent = (this.width >= LARGE_SCREEN_WIDTH_THRESHOLD) ? 60 : 50; // percent of total width
+        int leftAreaWidth = Math.max(0, (this.width * reservedPercent / 100) - (leftAreaMargin * 2));
+         if (blockGridWidth >= leftAreaWidth) {
+             // Not enough room to center: start at margin
+             return leftAreaMargin;
+         }
+         // center the grid in the reserved left half
+         return leftAreaMargin + (leftAreaWidth - blockGridWidth) / 2;
+     }
 
     public BlockEditorScreen() {
         super(Component.literal("Block Editor"));
@@ -79,11 +100,12 @@ public class BlockEditorScreen extends Screen {
         }
         filteredBlocks = new ArrayList<>(allBlocks);
 
-        int centerX = this.width / 2 - 40; // Shift main content left by 40px
-
-        // Calculate block grid width: 8 blocks × (32 + 4 padding) = 288 pixels
-        int blockGridWidth = BLOCKS_PER_ROW * (BLOCK_SIZE + BLOCK_PADDING);
-        int gridStartX = centerX - (blockGridWidth / 2);
+        // Calculate block grid width based on a dynamic column count (large screens get +1 column)
+        int blocksPerRow = computeBlocksPerRow();
+        // Exact grid width: N * BLOCK_SIZE + (N-1) * BLOCK_PADDING (no trailing padding after last column)
+        int blockGridWidth = blocksPerRow * BLOCK_SIZE + (blocksPerRow - 1) * BLOCK_PADDING;
+        // Place the main grid centered inside the left half of the screen
+        int gridStartX = computeGridStartX(blockGridWidth);
 
         // Search box - hidden from UI but functionality kept
         int searchWidth = 120; 
@@ -95,37 +117,73 @@ public class BlockEditorScreen extends Screen {
         int hexY = 30;
 
         // Custom hex input box
-        int hexX = gridStartX; // align exactly with the grid's left edge
-        hexBox = BlockEditorWidgets.createHexBox(this.font, hexX, hexY, hexColor);
+        hexBox = BlockEditorWidgets.createHexBox(this.font, gridStartX, hexY, hexColor);
         this.addRenderableWidget(hexBox);
 
         // Custom name input box - placed with consistent gap after hex box
         int gap = 10; // slightly thinner gap
-        int nameX = hexX + hexBox.getWidth() + gap;
+        int nameX = gridStartX + hexBox.getWidth() + gap;
         nameBox = BlockEditorWidgets.createNameBox(this.font, nameX, hexY);
         this.addRenderableWidget(nameBox);
 
-        // Buttons - positioned just above player inventory
-        int buttonY = this.height - 85; // Position buttons just above player inventory
+        // Buttons - positioned lower (moved down) so they don't overlap the block grid
+        // Compute grid bottom and place buttons 30px below it instead of anchoring to window bottom
+        int gridStartY = 55; // must match renderBlockGrid's startY
+        // Exact grid height: rows * BLOCK_SIZE + (rows-1) * BLOCK_PADDING (no trailing padding after last row)
+        int gridHeight = GRID_MAX_ROWS * BLOCK_SIZE + (GRID_MAX_ROWS - 1) * BLOCK_PADDING;
+        int buttonY = gridStartY + gridHeight + 30; // 30px after bottom of the grid
+        // Clamp buttonY so buttons stay on-screen (assume button height ~20px)
+        int minBottomMargin = 20;
+        int assumedButtonHeight = 20;
+        if (buttonY + assumedButtonHeight + minBottomMargin > this.height) {
+            buttonY = this.height - assumedButtonHeight - minBottomMargin;
+        }
         int buttonSpacing = 10;
-        int buttonWidth = 90;
-        int totalButtonWidth = (buttonWidth * 2) + buttonSpacing;
-        int buttonStartX = centerX - (totalButtonWidth / 2);
+        // We'll place all buttons in one row, left-aligned to the grid
+        int numButtons = 3; // Create, Cancel, Clear
 
-        // Create Block button
-        createButton = BlockEditorWidgets.createButton("Create Block", buttonStartX, buttonY, buttonWidth, this::createColoredBlock);
+        // Compute history panel left bound so it does not overlap the grid (use grid right + smaller gutter)
+        int historyLeftBoundInit = gridStartX + blockGridWidth + HISTORY_GUTTER;
+         // Available horizontal space from grid left to history panel (minus small margin)
+        int availableForButtons = Math.max(0, historyLeftBoundInit - gridStartX - 20);
+
+        // Compute the maximum possible width per button so the entire row fits inside availableForButtons
+        int maxPossibleWidth = (availableForButtons - (buttonSpacing * (numButtons - 1))) / numButtons;
+        // Choose a width that never exceeds the available space. If there's not enough room for the preferred min,
+        // accept a smaller width (to avoid overlapping the history panel).
+        // We intentionally allow widths smaller than minButtonWidth if space is limited.
+        // Prefer reasonably small buttons on large screens so they align well under the grid.
+        int preferredButtonWidth = 110;
+        int buttonWidthActual = Math.min(preferredButtonWidth, Math.max(1, maxPossibleWidth));
+
+        // Create the three equally sized buttons in one row.
+        // Align the right edge of the button group to the right edge of the grid (user requested)
+        int totalButtonsWidth = numButtons * buttonWidthActual + (numButtons - 1) * buttonSpacing;
+        int gridRightX = gridStartX + blockGridWidth;
+        int startButtonsX = Math.max(gridStartX, gridRightX - totalButtonsWidth); // clamp so buttons don't go left of grid
+
+        createButton = BlockEditorWidgets.createButton("Create Block", startButtonsX, buttonY, buttonWidthActual, this::createColoredBlock);
         this.addRenderableWidget(createButton);
 
-        // Cancel button
-        this.addRenderableWidget(BlockEditorWidgets.createButton("Cancel", buttonStartX + buttonWidth + buttonSpacing, buttonY, buttonWidth, this::onClose));
+        cancelButton = BlockEditorWidgets.createButton("Cancel", startButtonsX + (buttonWidthActual + buttonSpacing), buttonY, buttonWidthActual, this::onClose);
+        this.addRenderableWidget(cancelButton);
 
-        // Clear Registry button - positioned below other buttons
-        clearRegistryButton = BlockEditorWidgets.createButton("Clear Registry", buttonStartX, buttonY + 25, buttonWidth, this::handleClearRegistryClick);
+        clearRegistryButton = BlockEditorWidgets.createButton("Clear Registry", startButtonsX + (buttonWidthActual + buttonSpacing) * 2, buttonY, buttonWidthActual, this::handleClearRegistryClick);
         this.addRenderableWidget(clearRegistryButton);
 
-        // Constrain history panel so it doesn't overlap the main grid or fields; let it shrink to fit
-        int historyLeftBound = gridStartX + blockGridWidth + 8; // right edge of grid + thinner gutter
-        historyPanel.setLeftBoundX(historyLeftBound);
+        // Constrain history panel so it doesn't overlap the main grid or buttons; place it to the right of the block grid
+        historyPanel.setLeftBoundX(historyLeftBoundInit); // use grid-based bound so buttons stay left-aligned
+        // Align the panel vertically so it starts at the color/name input row and ends at the button row.
+        // This will make the history panel top align with the input boxes and bottom align with the buttons.
+        int initialTop = hexY;
+        if (hexBox != null) initialTop = hexBox.getY();
+        if (nameBox != null) initialTop = Math.min(initialTop, nameBox.getY());
+        // Use the maximum bottom of all buttons so the panel bottom lines up exactly.
+        int initialBottom = buttonY + assumedButtonHeight - 1; // base guess
+        if (createButton != null) initialBottom = Math.max(initialBottom, createButton.getY() + createButton.getHeight() - 1);
+        if (this.cancelButton != null) initialBottom = Math.max(initialBottom, this.cancelButton.getY() + this.cancelButton.getHeight() - 1);
+        if (clearRegistryButton != null) initialBottom = Math.max(initialBottom, clearRegistryButton.getY() + clearRegistryButton.getHeight() - 1);
+        historyPanel.setVerticalBounds(initialTop, initialBottom);
 
         // Wire history panel item click behavior
         historyPanel.setOnItemClick((info, mouseButton) -> {
@@ -148,16 +206,13 @@ public class BlockEditorScreen extends Screen {
         // Render background
         graphics.fill(0, 0, this.width, this.height, 0xC0101010);
 
-        // Draw title
-        graphics.drawCenteredString(this.font, this.title, this.width / 2 - 40, 10, 0xFFFFFF);
-
         // Draw block grid
-        renderBlockGrid(graphics, mouseX, mouseY);
+         renderBlockGrid(graphics, mouseX, mouseY);
 
-        // Calculate positions to match init()
-        int centerX = this.width / 2 - 40; // Shift main content left
-        int blockGridWidth = BLOCKS_PER_ROW * (BLOCK_SIZE + BLOCK_PADDING);
-        int gridStartX = centerX - (blockGridWidth / 2);
+        // Calculate positions to match init() - grid centered in left half
+        int blocksPerRowRuntime = computeBlocksPerRow();
+        int blockGridWidth = blocksPerRowRuntime * BLOCK_SIZE + (blocksPerRowRuntime - 1) * BLOCK_PADDING;
+        int gridStartX = computeGridStartX(blockGridWidth);
 
         // # symbol is now integrated into the hex input box
         
@@ -181,8 +236,9 @@ public class BlockEditorScreen extends Screen {
             int color = BlockValidation.parseHexColor(hexBox.getValue());
             int previewSize = 16; // Same size as blocks in selection grid (16px item size, not scaled)
 
-            // Position aligned with the rightmost column of the selection grid (column 7)
-            int blockPreviewX = gridStartX + (7 * (BLOCK_SIZE + BLOCK_PADDING)) + 8; // Column 7 + 8px offset like grid blocks
+            // Position aligned with the rightmost column of the selection grid
+            int rightmostCol = blocksPerRowRuntime - 1;
+            int blockPreviewX = gridStartX + (rightmostCol * (BLOCK_SIZE + BLOCK_PADDING)) + 8; // align with rightmost column
             int blockPreviewY = nameBox.getY() + (nameBox.getHeight() - previewSize) / 2; // Vertically centered with name box
 
             // Save the current pose
@@ -208,17 +264,43 @@ public class BlockEditorScreen extends Screen {
             pose.popPose();
         }
 
-        // Draw history panel on the right side (delegated)
-        historyPanel.render(this, graphics, this.font, mouseX, mouseY);
+        // Recompute left bound each frame based on the current grid so the panel follows the grid if the window is resized
+        blocksPerRowRuntime = computeBlocksPerRow();
+        int blockGridWidthRuntime = blocksPerRowRuntime * BLOCK_SIZE + (blocksPerRowRuntime - 1) * BLOCK_PADDING;
+        int gridStartXRuntime = computeGridStartX(blockGridWidthRuntime);
+        int runtimeHistoryLeftBound = gridStartXRuntime + blockGridWidthRuntime + HISTORY_GUTTER; // match gutter
+        historyPanel.setLeftBoundX(runtimeHistoryLeftBound);
+        // Also update vertical bounds each frame so the panel top starts at the input boxes
+        // and the bottom aligns with the buttons. This keeps the red-box alignment you showed
+        // even if the window is resized or widgets move.
+        int panelTop = 30; // default top (matches init's hexY)
+        // Prefer the actual hex/name widget positions when available so the panel aligns exactly
+        if (hexBox != null) panelTop = hexBox.getY();
+        if (nameBox != null) panelTop = Math.min(panelTop, nameBox.getY());
+        // Use the maximum bottom of the visible button row so the panel bottom matches all buttons
+        int panelBottom = this.height - 20; // default bottom fallback
+        if (createButton != null) panelBottom = Math.max(panelBottom, createButton.getY() + createButton.getHeight() - 1);
+        if (cancelButton != null) panelBottom = Math.max(panelBottom, cancelButton.getY() + cancelButton.getHeight() - 1);
+        if (clearRegistryButton != null) panelBottom = Math.max(panelBottom, clearRegistryButton.getY() + clearRegistryButton.getHeight() - 1);
+         // Debug log to help diagnose vertical alignment issues (inspect latest.log or console)
+         LOGGER.debug("BlockEditorScreen: hexY={}, nameY={}, clearBtnBottom={}, panelTop={}, panelBottom={}",
+                 (hexBox != null ? hexBox.getY() : -1),
+                 (nameBox != null ? nameBox.getY() : -1),
+                 (clearRegistryButton != null ? clearRegistryButton.getY() + clearRegistryButton.getHeight() - 1 : -1),
+                 panelTop, panelBottom);
+         historyPanel.setVerticalBounds(panelTop, panelBottom);
+          historyPanel.render(this, graphics, this.font, mouseX, mouseY);
 
         // Render all widgets (buttons and text boxes) - THIS IS CRITICAL
         super.render(graphics, mouseX, mouseY, partialTick);
     }
 
     private void renderBlockGrid(GuiGraphics graphics, int mouseX, int mouseY) {
-        int startX = (this.width / 2 - 40) - (BLOCKS_PER_ROW * (BLOCK_SIZE + BLOCK_PADDING)) / 2; // Shifted left
-        int startY = 55;
-        int maxRows = 4;
+         // Grid start X should be computed to occupy the left half
+         int blocksPerRow = computeBlocksPerRow();
+         int blockGridWidth = blocksPerRow * BLOCK_SIZE + (blocksPerRow - 1) * BLOCK_PADDING;
+         int startX = computeGridStartX(blockGridWidth);
+         int startY = 55;
 
         // Filter blocks based on search
         String search = (searchBox != null ? searchBox.getValue() : "").toLowerCase();
@@ -238,9 +320,9 @@ public class BlockEditorScreen extends Screen {
         }
 
         // Render visible blocks
-        for (int row = 0; row < maxRows; row++) {
-            for (int col = 0; col < BLOCKS_PER_ROW; col++) {
-                int index = (row + scrollOffset) * BLOCKS_PER_ROW + col;
+        for (int row = 0; row < GRID_MAX_ROWS; row++) {
+            for (int col = 0; col < blocksPerRow; col++) {
+                int index = (row + scrollOffset) * blocksPerRow + col;
                 if (index >= filteredBlocks.size()) break;
 
                 Block block = filteredBlocks.get(index);
@@ -278,13 +360,19 @@ public class BlockEditorScreen extends Screen {
         }
 
         // Handle block selection clicks - MUST match renderBlockGrid positions
-        int startX = (this.width / 2 - 40) - (BLOCKS_PER_ROW * (BLOCK_SIZE + BLOCK_PADDING)) / 2; // Shifted left
-        int startY = 55;  // Changed from 60 to match renderBlockGrid
-        int maxRows = 4;  // Changed from 6 to match renderBlockGrid
+        // Use the same grid width math as renderBlockGrid for consistent alignment
+        //int centerX3 = this.width / 2 - 40 - MAIN_CONTENT_SHIFT; // Shifted left
+        //int blockGridWidth3 = BLOCKS_PER_ROW * BLOCK_SIZE + (BLOCKS_PER_ROW - 1) * BLOCK_PADDING;
+        //int startX = centerX3 - (blockGridWidth3 / 2);
+        int blocksPerRow = computeBlocksPerRow();
+        int blockGridWidth3 = blocksPerRow * BLOCK_SIZE + (blocksPerRow - 1) * BLOCK_PADDING;
+        int startX = computeGridStartX(blockGridWidth3);
+         int startY = 55;  // Must match renderBlockGrid
+         // use GRID_MAX_ROWS directly
 
-        for (int row = 0; row < maxRows; row++) {
-            for (int col = 0; col < BLOCKS_PER_ROW; col++) {
-                int index = (row + scrollOffset) * BLOCKS_PER_ROW + col;
+        for (int row = 0; row < GRID_MAX_ROWS; row++) {
+            for (int col = 0; col < blocksPerRow; col++) {
+                int index = (row + scrollOffset) * blocksPerRow + col;
                 if (index >= filteredBlocks.size()) break;
 
                 int x = startX + col * (BLOCK_SIZE + BLOCK_PADDING);
@@ -297,9 +385,6 @@ public class BlockEditorScreen extends Screen {
             }
         }
 
-        // Check if clicking on text boxes for special handling
-        boolean clickedOnTextBox = false;
-        
         // Check hex box click: select all on click
         if (hexBox != null) {
             int hx = hexBox.getX();
@@ -307,7 +392,6 @@ public class BlockEditorScreen extends Screen {
             int hw = hexBox.getWidth();
             int hh = hexBox.getHeight();
             if (mouseX >= hx && mouseX < hx + hw && mouseY >= hy && mouseY < hy + hh) {
-                clickedOnTextBox = true;
                 boolean result = super.mouseClicked(mouseX, mouseY, button);
                 if (hexBox.isFocused()) {
                     hexBox.setHighlightPos(0);
@@ -324,7 +408,6 @@ public class BlockEditorScreen extends Screen {
             int nw = nameBox.getWidth();
             int nh = nameBox.getHeight();
             if (mouseX >= nx && mouseX < nx + nw && mouseY >= ny && mouseY < ny + nh) {
-                clickedOnTextBox = true;
                 boolean result = super.mouseClicked(mouseX, mouseY, button);
                 if (nameBox.isFocused() && nameBox.getValue().trim().isEmpty()) {
                     nameBox.setHighlightPos(0);
@@ -335,13 +418,11 @@ public class BlockEditorScreen extends Screen {
         }
         
         // If clicked outside text boxes, unfocus them
-        if (!clickedOnTextBox) {
-            if (hexBox != null && hexBox.isFocused()) {
-                hexBox.setFocused(false);
-            }
-            if (nameBox != null && nameBox.isFocused()) {
-                nameBox.setFocused(false);
-            }
+        if (hexBox != null && hexBox.isFocused()) {
+            hexBox.setFocused(false);
+        }
+        if (nameBox != null && nameBox.isFocused()) {
+            nameBox.setFocused(false);
         }
 
         return super.mouseClicked(mouseX, mouseY, button);
@@ -366,15 +447,19 @@ public class BlockEditorScreen extends Screen {
         }
         
         // Check if mouse is over main block grid area
-        int startX2 = (this.width / 2 - 40) - (BLOCKS_PER_ROW * (BLOCK_SIZE + BLOCK_PADDING)) / 2;
-        int startY2 = 55;
-        int gridWidth = BLOCKS_PER_ROW * (BLOCK_SIZE + BLOCK_PADDING);
-        int gridHeight = 4 * (BLOCK_SIZE + BLOCK_PADDING);
-        
-        if (mouseX >= startX2 && mouseX <= startX2 + gridWidth &&
-            mouseY >= startY2 && mouseY <= startY2 + gridHeight) {
+        int blocksPerRow2 = computeBlocksPerRow();
+        int blockGridWidth2 = blocksPerRow2 * BLOCK_SIZE + (blocksPerRow2 - 1) * BLOCK_PADDING;
+        int startX2 = computeGridStartX(blockGridWidth2);
+         int startY2 = 55;
+         // Exact grid height: rows * BLOCK_SIZE + (rows-1) * BLOCK_PADDING
+         int gridHeight = GRID_MAX_ROWS * BLOCK_SIZE + (GRID_MAX_ROWS - 1) * BLOCK_PADDING;
+
+         if (mouseX >= startX2 && mouseX <= startX2 + blockGridWidth2 &&
+             mouseY >= startY2 && mouseY <= startY2 + gridHeight) {
             // Scroll in main block grid
-            int maxScroll = Math.max(0, (filteredBlocks.size() / BLOCKS_PER_ROW) - 4);
+            // Compute total rows using ceiling division so the scroll limit is correct for partial rows
+            int totalRows = (filteredBlocks.size() + blocksPerRow2 - 1) / blocksPerRow2;
+            int maxScroll = Math.max(0, totalRows - GRID_MAX_ROWS);
             int oldOffset = scrollOffset;
             
             if (delta > 0) {
@@ -384,9 +469,9 @@ public class BlockEditorScreen extends Screen {
             }
             
             return scrollOffset != oldOffset;
-        }
-        
-        return super.mouseScrolled(mouseX, mouseY, delta);
+         }
+
+         return super.mouseScrolled(mouseX, mouseY, delta);
     }
 
     @Override
@@ -495,13 +580,41 @@ public class BlockEditorScreen extends Screen {
                     }
                 }
                 if (org.lwjgl.glfw.GLFW.glfwGetKey(minecraft.getWindow().getWindow(), org.lwjgl.glfw.GLFW.GLFW_KEY_DOWN) == org.lwjgl.glfw.GLFW.GLFW_PRESS) {
-                    if (System.currentTimeMillis() % 200 < 50) { // Throttle key repeat
+                    if (System.currentTimeMillis() % 200 < 50) // Throttle key repeat
                         scrollHistoryDown();
-                    }
                 }
             }
         }
     }
+
+    private int computeBlocksPerRow() {
+         // Detect large screens robustly across GUI scale/DPI settings by taking
+         // the maximum of several width measurements we can reasonably obtain.
+         int guiWidth = this.width; // scaled GUI units
+         int windowPixelWidth = guiWidth;
+         int guiScaledWidth = guiWidth;
+         if (this.minecraft != null) {
+             try {
+                 var window = this.minecraft.getWindow();
+                 if (window != null) {
+                     windowPixelWidth = window.getScreenWidth();
+                     guiScaledWidth = window.getGuiScaledWidth();
+                 }
+             } catch (Exception ignored) {
+                 // fall back to guiWidth
+             }
+         }
+         int maxObserved = Math.max(guiWidth, Math.max(windowPixelWidth, guiScaledWidth));
+         int desired = (maxObserved >= LARGE_SCREEN_WIDTH_THRESHOLD) ? LARGE_SCREEN_BLOCKS : DEFAULT_BLOCKS_PER_ROW;
+
+        // Now ensure the desired number of columns actually fits inside the reserved left half
+        int leftAreaMargin = 20;
+        int leftAreaWidth = Math.max(0, (this.width / 2) - (leftAreaMargin * 2));
+        // Compute how many full block cells fit (accounting for N*BLOCK_SIZE + (N-1)*BLOCK_PADDING)
+        int maxColumns = Math.max(1, (leftAreaWidth + BLOCK_PADDING) / (BLOCK_SIZE + BLOCK_PADDING));
+
+        return Math.min(desired, maxColumns);
+     }
 
     private boolean isNameBoxValid() {
         if (nameBox == null) {

@@ -11,7 +11,10 @@ public final class BlockEditorWidgets {
     private BlockEditorWidgets() {}
 
     public static EditBox createHexBox(Font font, int x, int y, String initialHex) {
-        EditBox box = new EditBox(font, x, y, 90, 20, Component.literal("Hex"));
+        // Size the hex box to exactly fit 6 hex characters plus a small padding
+        int hexTextWidth = font.width("FFFFFF");
+        int hexPadding = 8; // left+right padding in pixels
+        EditBox box = new EditBox(font, x, y, Math.max(40, hexTextWidth + hexPadding), 20, Component.literal("Hex"));
         box.setMaxLength(6);
         if (initialHex != null) {
             box.setValue(sanitizeHex(initialHex));
@@ -23,9 +26,12 @@ public final class BlockEditorWidgets {
     }
 
     public static EditBox createNameBox(Font font, int x, int y) {
-        EditBox box = new EditBox(font, x, y, 140, 20, Component.literal("Name"));
+        // Size the name box to fit the hint text "new block name" plus a small padding
+        int hintWidth = font.width("new block name");
+        int namePadding = 6; // tighter padding so the box is just wide enough
+        EditBox box = new EditBox(font, x, y, Math.max(64, hintWidth + namePadding), 20, Component.literal("Name"));
         box.setMaxLength(32);
-        box.setHint(Component.literal("Enter block name"));
+        box.setHint(Component.literal("new block name"));
         return box;
     }
 
