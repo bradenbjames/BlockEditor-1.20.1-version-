@@ -5,6 +5,8 @@
 [![Forge](https://img.shields.io/badge/Forge-47.3.0+-orange.svg)](https://files.minecraftforge.net/)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
+[View the CurseForge page description](./CURSEFORGE.md)
+
 Create and customize blocks with any color, texture, and **custom names** in Minecraft! Now with enhanced WorldEdit integration, smart UI features, and **world-based pick block functionality**.
 
 ![Block Editor Interface](./images/1.0.3/Screenshot%202025-10-24%20235709.png)

@@ -1,5 +1,37 @@
 # Block Editor Mod - Changelog
 
+## Version 1.0.3 - World Pick Block & Clean Distribution
+
+### 🖱️ World-Based Pick Block
+- Middle-click any BlockEditor custom block in the world to instantly equip it
+- Smart inventory search using exact match on Color + OriginalBlock (+ CustomName when present)
+- Seamless server fallback: requests the exact item from the server when not found locally
+- Preserves all properties: color (hex/int), mimic/original block, and custom name
+- Cancels vanilla pick-block for these cases to avoid conflicts; shows concise status messages
+
+### 🧠 Detection & Robustness
+- Detects BlockEditor blocks by mod namespace and path prefixes: `dynamic_block*`, `user_*`, `u_*`
+- Robust BE data parsing: supports color as int or hex string with normalization and validation
+- Safe fallbacks for missing/invalid data paths to prevent crashes
+
+### 🧭 UX & Feedback
+- Clear inline toasts when equipping from inventory or when requesting from the server
+- One-click workflow: middle-click → equip → build
+
+### 💾 Data & Distribution
+- Ensured clean installs: no pre-shipped history or saved blocks
+- History loader now guards against duplicate loads per session
+- Verified JAR contains no `.dat` or config files; `run/` remains ignored by VCS
+
+### 🧰 Internal Fixes
+- Resolved duplicate method definition in `BlockEditorHistory`
+- Minor code hygiene and error handling improvements around history persistence
+
+### 📚 Docs & Assets
+- README updated for v1.0.3 with new feature overview and workflow
+- Version badge bumped to 1.0.3
+- New screenshot added: `images/1.0.3/Screenshot 2025-10-24 235709.png`
+
 ## Version 1.0.2 - WorldEdit Integration & Advanced Features
 
 ### 🌍 **WorldEdit Integration**
