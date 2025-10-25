@@ -1,1 +1,3 @@
-﻿{"parent": "be:block/u_terracotta16"}
+{
+  "parent": "be:block/terracotta/u_terracotta16"
+}

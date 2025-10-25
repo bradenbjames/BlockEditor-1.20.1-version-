@@ -1,6 +1,7 @@
 {
   "variants": {
-    "": { "model": "be:block/u_deepslate1" }
+    "": { "model": "be:block/deepslate/u_deepslate1" }
   }
 }
+
 

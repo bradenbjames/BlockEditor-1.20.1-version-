@@ -1,1 +1,3 @@
-﻿{"parent": "be:block/u_mushroom_stem15"}
+{
+  "parent": "be:block/mushroom_stem/u_mushroom_stem15"
+}

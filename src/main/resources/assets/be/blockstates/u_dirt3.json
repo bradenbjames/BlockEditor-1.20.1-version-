@@ -1,6 +1,7 @@
 {
   "variants": {
-    "": { "model": "be:block/u_dirt3" }
+    "": { "model": "be:block/dirt/u_dirt3" }
   }
 }
+
 

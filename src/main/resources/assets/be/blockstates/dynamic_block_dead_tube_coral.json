@@ -1,5 +1,6 @@
 {
   "variants": {
-    "": { "model": "be:block/dynamic_block_dead_tube_coral" }
+    "": { "model": "be:block/dead_tube_coral/dynamic_block_dead_tube_coral" }
   }
 }
+

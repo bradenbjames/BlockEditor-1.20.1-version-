@@ -1,5 +1,6 @@
-﻿{
+{
   "variants": {
-    "": { "model": "be:block/u_smooth_stone11" }
+    "": { "model": "be:block/smooth_stone/u_smooth_stone11" }
   }
 }
+

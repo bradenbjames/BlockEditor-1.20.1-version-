@@ -1,5 +1,3 @@
 {
-  "parent": "be:block/u_stone1"
+  "parent": "be:block/stone/u_stone1"
 }
-
-

@@ -1,5 +1,6 @@
 {
   "variants": {
-    "": { "model": "be:block/dynamic_block_terracotta" }
+    "": { "model": "be:block/terracotta/dynamic_block_terracotta" }
   }
 }
+

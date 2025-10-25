@@ -30,7 +30,7 @@ public class UserBlock extends DynamicBlock {
     }
 
     private static BlockBehaviour.Properties createProperties(String blockType) {
-        if ("glass".equalsIgnoreCase(blockType)) {
+        if ("glass".equalsIgnoreCase(blockType) || "tinted_glass".equalsIgnoreCase(blockType) || "stained_glass".equalsIgnoreCase(blockType)) {
             return BlockBehaviour.Properties.of()
                 .noOcclusion()
                 .strength(0.3f)
@@ -64,8 +64,12 @@ public class UserBlock extends DynamicBlock {
                     blockEntity.setColor(color);
                     LOGGER.info("UserBlock: Applied NBT color {} for user block type {}", hexColor, blockType);
                     
-                    // Also set mimic block if not already set
-                    if (!tag.contains("OriginalBlock")) {
+                    // Set mimic block from NBT if available, otherwise use default
+                    if (tag.contains("OriginalBlock")) {
+                        String mimicBlock = tag.getString("OriginalBlock");
+                        blockEntity.setMimicBlock(mimicBlock);
+                        LOGGER.info("UserBlock: Applied NBT mimic block {} for user block type {}", mimicBlock, blockType);
+                    } else {
                         String mimicBlock = getMimicBlockForType(blockType);
                         blockEntity.setMimicBlock(mimicBlock);
                         LOGGER.info("UserBlock: Applied default mimic block {} for user block type {}", mimicBlock, blockType);
@@ -135,6 +139,8 @@ public class UserBlock extends DynamicBlock {
             case "concrete_powder" -> 0xE0E0E0; // Light gray
             case "terracotta" -> 0xD2B1A1; // Light terracotta
             case "glass" -> 0xFFFFFF; // White/Clear
+            case "tinted_glass" -> 0x795E4A; // Tinted glass brown color
+            case "stained_glass" -> 0xFFFFFF; // White/Clear for stained glass
             case "diorite" -> 0xC4C4C4; // Light gray
             case "calcite" -> 0xE3DDD4; // Off-white
             case "mushroom_stem" -> 0xC9B8A1; // Tan
@@ -158,6 +164,8 @@ public class UserBlock extends DynamicBlock {
             case "concrete_powder" -> "minecraft:white_concrete_powder";
             case "terracotta" -> "minecraft:white_terracotta";
             case "glass" -> "minecraft:glass";
+            case "tinted_glass" -> "minecraft:tinted_glass";
+            case "stained_glass" -> "minecraft:white_stained_glass";
             case "diorite" -> "minecraft:diorite";
             case "calcite" -> "minecraft:calcite";
             case "mushroom_stem" -> "minecraft:mushroom_stem";
@@ -224,11 +232,19 @@ public class UserBlock extends DynamicBlock {
     // Make glass blocks transparent
     @Override
     public boolean propagatesSkylightDown(BlockState state, net.minecraft.world.level.BlockGetter level, BlockPos pos) {
-        return blockType.equals("glass");
+        return blockType.equals("glass") || blockType.equals("stained_glass");
     }
     
     @Override
     public float getShadeBrightness(BlockState state, net.minecraft.world.level.BlockGetter level, BlockPos pos) {
-        return blockType.equals("glass") ? 1.0F : 0.2F;
+        return (blockType.equals("glass") || blockType.equals("tinted_glass") || blockType.equals("stained_glass")) ? 1.0F : 0.2F;
+    }
+
+    @Override
+    public int getLightBlock(BlockState state, net.minecraft.world.level.BlockGetter level, BlockPos pos) {
+        if (blockType.equals("tinted_glass")) {
+            return 15; // Tinted glass blocks all light
+        }
+        return super.getLightBlock(state, level, pos);
     }
 }

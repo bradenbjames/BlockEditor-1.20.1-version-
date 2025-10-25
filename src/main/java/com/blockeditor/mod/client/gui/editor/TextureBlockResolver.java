@@ -24,6 +24,10 @@ public final class TextureBlockResolver {
             return ModBlocks.DYNAMIC_BLOCK_CONCRETE_POWDER.get();
         } else if (blockName.contains("terracotta")) {
             return ModBlocks.DYNAMIC_BLOCK_TERRACOTTA.get();
+        } else if (blockName.contains("tinted_glass")) {
+            return ModBlocks.DYNAMIC_BLOCK_TINTED_GLASS.get();
+        } else if (blockName.contains("white_stained_glass") || blockName.contains("stained_glass")) {
+            return ModBlocks.DYNAMIC_BLOCK_STAINED_GLASS.get();
         } else if (blockName.contains("glass") && !blockName.contains("pane")) {
             return ModBlocks.DYNAMIC_BLOCK_GLASS.get();
         } else if (blockName.contains("diorite")) {

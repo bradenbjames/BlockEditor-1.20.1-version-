@@ -1,6 +1,7 @@
 {
   "variants": {
-    "": { "model": "be:block/dynamic_block_concrete" }
+    "": { "model": "be:block/concrete/dynamic_block_concrete" }
   }
 }
+
 

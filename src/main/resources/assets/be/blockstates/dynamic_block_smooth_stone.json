@@ -1,7 +1,8 @@
 {
   "variants": {
     "": {
-      "model": "be:block/dynamic_block_smooth_stone"
+      "model": "be:block/smooth_stone/dynamic_block_smooth_stone"
     }
   }
 }
+

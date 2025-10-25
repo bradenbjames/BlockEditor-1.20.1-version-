@@ -19,6 +19,8 @@ public final class BlockAllowList {
         "white_terracotta",
         "white_concrete_powder",
         "glass",
+        "tinted_glass",
+        "white_stained_glass",
         "diorite",
         "calcite",
         "mushroom_stem",

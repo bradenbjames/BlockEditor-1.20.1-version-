@@ -1,5 +1,6 @@
 {
   "variants": {
-    "": { "model": "be:block/dynamic_block_diorite" }
+    "": { "model": "be:block/diorite/dynamic_block_diorite" }
   }
 }
+

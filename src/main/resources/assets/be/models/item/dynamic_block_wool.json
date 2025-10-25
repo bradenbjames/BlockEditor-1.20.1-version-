@@ -1,8 +1,3 @@
 {
-  "parent": "be:block/dynamic_block_wool"
+  "parent": "be:block/wool/dynamic_block_wool"
 }
-{
-  "parent": "be:block/dynamic_block_wool"
-}
-
-

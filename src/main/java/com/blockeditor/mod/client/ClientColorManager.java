@@ -101,6 +101,9 @@ public class ClientColorManager {
         if (mimicBlock.contains("wool")) return "wool";
         if (mimicBlock.contains("stone") && !mimicBlock.contains("deepslate") && !mimicBlock.contains("smooth")) return "stone";
         if (mimicBlock.contains("concrete")) return "concrete";
+        if (mimicBlock.contains("tinted_glass")) return "tinted_glass";
+        if (mimicBlock.contains("white_stained_glass") || mimicBlock.contains("stained_glass")) return "stained_glass";
+        if (mimicBlock.contains("glass")) return "glass";
         if (mimicBlock.contains("planks") || mimicBlock.contains("wood") || mimicBlock.contains("log")) return "wood";
         if (mimicBlock.contains("dirt")) return "dirt";
         if (mimicBlock.contains("sand")) return "sand";

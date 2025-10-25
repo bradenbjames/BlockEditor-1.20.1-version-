@@ -1,5 +1,6 @@
 {
   "variants": {
-    "": { "model": "be:block/dynamic_block_glass" }
+    "": { "model": "be:block/glass/dynamic_block_glass" }
   }
 }
+

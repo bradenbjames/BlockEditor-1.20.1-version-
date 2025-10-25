@@ -1,1 +1,3 @@
-﻿{"parent": "be:block/u_dead_tube_coral5"}
+{
+  "parent": "be:block/dead_tube_coral/u_dead_tube_coral5"
+}

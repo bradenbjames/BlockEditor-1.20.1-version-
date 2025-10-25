@@ -1,5 +1,6 @@
-﻿{
+{
   "variants": {
-    "": { "model": "be:block/u_cobblestone9" }
+    "": { "model": "be:block/cobblestone/u_cobblestone9" }
   }
 }
+

@@ -1,6 +1,7 @@
 {
   "variants": {
-    "": { "model": "be:block/u_sand1" }
+    "": { "model": "be:block/sand/u_sand1" }
   }
 }
+
 

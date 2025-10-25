@@ -155,6 +155,8 @@ public class DynamicBlock extends Block implements EntityBlock {
         if (mimicBlock.contains("concrete") && !mimicBlock.contains("powder")) return "concrete";
         if (mimicBlock.contains("concrete_powder")) return "concrete_powder";
         if (mimicBlock.contains("terracotta")) return "terracotta";
+        if (mimicBlock.contains("tinted_glass")) return "tinted_glass";
+        if (mimicBlock.contains("white_stained_glass") || mimicBlock.contains("stained_glass")) return "stained_glass";
         if (mimicBlock.contains("glass") && !mimicBlock.contains("pane")) return "glass";
         if (mimicBlock.contains("diorite")) return "diorite";
         if (mimicBlock.contains("calcite")) return "calcite";

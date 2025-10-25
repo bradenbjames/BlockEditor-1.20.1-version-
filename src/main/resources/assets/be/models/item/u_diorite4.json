@@ -1,1 +1,3 @@
-﻿{"parent": "be:block/u_diorite4"}
+{
+  "parent": "be:block/diorite/u_diorite4"
+}

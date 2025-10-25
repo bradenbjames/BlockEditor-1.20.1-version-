@@ -1,0 +1,5 @@
+{
+  "variants": {
+    "": { "model": "be:block/tinted_glass/dynamic_block_tinted_glass" }
+  }
+}

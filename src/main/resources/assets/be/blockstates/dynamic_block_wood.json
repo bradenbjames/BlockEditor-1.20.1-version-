@@ -1,5 +1,6 @@
 {
   "variants": {
-    "": { "model": "be:block/dynamic_block_wood" }
+    "": { "model": "be:block/wood/dynamic_block_wood" }
   }
 }
+

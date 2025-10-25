@@ -4,6 +4,7 @@ import com.blockeditor.mod.BlockEditorMod;
 import com.blockeditor.mod.content.DynamicBlock;
 import com.blockeditor.mod.content.UserBlock;
 import com.blockeditor.mod.content.TransparentDynamicBlock;
+import com.blockeditor.mod.content.TintedDynamicBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -53,6 +54,12 @@ public class ModBlocks {
 
     public static final RegistryObject<Block> DYNAMIC_BLOCK_GLASS = BLOCKS.register("dynamic_block_glass",
         TransparentDynamicBlock::new);
+
+    public static final RegistryObject<Block> DYNAMIC_BLOCK_TINTED_GLASS = BLOCKS.register("dynamic_block_tinted_glass",
+        TintedDynamicBlock::new);
+
+    public static final RegistryObject<Block> DYNAMIC_BLOCK_STAINED_GLASS = BLOCKS.register("dynamic_block_stained_glass",
+        TranslucentDynamicBlock::new);
 
     public static final RegistryObject<Block> DYNAMIC_BLOCK_DIORITE = BLOCKS.register("dynamic_block_diorite",
         () -> new DynamicBlock());
@@ -333,6 +340,50 @@ public class ModBlocks {
     public static final RegistryObject<Block> USER_GLASS_18 = BLOCKS.register("u_glass18", () -> new UserBlock("glass"));
     public static final RegistryObject<Block> USER_GLASS_19 = BLOCKS.register("u_glass19", () -> new UserBlock("glass"));
     public static final RegistryObject<Block> USER_GLASS_20 = BLOCKS.register("u_glass20", () -> new UserBlock("glass"));
+
+    // Tinted glass blocks (1-20)
+    public static final RegistryObject<Block> USER_TINTED_GLASS_1 = BLOCKS.register("u_tinted_glass1", () -> new UserBlock("tinted_glass"));
+    public static final RegistryObject<Block> USER_TINTED_GLASS_2 = BLOCKS.register("u_tinted_glass2", () -> new UserBlock("tinted_glass"));
+    public static final RegistryObject<Block> USER_TINTED_GLASS_3 = BLOCKS.register("u_tinted_glass3", () -> new UserBlock("tinted_glass"));
+    public static final RegistryObject<Block> USER_TINTED_GLASS_4 = BLOCKS.register("u_tinted_glass4", () -> new UserBlock("tinted_glass"));
+    public static final RegistryObject<Block> USER_TINTED_GLASS_5 = BLOCKS.register("u_tinted_glass5", () -> new UserBlock("tinted_glass"));
+    public static final RegistryObject<Block> USER_TINTED_GLASS_6 = BLOCKS.register("u_tinted_glass6", () -> new UserBlock("tinted_glass"));
+    public static final RegistryObject<Block> USER_TINTED_GLASS_7 = BLOCKS.register("u_tinted_glass7", () -> new UserBlock("tinted_glass"));
+    public static final RegistryObject<Block> USER_TINTED_GLASS_8 = BLOCKS.register("u_tinted_glass8", () -> new UserBlock("tinted_glass"));
+    public static final RegistryObject<Block> USER_TINTED_GLASS_9 = BLOCKS.register("u_tinted_glass9", () -> new UserBlock("tinted_glass"));
+    public static final RegistryObject<Block> USER_TINTED_GLASS_10 = BLOCKS.register("u_tinted_glass10", () -> new UserBlock("tinted_glass"));
+    public static final RegistryObject<Block> USER_TINTED_GLASS_11 = BLOCKS.register("u_tinted_glass11", () -> new UserBlock("tinted_glass"));
+    public static final RegistryObject<Block> USER_TINTED_GLASS_12 = BLOCKS.register("u_tinted_glass12", () -> new UserBlock("tinted_glass"));
+    public static final RegistryObject<Block> USER_TINTED_GLASS_13 = BLOCKS.register("u_tinted_glass13", () -> new UserBlock("tinted_glass"));
+    public static final RegistryObject<Block> USER_TINTED_GLASS_14 = BLOCKS.register("u_tinted_glass14", () -> new UserBlock("tinted_glass"));
+    public static final RegistryObject<Block> USER_TINTED_GLASS_15 = BLOCKS.register("u_tinted_glass15", () -> new UserBlock("tinted_glass"));
+    public static final RegistryObject<Block> USER_TINTED_GLASS_16 = BLOCKS.register("u_tinted_glass16", () -> new UserBlock("tinted_glass"));
+    public static final RegistryObject<Block> USER_TINTED_GLASS_17 = BLOCKS.register("u_tinted_glass17", () -> new UserBlock("tinted_glass"));
+    public static final RegistryObject<Block> USER_TINTED_GLASS_18 = BLOCKS.register("u_tinted_glass18", () -> new UserBlock("tinted_glass"));
+    public static final RegistryObject<Block> USER_TINTED_GLASS_19 = BLOCKS.register("u_tinted_glass19", () -> new UserBlock("tinted_glass"));
+    public static final RegistryObject<Block> USER_TINTED_GLASS_20 = BLOCKS.register("u_tinted_glass20", () -> new UserBlock("tinted_glass"));
+    
+    // Stained Glass blocks (1-20)
+    public static final RegistryObject<Block> USER_STAINED_GLASS_1 = BLOCKS.register("u_stained_glass1", () -> new UserBlock("stained_glass"));
+    public static final RegistryObject<Block> USER_STAINED_GLASS_2 = BLOCKS.register("u_stained_glass2", () -> new UserBlock("stained_glass"));
+    public static final RegistryObject<Block> USER_STAINED_GLASS_3 = BLOCKS.register("u_stained_glass3", () -> new UserBlock("stained_glass"));
+    public static final RegistryObject<Block> USER_STAINED_GLASS_4 = BLOCKS.register("u_stained_glass4", () -> new UserBlock("stained_glass"));
+    public static final RegistryObject<Block> USER_STAINED_GLASS_5 = BLOCKS.register("u_stained_glass5", () -> new UserBlock("stained_glass"));
+    public static final RegistryObject<Block> USER_STAINED_GLASS_6 = BLOCKS.register("u_stained_glass6", () -> new UserBlock("stained_glass"));
+    public static final RegistryObject<Block> USER_STAINED_GLASS_7 = BLOCKS.register("u_stained_glass7", () -> new UserBlock("stained_glass"));
+    public static final RegistryObject<Block> USER_STAINED_GLASS_8 = BLOCKS.register("u_stained_glass8", () -> new UserBlock("stained_glass"));
+    public static final RegistryObject<Block> USER_STAINED_GLASS_9 = BLOCKS.register("u_stained_glass9", () -> new UserBlock("stained_glass"));
+    public static final RegistryObject<Block> USER_STAINED_GLASS_10 = BLOCKS.register("u_stained_glass10", () -> new UserBlock("stained_glass"));
+    public static final RegistryObject<Block> USER_STAINED_GLASS_11 = BLOCKS.register("u_stained_glass11", () -> new UserBlock("stained_glass"));
+    public static final RegistryObject<Block> USER_STAINED_GLASS_12 = BLOCKS.register("u_stained_glass12", () -> new UserBlock("stained_glass"));
+    public static final RegistryObject<Block> USER_STAINED_GLASS_13 = BLOCKS.register("u_stained_glass13", () -> new UserBlock("stained_glass"));
+    public static final RegistryObject<Block> USER_STAINED_GLASS_14 = BLOCKS.register("u_stained_glass14", () -> new UserBlock("stained_glass"));
+    public static final RegistryObject<Block> USER_STAINED_GLASS_15 = BLOCKS.register("u_stained_glass15", () -> new UserBlock("stained_glass"));
+    public static final RegistryObject<Block> USER_STAINED_GLASS_16 = BLOCKS.register("u_stained_glass16", () -> new UserBlock("stained_glass"));
+    public static final RegistryObject<Block> USER_STAINED_GLASS_17 = BLOCKS.register("u_stained_glass17", () -> new UserBlock("stained_glass"));
+    public static final RegistryObject<Block> USER_STAINED_GLASS_18 = BLOCKS.register("u_stained_glass18", () -> new UserBlock("stained_glass"));
+    public static final RegistryObject<Block> USER_STAINED_GLASS_19 = BLOCKS.register("u_stained_glass19", () -> new UserBlock("stained_glass"));
+    public static final RegistryObject<Block> USER_STAINED_GLASS_20 = BLOCKS.register("u_stained_glass20", () -> new UserBlock("stained_glass"));
     
     // Diorite blocks (up to 20 custom diorite blocks)
     public static final RegistryObject<Block> USER_DIORITE_1 = BLOCKS.register("u_diorite1", () -> new UserBlock("diorite"));

@@ -1,6 +1,7 @@
 {
   "variants": {
-    "": { "model": "be:block/dynamic_block_wool" }
+    "": { "model": "be:block/wool/dynamic_block_wool" }
   }
 }
+
 

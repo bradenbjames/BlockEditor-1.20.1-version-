@@ -1,5 +1,6 @@
 {
   "variants": {
-    "": { "model": "be:block/dynamic_block_mushroom_stem" }
+    "": { "model": "be:block/mushroom_stem/dynamic_block_mushroom_stem" }
   }
 }
+

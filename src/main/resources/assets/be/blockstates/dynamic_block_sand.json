@@ -1,6 +1,7 @@
 {
   "variants": {
-    "": { "model": "be:block/dynamic_block_sand" }
+    "": { "model": "be:block/sand/dynamic_block_sand" }
   }
 }
+
 

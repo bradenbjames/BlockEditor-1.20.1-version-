@@ -1,3 +1,3 @@
 {
-  "parent": "be:block/dynamic_block_calcite"
+  "parent": "be:block/calcite/dynamic_block_calcite"
 }

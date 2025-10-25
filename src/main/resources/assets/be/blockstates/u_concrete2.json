@@ -1,6 +1,7 @@
 {
   "variants": {
-    "": { "model": "be:block/u_concrete2" }
+    "": { "model": "be:block/concrete/u_concrete2" }
   }
 }
+
 

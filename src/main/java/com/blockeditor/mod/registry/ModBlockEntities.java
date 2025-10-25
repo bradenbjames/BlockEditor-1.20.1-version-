@@ -30,6 +30,8 @@ public class ModBlockEntities {
                 ModBlocks.DYNAMIC_BLOCK_TERRACOTTA.get(),
                 ModBlocks.DYNAMIC_BLOCK_CONCRETE_POWDER.get(),
                 ModBlocks.DYNAMIC_BLOCK_GLASS.get(),
+                ModBlocks.DYNAMIC_BLOCK_TINTED_GLASS.get(),
+                ModBlocks.DYNAMIC_BLOCK_STAINED_GLASS.get(),
                 ModBlocks.DYNAMIC_BLOCK_DIORITE.get(),
                 ModBlocks.DYNAMIC_BLOCK_CALCITE.get(),
                 ModBlocks.DYNAMIC_BLOCK_MUSHROOM_STEM.get(),

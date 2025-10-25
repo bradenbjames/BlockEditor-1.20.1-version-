@@ -1,7 +1,8 @@
 {
   "variants": {
     "": {
-      "model": "be:block/dynamic_block_cobblestone"
+      "model": "be:block/cobblestone/dynamic_block_cobblestone"
     }
   }
 }
+

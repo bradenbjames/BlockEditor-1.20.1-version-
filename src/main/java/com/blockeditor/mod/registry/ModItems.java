@@ -50,6 +50,12 @@ public class ModItems {
     public static final RegistryObject<Item> DYNAMIC_BLOCK_GLASS_ITEM = ITEMS.register("dynamic_block_glass",
         () -> new DynamicBlockItem(ModBlocks.DYNAMIC_BLOCK_GLASS.get(), new Item.Properties()));
 
+    public static final RegistryObject<Item> DYNAMIC_BLOCK_TINTED_GLASS_ITEM = ITEMS.register("dynamic_block_tinted_glass",
+        () -> new DynamicBlockItem(ModBlocks.DYNAMIC_BLOCK_TINTED_GLASS.get(), new Item.Properties()));
+
+    public static final RegistryObject<Item> DYNAMIC_BLOCK_STAINED_GLASS_ITEM = ITEMS.register("dynamic_block_stained_glass",
+        () -> new DynamicBlockItem(ModBlocks.DYNAMIC_BLOCK_STAINED_GLASS.get(), new Item.Properties()));
+
     public static final RegistryObject<Item> DYNAMIC_BLOCK_DIORITE_ITEM = ITEMS.register("dynamic_block_diorite",
         () -> new DynamicBlockItem(ModBlocks.DYNAMIC_BLOCK_DIORITE.get(), new Item.Properties()));
 
@@ -329,6 +335,50 @@ public class ModItems {
     public static final RegistryObject<Item> USER_GLASS_18_ITEM = ITEMS.register("u_glass18", () -> new DynamicBlockItem(ModBlocks.USER_GLASS_18.get(), new Item.Properties()));
     public static final RegistryObject<Item> USER_GLASS_19_ITEM = ITEMS.register("u_glass19", () -> new DynamicBlockItem(ModBlocks.USER_GLASS_19.get(), new Item.Properties()));
     public static final RegistryObject<Item> USER_GLASS_20_ITEM = ITEMS.register("u_glass20", () -> new DynamicBlockItem(ModBlocks.USER_GLASS_20.get(), new Item.Properties()));
+
+    // Tinted glass items (1-20)
+    public static final RegistryObject<Item> USER_TINTED_GLASS_1_ITEM = ITEMS.register("u_tinted_glass1", () -> new DynamicBlockItem(ModBlocks.USER_TINTED_GLASS_1.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_TINTED_GLASS_2_ITEM = ITEMS.register("u_tinted_glass2", () -> new DynamicBlockItem(ModBlocks.USER_TINTED_GLASS_2.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_TINTED_GLASS_3_ITEM = ITEMS.register("u_tinted_glass3", () -> new DynamicBlockItem(ModBlocks.USER_TINTED_GLASS_3.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_TINTED_GLASS_4_ITEM = ITEMS.register("u_tinted_glass4", () -> new DynamicBlockItem(ModBlocks.USER_TINTED_GLASS_4.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_TINTED_GLASS_5_ITEM = ITEMS.register("u_tinted_glass5", () -> new DynamicBlockItem(ModBlocks.USER_TINTED_GLASS_5.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_TINTED_GLASS_6_ITEM = ITEMS.register("u_tinted_glass6", () -> new DynamicBlockItem(ModBlocks.USER_TINTED_GLASS_6.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_TINTED_GLASS_7_ITEM = ITEMS.register("u_tinted_glass7", () -> new DynamicBlockItem(ModBlocks.USER_TINTED_GLASS_7.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_TINTED_GLASS_8_ITEM = ITEMS.register("u_tinted_glass8", () -> new DynamicBlockItem(ModBlocks.USER_TINTED_GLASS_8.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_TINTED_GLASS_9_ITEM = ITEMS.register("u_tinted_glass9", () -> new DynamicBlockItem(ModBlocks.USER_TINTED_GLASS_9.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_TINTED_GLASS_10_ITEM = ITEMS.register("u_tinted_glass10", () -> new DynamicBlockItem(ModBlocks.USER_TINTED_GLASS_10.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_TINTED_GLASS_11_ITEM = ITEMS.register("u_tinted_glass11", () -> new DynamicBlockItem(ModBlocks.USER_TINTED_GLASS_11.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_TINTED_GLASS_12_ITEM = ITEMS.register("u_tinted_glass12", () -> new DynamicBlockItem(ModBlocks.USER_TINTED_GLASS_12.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_TINTED_GLASS_13_ITEM = ITEMS.register("u_tinted_glass13", () -> new DynamicBlockItem(ModBlocks.USER_TINTED_GLASS_13.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_TINTED_GLASS_14_ITEM = ITEMS.register("u_tinted_glass14", () -> new DynamicBlockItem(ModBlocks.USER_TINTED_GLASS_14.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_TINTED_GLASS_15_ITEM = ITEMS.register("u_tinted_glass15", () -> new DynamicBlockItem(ModBlocks.USER_TINTED_GLASS_15.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_TINTED_GLASS_16_ITEM = ITEMS.register("u_tinted_glass16", () -> new DynamicBlockItem(ModBlocks.USER_TINTED_GLASS_16.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_TINTED_GLASS_17_ITEM = ITEMS.register("u_tinted_glass17", () -> new DynamicBlockItem(ModBlocks.USER_TINTED_GLASS_17.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_TINTED_GLASS_18_ITEM = ITEMS.register("u_tinted_glass18", () -> new DynamicBlockItem(ModBlocks.USER_TINTED_GLASS_18.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_TINTED_GLASS_19_ITEM = ITEMS.register("u_tinted_glass19", () -> new DynamicBlockItem(ModBlocks.USER_TINTED_GLASS_19.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_TINTED_GLASS_20_ITEM = ITEMS.register("u_tinted_glass20", () -> new DynamicBlockItem(ModBlocks.USER_TINTED_GLASS_20.get(), new Item.Properties()));
+
+    // Stained Glass items (1-20)
+    public static final RegistryObject<Item> USER_STAINED_GLASS_1_ITEM = ITEMS.register("u_stained_glass1", () -> new DynamicBlockItem(ModBlocks.USER_STAINED_GLASS_1.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_STAINED_GLASS_2_ITEM = ITEMS.register("u_stained_glass2", () -> new DynamicBlockItem(ModBlocks.USER_STAINED_GLASS_2.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_STAINED_GLASS_3_ITEM = ITEMS.register("u_stained_glass3", () -> new DynamicBlockItem(ModBlocks.USER_STAINED_GLASS_3.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_STAINED_GLASS_4_ITEM = ITEMS.register("u_stained_glass4", () -> new DynamicBlockItem(ModBlocks.USER_STAINED_GLASS_4.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_STAINED_GLASS_5_ITEM = ITEMS.register("u_stained_glass5", () -> new DynamicBlockItem(ModBlocks.USER_STAINED_GLASS_5.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_STAINED_GLASS_6_ITEM = ITEMS.register("u_stained_glass6", () -> new DynamicBlockItem(ModBlocks.USER_STAINED_GLASS_6.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_STAINED_GLASS_7_ITEM = ITEMS.register("u_stained_glass7", () -> new DynamicBlockItem(ModBlocks.USER_STAINED_GLASS_7.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_STAINED_GLASS_8_ITEM = ITEMS.register("u_stained_glass8", () -> new DynamicBlockItem(ModBlocks.USER_STAINED_GLASS_8.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_STAINED_GLASS_9_ITEM = ITEMS.register("u_stained_glass9", () -> new DynamicBlockItem(ModBlocks.USER_STAINED_GLASS_9.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_STAINED_GLASS_10_ITEM = ITEMS.register("u_stained_glass10", () -> new DynamicBlockItem(ModBlocks.USER_STAINED_GLASS_10.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_STAINED_GLASS_11_ITEM = ITEMS.register("u_stained_glass11", () -> new DynamicBlockItem(ModBlocks.USER_STAINED_GLASS_11.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_STAINED_GLASS_12_ITEM = ITEMS.register("u_stained_glass12", () -> new DynamicBlockItem(ModBlocks.USER_STAINED_GLASS_12.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_STAINED_GLASS_13_ITEM = ITEMS.register("u_stained_glass13", () -> new DynamicBlockItem(ModBlocks.USER_STAINED_GLASS_13.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_STAINED_GLASS_14_ITEM = ITEMS.register("u_stained_glass14", () -> new DynamicBlockItem(ModBlocks.USER_STAINED_GLASS_14.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_STAINED_GLASS_15_ITEM = ITEMS.register("u_stained_glass15", () -> new DynamicBlockItem(ModBlocks.USER_STAINED_GLASS_15.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_STAINED_GLASS_16_ITEM = ITEMS.register("u_stained_glass16", () -> new DynamicBlockItem(ModBlocks.USER_STAINED_GLASS_16.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_STAINED_GLASS_17_ITEM = ITEMS.register("u_stained_glass17", () -> new DynamicBlockItem(ModBlocks.USER_STAINED_GLASS_17.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_STAINED_GLASS_18_ITEM = ITEMS.register("u_stained_glass18", () -> new DynamicBlockItem(ModBlocks.USER_STAINED_GLASS_18.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_STAINED_GLASS_19_ITEM = ITEMS.register("u_stained_glass19", () -> new DynamicBlockItem(ModBlocks.USER_STAINED_GLASS_19.get(), new Item.Properties()));
+    public static final RegistryObject<Item> USER_STAINED_GLASS_20_ITEM = ITEMS.register("u_stained_glass20", () -> new DynamicBlockItem(ModBlocks.USER_STAINED_GLASS_20.get(), new Item.Properties()));
 
     // Diorite items (1-20)
     public static final RegistryObject<Item> USER_DIORITE_1_ITEM = ITEMS.register("u_diorite1", () -> new DynamicBlockItem(ModBlocks.USER_DIORITE_1.get(), new Item.Properties()));

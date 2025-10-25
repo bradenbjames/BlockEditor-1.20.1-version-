@@ -1,5 +1,6 @@
 {
   "variants": {
-    "": { "model": "be:block/dynamic_block_pearlescent_froglight" }
+    "": { "model": "be:block/pearlescent_froglight/dynamic_block_pearlescent_froglight" }
   }
 }
+

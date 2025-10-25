@@ -1,1 +1,3 @@
-﻿{"parent": "be:block/u_glass12"}
+{
+  "parent": "be:block/glass/u_glass12"
+}

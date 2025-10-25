@@ -1,8 +1,3 @@
 {
-  "parent": "be:block/dynamic_block_concrete"
+  "parent": "be:block/concrete/dynamic_block_concrete"
 }
-{
-  "parent": "be:block/dynamic_block_concrete"
-}
-
-

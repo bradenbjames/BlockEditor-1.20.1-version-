@@ -1,6 +1,7 @@
 {
   "variants": {
-    "": { "model": "be:block/u_wood3" }
+    "": { "model": "be:block/wood/u_wood3" }
   }
 }
+
 

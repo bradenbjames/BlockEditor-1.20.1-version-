@@ -24,6 +24,8 @@ public class ClientModEvents {
         event.enqueueWork(() -> {
             // Set glass blocks to render as translucent
             ItemBlockRenderTypes.setRenderLayer(ModBlocks.DYNAMIC_BLOCK_GLASS.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.DYNAMIC_BLOCK_TINTED_GLASS.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.DYNAMIC_BLOCK_STAINED_GLASS.get(), RenderType.translucent());
             
             // Set all 20 user glass blocks to translucent
             ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_GLASS_1.get(), RenderType.translucent());
@@ -46,6 +48,50 @@ public class ClientModEvents {
             ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_GLASS_18.get(), RenderType.translucent());
             ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_GLASS_19.get(), RenderType.translucent());
             ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_GLASS_20.get(), RenderType.translucent());
+
+            // Set all 20 user tinted glass blocks to translucent
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_TINTED_GLASS_1.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_TINTED_GLASS_2.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_TINTED_GLASS_3.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_TINTED_GLASS_4.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_TINTED_GLASS_5.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_TINTED_GLASS_6.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_TINTED_GLASS_7.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_TINTED_GLASS_8.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_TINTED_GLASS_9.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_TINTED_GLASS_10.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_TINTED_GLASS_11.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_TINTED_GLASS_12.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_TINTED_GLASS_13.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_TINTED_GLASS_14.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_TINTED_GLASS_15.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_TINTED_GLASS_16.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_TINTED_GLASS_17.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_TINTED_GLASS_18.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_TINTED_GLASS_19.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_TINTED_GLASS_20.get(), RenderType.translucent());
+            
+            // Set all 20 user stained glass blocks to translucent
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_STAINED_GLASS_1.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_STAINED_GLASS_2.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_STAINED_GLASS_3.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_STAINED_GLASS_4.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_STAINED_GLASS_5.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_STAINED_GLASS_6.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_STAINED_GLASS_7.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_STAINED_GLASS_8.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_STAINED_GLASS_9.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_STAINED_GLASS_10.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_STAINED_GLASS_11.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_STAINED_GLASS_12.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_STAINED_GLASS_13.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_STAINED_GLASS_14.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_STAINED_GLASS_15.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_STAINED_GLASS_16.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_STAINED_GLASS_17.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_STAINED_GLASS_18.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_STAINED_GLASS_19.get(), RenderType.translucent());
+            ItemBlockRenderTypes.setRenderLayer(ModBlocks.USER_STAINED_GLASS_20.get(), RenderType.translucent());
         });
     }
 
@@ -56,10 +102,6 @@ public class ClientModEvents {
 
     @SubscribeEvent
     public static void registerBlockColors(RegisterColorHandlersEvent.Block event) {
-        System.out.println("=== STARTING BLOCK COLOR REGISTRATION ===");
-        // Log that we're registering colors
-        System.out.println("=== REGISTERING BLOCK COLORS FOR USER BLOCKS ===");
-        
         event.register((state, level, pos, tintIndex) -> {
             if (tintIndex != 0) return 0xFFFFFF; // Only tint layer 0
             if (level != null && pos != null && level.getBlockEntity(pos) instanceof DynamicBlockEntity blockEntity) {
@@ -172,7 +214,19 @@ public class ClientModEvents {
         ModBlocks.USER_PEARLESCENT_FROGLIGHT_1.get(), ModBlocks.USER_PEARLESCENT_FROGLIGHT_2.get(), ModBlocks.USER_PEARLESCENT_FROGLIGHT_3.get(), ModBlocks.USER_PEARLESCENT_FROGLIGHT_4.get(), ModBlocks.USER_PEARLESCENT_FROGLIGHT_5.get(),
         ModBlocks.USER_PEARLESCENT_FROGLIGHT_6.get(), ModBlocks.USER_PEARLESCENT_FROGLIGHT_7.get(), ModBlocks.USER_PEARLESCENT_FROGLIGHT_8.get(), ModBlocks.USER_PEARLESCENT_FROGLIGHT_9.get(), ModBlocks.USER_PEARLESCENT_FROGLIGHT_10.get(),
         ModBlocks.USER_PEARLESCENT_FROGLIGHT_11.get(), ModBlocks.USER_PEARLESCENT_FROGLIGHT_12.get(), ModBlocks.USER_PEARLESCENT_FROGLIGHT_13.get(), ModBlocks.USER_PEARLESCENT_FROGLIGHT_14.get(), ModBlocks.USER_PEARLESCENT_FROGLIGHT_15.get(),
-        ModBlocks.USER_PEARLESCENT_FROGLIGHT_16.get(), ModBlocks.USER_PEARLESCENT_FROGLIGHT_17.get(), ModBlocks.USER_PEARLESCENT_FROGLIGHT_18.get(), ModBlocks.USER_PEARLESCENT_FROGLIGHT_19.get(), ModBlocks.USER_PEARLESCENT_FROGLIGHT_20.get());
+        ModBlocks.USER_PEARLESCENT_FROGLIGHT_16.get(), ModBlocks.USER_PEARLESCENT_FROGLIGHT_17.get(), ModBlocks.USER_PEARLESCENT_FROGLIGHT_18.get(), ModBlocks.USER_PEARLESCENT_FROGLIGHT_19.get(), ModBlocks.USER_PEARLESCENT_FROGLIGHT_20.get(),
+        // Tinted Glass blocks (dynamic and user variants)
+        ModBlocks.DYNAMIC_BLOCK_TINTED_GLASS.get(),
+        ModBlocks.USER_TINTED_GLASS_1.get(), ModBlocks.USER_TINTED_GLASS_2.get(), ModBlocks.USER_TINTED_GLASS_3.get(), ModBlocks.USER_TINTED_GLASS_4.get(), ModBlocks.USER_TINTED_GLASS_5.get(),
+        ModBlocks.USER_TINTED_GLASS_6.get(), ModBlocks.USER_TINTED_GLASS_7.get(), ModBlocks.USER_TINTED_GLASS_8.get(), ModBlocks.USER_TINTED_GLASS_9.get(), ModBlocks.USER_TINTED_GLASS_10.get(),
+        ModBlocks.USER_TINTED_GLASS_11.get(), ModBlocks.USER_TINTED_GLASS_12.get(), ModBlocks.USER_TINTED_GLASS_13.get(), ModBlocks.USER_TINTED_GLASS_14.get(), ModBlocks.USER_TINTED_GLASS_15.get(),
+        ModBlocks.USER_TINTED_GLASS_16.get(), ModBlocks.USER_TINTED_GLASS_17.get(), ModBlocks.USER_TINTED_GLASS_18.get(), ModBlocks.USER_TINTED_GLASS_19.get(), ModBlocks.USER_TINTED_GLASS_20.get(),
+        // Stained Glass blocks (dynamic and user variants)
+        ModBlocks.DYNAMIC_BLOCK_STAINED_GLASS.get(),
+        ModBlocks.USER_STAINED_GLASS_1.get(), ModBlocks.USER_STAINED_GLASS_2.get(), ModBlocks.USER_STAINED_GLASS_3.get(), ModBlocks.USER_STAINED_GLASS_4.get(), ModBlocks.USER_STAINED_GLASS_5.get(),
+        ModBlocks.USER_STAINED_GLASS_6.get(), ModBlocks.USER_STAINED_GLASS_7.get(), ModBlocks.USER_STAINED_GLASS_8.get(), ModBlocks.USER_STAINED_GLASS_9.get(), ModBlocks.USER_STAINED_GLASS_10.get(),
+        ModBlocks.USER_STAINED_GLASS_11.get(), ModBlocks.USER_STAINED_GLASS_12.get(), ModBlocks.USER_STAINED_GLASS_13.get(), ModBlocks.USER_STAINED_GLASS_14.get(), ModBlocks.USER_STAINED_GLASS_15.get(),
+        ModBlocks.USER_STAINED_GLASS_16.get(), ModBlocks.USER_STAINED_GLASS_17.get(), ModBlocks.USER_STAINED_GLASS_18.get(), ModBlocks.USER_STAINED_GLASS_19.get(), ModBlocks.USER_STAINED_GLASS_20.get());
         
         System.out.println("=== FINISHED REGISTERING BLOCK COLORS - INCLUDING ALL USER BLOCKS ===");
     }
@@ -203,6 +257,8 @@ public class ClientModEvents {
         ModBlocks.DYNAMIC_BLOCK_TERRACOTTA.get(),
         ModBlocks.DYNAMIC_BLOCK_CONCRETE_POWDER.get(),
         ModBlocks.DYNAMIC_BLOCK_GLASS.get(),
+        ModBlocks.DYNAMIC_BLOCK_TINTED_GLASS.get(),
+        ModBlocks.DYNAMIC_BLOCK_STAINED_GLASS.get(),
         ModBlocks.DYNAMIC_BLOCK_DIORITE.get(),
         ModBlocks.DYNAMIC_BLOCK_CALCITE.get(),
         ModBlocks.DYNAMIC_BLOCK_MUSHROOM_STEM.get(),
@@ -293,7 +349,19 @@ public class ClientModEvents {
         ModBlocks.USER_PEARLESCENT_FROGLIGHT_1.get(), ModBlocks.USER_PEARLESCENT_FROGLIGHT_2.get(), ModBlocks.USER_PEARLESCENT_FROGLIGHT_3.get(), ModBlocks.USER_PEARLESCENT_FROGLIGHT_4.get(), ModBlocks.USER_PEARLESCENT_FROGLIGHT_5.get(),
         ModBlocks.USER_PEARLESCENT_FROGLIGHT_6.get(), ModBlocks.USER_PEARLESCENT_FROGLIGHT_7.get(), ModBlocks.USER_PEARLESCENT_FROGLIGHT_8.get(), ModBlocks.USER_PEARLESCENT_FROGLIGHT_9.get(), ModBlocks.USER_PEARLESCENT_FROGLIGHT_10.get(),
         ModBlocks.USER_PEARLESCENT_FROGLIGHT_11.get(), ModBlocks.USER_PEARLESCENT_FROGLIGHT_12.get(), ModBlocks.USER_PEARLESCENT_FROGLIGHT_13.get(), ModBlocks.USER_PEARLESCENT_FROGLIGHT_14.get(), ModBlocks.USER_PEARLESCENT_FROGLIGHT_15.get(),
-        ModBlocks.USER_PEARLESCENT_FROGLIGHT_16.get(), ModBlocks.USER_PEARLESCENT_FROGLIGHT_17.get(), ModBlocks.USER_PEARLESCENT_FROGLIGHT_18.get(), ModBlocks.USER_PEARLESCENT_FROGLIGHT_19.get(), ModBlocks.USER_PEARLESCENT_FROGLIGHT_20.get()
+        ModBlocks.USER_PEARLESCENT_FROGLIGHT_16.get(), ModBlocks.USER_PEARLESCENT_FROGLIGHT_17.get(), ModBlocks.USER_PEARLESCENT_FROGLIGHT_18.get(), ModBlocks.USER_PEARLESCENT_FROGLIGHT_19.get(), ModBlocks.USER_PEARLESCENT_FROGLIGHT_20.get(),
+        // Tinted Glass
+        ModBlocks.DYNAMIC_BLOCK_TINTED_GLASS.get(),
+        ModBlocks.USER_TINTED_GLASS_1.get(), ModBlocks.USER_TINTED_GLASS_2.get(), ModBlocks.USER_TINTED_GLASS_3.get(), ModBlocks.USER_TINTED_GLASS_4.get(), ModBlocks.USER_TINTED_GLASS_5.get(),
+        ModBlocks.USER_TINTED_GLASS_6.get(), ModBlocks.USER_TINTED_GLASS_7.get(), ModBlocks.USER_TINTED_GLASS_8.get(), ModBlocks.USER_TINTED_GLASS_9.get(), ModBlocks.USER_TINTED_GLASS_10.get(),
+        ModBlocks.USER_TINTED_GLASS_11.get(), ModBlocks.USER_TINTED_GLASS_12.get(), ModBlocks.USER_TINTED_GLASS_13.get(), ModBlocks.USER_TINTED_GLASS_14.get(), ModBlocks.USER_TINTED_GLASS_15.get(),
+        ModBlocks.USER_TINTED_GLASS_16.get(), ModBlocks.USER_TINTED_GLASS_17.get(), ModBlocks.USER_TINTED_GLASS_18.get(), ModBlocks.USER_TINTED_GLASS_19.get(), ModBlocks.USER_TINTED_GLASS_20.get(),
+        // Stained Glass
+        ModBlocks.DYNAMIC_BLOCK_STAINED_GLASS.get(),
+        ModBlocks.USER_STAINED_GLASS_1.get(), ModBlocks.USER_STAINED_GLASS_2.get(), ModBlocks.USER_STAINED_GLASS_3.get(), ModBlocks.USER_STAINED_GLASS_4.get(), ModBlocks.USER_STAINED_GLASS_5.get(),
+        ModBlocks.USER_STAINED_GLASS_6.get(), ModBlocks.USER_STAINED_GLASS_7.get(), ModBlocks.USER_STAINED_GLASS_8.get(), ModBlocks.USER_STAINED_GLASS_9.get(), ModBlocks.USER_STAINED_GLASS_10.get(),
+        ModBlocks.USER_STAINED_GLASS_11.get(), ModBlocks.USER_STAINED_GLASS_12.get(), ModBlocks.USER_STAINED_GLASS_13.get(), ModBlocks.USER_STAINED_GLASS_14.get(), ModBlocks.USER_STAINED_GLASS_15.get(),
+        ModBlocks.USER_STAINED_GLASS_16.get(), ModBlocks.USER_STAINED_GLASS_17.get(), ModBlocks.USER_STAINED_GLASS_18.get(), ModBlocks.USER_STAINED_GLASS_19.get(), ModBlocks.USER_STAINED_GLASS_20.get()
         );
     }
 }
