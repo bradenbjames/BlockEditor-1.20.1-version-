@@ -25,13 +25,15 @@ public final class BlockEditorWidgets {
         return box;
     }
 
-    public static EditBox createNameBox(Font font, int x, int y) {
-        // Size the name box to fit the hint text "new block name" plus a small padding
-        int hintWidth = font.width("new block name");
-        int namePadding = 6; // tighter padding so the box is just wide enough
-        EditBox box = new EditBox(font, x, y, Math.max(64, hintWidth + namePadding), 20, Component.literal("Name"));
+    // Now accepts an explicit desired width so the screen can ensure the name box doesn't overlap
+    // nearby UI (for example, the block preview). The method will still enforce a small minimum width.
+    public static EditBox createNameBox(Font font, int x, int y, int width) {
+        int minWidth = 40; // very small fallback to avoid zero/negative widths
+        int usedWidth = Math.max(minWidth, width);
+        EditBox box = new EditBox(font, x, y, usedWidth, 20, Component.literal("Name"));
         box.setMaxLength(32);
-        box.setHint(Component.literal("new block name"));
+        // Make the placeholder text light blue so it's visually distinct
+        box.setHint(Component.literal("new block name").withStyle(s -> s.withColor(0xADD8E6)));
         return box;
     }
 

@@ -38,9 +38,9 @@ public class WorldEditIntegration {
      */
     public static void updateCustomBlockMapping(String customName, String internalIdentifier) {
         customBlockMappings.put(customName.toLowerCase(), internalIdentifier);
-        LOGGER.info("WorldEdit Integration: Mapped '{}' -> '{}'", customName, internalIdentifier);
-        LOGGER.info("WorldEdit Integration: Current mappings: {}", customBlockMappings);
-        
+        LOGGER.debug("WorldEdit Integration: Mapped '{}' -> '{}'", customName, internalIdentifier);
+        LOGGER.debug("WorldEdit Integration: Current mappings: {}", customBlockMappings);
+
         // Register with WorldEdit's block alias system
         registerWorldEditAlias(customName, internalIdentifier);
     }
@@ -48,9 +48,10 @@ public class WorldEditIntegration {
     /**
      * Removes a custom block mapping
      */
+    @SuppressWarnings("unused")
     public static void removeCustomBlockMapping(String customName) {
         customBlockMappings.remove(customName.toLowerCase());
-        LOGGER.info("WorldEdit Integration: Removed mapping for '{}'", customName);
+        LOGGER.debug("WorldEdit Integration: Removed mapping for '{}'", customName);
     }
     
     /**
@@ -58,7 +59,7 @@ public class WorldEditIntegration {
      */
     public static void clearAllMappings() {
         customBlockMappings.clear();
-        LOGGER.info("WorldEdit Integration: Cleared all custom block mappings");
+        LOGGER.debug("WorldEdit Integration: Cleared all custom block mappings");
     }
     
     /**
@@ -69,7 +70,7 @@ public class WorldEditIntegration {
     }
     
     /**
-     * Intercepts chat messages to translate WorldEdit commands with custom block names
+     * Intercepts chat messages to translate WorldEdit commands with our custom block names
      * Using HIGHEST priority to catch commands before anything else processes them
      */
     @SubscribeEvent(priority = EventPriority.HIGHEST)
@@ -77,12 +78,12 @@ public class WorldEditIntegration {
         String message = event.getMessage().getString();
         ServerPlayer player = event.getPlayer();
         
-        LOGGER.info("WorldEdit Integration: Chat message received: '{}'", message);
-        
+        LOGGER.debug("WorldEdit Integration: Chat message received: '{}'", message);
+
         // Check if this is a WorldEdit command with our custom blocks
         if (message.startsWith("//") && message.contains("be:")) {
-            LOGGER.info("WorldEdit Integration: Intercepted WorldEdit command: {}", message);
-            
+            LOGGER.debug("WorldEdit Integration: Intercepted WorldEdit command: {}", message);
+
             // Check if the command contains any of our custom block patterns
             Matcher matcher = WORLDEDIT_PATTERN.matcher(message);
             StringBuffer modifiedMessage = new StringBuffer();
@@ -90,8 +91,8 @@ public class WorldEditIntegration {
             
             while (matcher.find()) {
                 String customName = matcher.group(1).toLowerCase();
-                LOGGER.info("WorldEdit Integration: Found custom block reference: {}", customName);
-                
+                LOGGER.debug("WorldEdit Integration: Found custom block reference: {}", customName);
+
                 String internalId = customBlockMappings.get(customName);
                 
                 if (internalId != null) {
@@ -99,7 +100,7 @@ public class WorldEditIntegration {
                     String replacement = "be:u_" + internalId;
                     matcher.appendReplacement(modifiedMessage, replacement);
                     foundReplacement = true;
-                    LOGGER.info("WorldEdit Integration: Translated '{}' -> '{}'", customName, replacement);
+                    LOGGER.debug("WorldEdit Integration: Translated '{}' -> '{}'", customName, replacement);
                 } else {
                     // Check if we can find the mapping in the registry
                     ServerLevel level = player.serverLevel();
@@ -112,7 +113,7 @@ public class WorldEditIntegration {
                         String replacement = "be:u_" + foundInternalId;
                         matcher.appendReplacement(modifiedMessage, replacement);
                         foundReplacement = true;
-                        LOGGER.info("WorldEdit Integration: Found in registry and translated '{}' -> '{}'", customName, replacement);
+                        LOGGER.debug("WorldEdit Integration: Found in registry and translated '{}' -> '{}'", customName, replacement);
                     } else {
                         // No replacement found, keep original
                         matcher.appendReplacement(modifiedMessage, matcher.group());
@@ -124,15 +125,15 @@ public class WorldEditIntegration {
             if (foundReplacement) {
                 matcher.appendTail(modifiedMessage);
                 String translatedCommand = modifiedMessage.toString();
-                LOGGER.info("WorldEdit Integration: Final translated command: {}", translatedCommand);
-                
+                LOGGER.debug("WorldEdit Integration: Final translated command: {}", translatedCommand);
+
                 // Cancel the original event
                 event.setCanceled(true);
                 
                 // Execute the translated command
                 player.server.execute(() -> {
                     try {
-                        LOGGER.info("WorldEdit Integration: Executing translated command: {}", translatedCommand);
+                        LOGGER.debug("WorldEdit Integration: Executing translated command: {}", translatedCommand);
                         player.server.getCommands().performPrefixedCommand(
                             player.createCommandSourceStack(),
                             translatedCommand
@@ -158,8 +159,8 @@ public class WorldEditIntegration {
             Block block = BuiltInRegistries.BLOCK.get(blockLocation);
             
             if (block != null) {
-                LOGGER.info("WorldEdit Integration: Block '{}' is available for custom name '{}'", blockLocation, customName);
-                LOGGER.info("WorldEdit Integration: Users should use 'be:u_{}' in WorldEdit commands", internalId);
+                LOGGER.debug("WorldEdit Integration: Block '{}' is available for custom name '{}'", blockLocation, customName);
+                LOGGER.debug("WorldEdit Integration: Users should use 'be:u_{}' in WorldEdit commands", internalId);
             } else {
                 LOGGER.warn("WorldEdit Integration: Block not found for location: {}", blockLocation);
             }
@@ -170,48 +171,41 @@ public class WorldEditIntegration {
     
     @SubscribeEvent
     public static void onServerStarted(ServerStartedEvent event) {
-        LOGGER.info("WorldEdit Block Alias Manager: Server started, loading existing custom block mappings");
-        
-        // Load existing mappings from the UserBlockRegistry
-        // This will be called when the server starts
-        try {
-            // We'll load the mappings when players join instead since we need a ServerLevel
-            LOGGER.info("WorldEdit Integration: Ready to load custom block mappings when players join");
-        } catch (Exception e) {
-            LOGGER.error("WorldEdit Integration: Error during server startup: {}", e.getMessage());
-        }
-    }
-    
-    @SubscribeEvent
-    public static void onPlayerJoin(PlayerEvent.PlayerLoggedInEvent event) {
+        LOGGER.debug("WorldEdit Block Alias Manager: Server started (startup logging suppressed by default)");
+        // Load existing mappings when players join (we need a ServerLevel to access registry)
+     }
+
+     @SubscribeEvent
+     public static void onPlayerJoin(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
             ServerLevel level = player.serverLevel();
             UserBlockRegistry registry = UserBlockRegistry.get(level);
-            
+
             // Load all existing custom block mappings
             Set<String> existingNames = registry.getAllCustomNames();
             for (String customName : existingNames) {
                 String internalId = registry.getInternalIdentifier(customName);
                 if (internalId != null) {
                     customBlockMappings.put(customName.toLowerCase(), internalId);
-                    LOGGER.info("Stored custom block mapping: {} -> {}", customName, internalId);
-                    
-                    // Try to make WorldEdit recognize this block
+                    LOGGER.debug("Stored custom block mapping: {} -> {}", customName, internalId);
+
+                    // Try to make WorldEdit recognize this block (debug only)
                     ResourceLocation blockLocation = new ResourceLocation(BlockEditorMod.MOD_ID, "u_" + internalId);
-                    LOGGER.info("WorldEdit should recognize: {} as UserBlock", blockLocation);
+                    LOGGER.debug("WorldEdit should recognize: {} as UserBlock", blockLocation);
                 }
             }
-            
-            LOGGER.info("Loaded {} existing custom block aliases", existingNames.size());
+
+            LOGGER.debug("Loaded {} existing custom block aliases", existingNames.size());
             if (!existingNames.isEmpty()) {
-                LOGGER.info("Example mappings loaded:");
+                LOGGER.debug("Example mappings loaded:");
                 existingNames.stream().limit(5).forEach(name -> {
                     String internalId = registry.getInternalIdentifier(name);
                     if (internalId != null) {
-                        LOGGER.info("  '{}' -> 'be:u_{}'", name, internalId);
+                        LOGGER.debug("  '{}' -> 'be:u_{}'", name, internalId);
                     }
                 });
             }
         }
     }
+
 }

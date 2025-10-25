@@ -5,6 +5,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.Minecraft;
 
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -13,24 +14,29 @@ import org.slf4j.Logger;
 
 public final class HistoryPanel {
     // Layout constants
-    private static final int PANEL_MARGIN = 10;
+    private static final int PANEL_MARGIN = 5;
     private static final int INNER_PADDING = 8; // equal space on left/right inside the panel
     private static final int ITEM_HEIGHT = 18; // compact height
-    private static final int ITEM_WIDTH = 46;  // slightly narrower to allow more columns on wide panels
+    // Reduce width so items end near the hex code and occupy less horizontal space
+    private static final int ITEM_WIDTH = 34;  // narrower as requested (base compact width)
     private static final int ITEM_SPACING = 2; // tighter spacing
     private static final int TITLE_BAR_HEIGHT = 16;
     // Increase top padding so there is a visible gap under the "Recent Blocks" header
-    private static final int CONTENT_TOP_PADDING = 10; // space between title bar and first row of items
+    // Use the same padding as the horizontal inner padding so spacing is consistent on all sides
+    private static final int CONTENT_TOP_PADDING = INNER_PADDING;
     // Larger bottom inset to avoid the panel overlapping bottom-aligned buttons/widgets
     private static final int BOTTOM_INSET = 6; // small inset so panel doesn't overlap bottom-aligned widgets
     private static final int SCROLLBAR_WIDTH = 6; // width reserved for the external scrollbar
 
     // Text scales for compact entries
-    private static final float NAME_TEXT_SCALE = 0.65f; // even smaller
-    private static final float HEX_TEXT_SCALE = 0.40f;  // much smaller
+    // Name is primary; hex should be just slightly smaller than the name for readability
+    private static final float NAME_TEXT_SCALE = 0.65f;
+    private static final float HEX_TEXT_SCALE = 0.30f; // slightly smaller than name
 
     private int scrollOffset = 0; // in items
     private BiConsumer<CreatedBlockInfo, Integer> onItemClick;
+    // Temporary storage for hover-tooltips collected during scissored rendering
+    // We'll render these after disabling scissor so they aren't clipped.
 
     // New: left bound X that the panel should not cross (to avoid overlapping main content)
     // If < 0, the panel will use full available screen width up to margin.
@@ -39,6 +45,22 @@ public final class HistoryPanel {
     // If topBoundY or bottomBoundY < 0 they are ignored and defaults are used
     private int topBoundY = -1;
     private int bottomBoundY = -1;
+
+    // Toggle state: true = compact (current), false = enlarged (double width)
+    // Persist the compact/enlarged toggle for the running game instance (static so it survives screen re-opens)
+    private static boolean compactView = true;
+    private static final int TOGGLE_SIZE = 12;
+
+    // Public accessors so other screens / code can read/modify the view state for the running instance
+    @SuppressWarnings("unused")
+    public static boolean isCompactView() {
+        return compactView;
+    }
+
+    @SuppressWarnings("unused")
+    public static void setCompactView(boolean value) {
+        compactView = value;
+    }
 
     private static final Logger LOGGER = LogUtils.getLogger();
 
@@ -65,7 +87,8 @@ public final class HistoryPanel {
         // internal scrollbar width so items never draw under the rail.
         int contentWidth = Math.max(0, panelWidth - (INNER_PADDING * 2) - SCROLLBAR_WIDTH);
 
-        int cols = computeColumns(contentWidth);
+        // Use layout-aware columns: compact uses the previous heuristic; enlarged uses fixed columns
+        int cols = computeColumnsForLayout(screen, contentWidth);
         Bounds bounds = computeBounds(screen, panelWidth);
         int panelX = bounds.x;
         int panelY = bounds.y;
@@ -75,32 +98,37 @@ public final class HistoryPanel {
         graphics.fill(panelX, panelY - TITLE_BAR_HEIGHT, panelX + panelWidth, panelY + panelHeight, 0xE0000000);
         graphics.fill(panelX, panelY - TITLE_BAR_HEIGHT, panelX + panelWidth, panelY, 0xFF333333);
 
-        // Title centered and slightly scaled
-        var pose = graphics.pose();
-        pose.pushPose();
-        pose.translate(panelX + panelWidth / 2f, panelY - 13, 0);
-        pose.scale(0.6f, 0.6f, 1.0f);
-        graphics.drawCenteredString(font, "§eRecent Blocks", 0, 0, 0xFFFFFF);
-        pose.popPose();
+        // Title and debug overlay will be redrawn after content is rendered (after scissor is disabled)
+        // to ensure the title bar is always on top and covers any artifact fragments from the content
 
         if (history.isEmpty()) {
-            graphics.drawCenteredString(font, "§7No blocks yet", panelX + panelWidth / 2, panelY + 20, 0xAAAAAA);
+            var none = net.minecraft.network.chat.Component.literal("No blocks yet").withStyle(s -> s.withColor(0xAAAAAA));
+            graphics.drawCenteredString(font, none, panelX + panelWidth / 2, panelY + 20, 0);
             return;
         }
 
         // Compute visible rows and scrolling using the padded content height so layout, scrollbar
         // and interaction all agree about where items are placed.
+        // Effective panel height for items excludes the title bar and top content padding so
+        // rows and scrollbars align correctly with the visible item area.
         int effectivePanelHeight = Math.max(0, panelHeight - CONTENT_TOP_PADDING);
         int rowsVisible = Math.max(1, effectivePanelHeight / (ITEM_HEIGHT + ITEM_SPACING));
         int maxVisible = rowsVisible * cols;
         int maxScroll = Math.max(0, history.size() - maxVisible);
         scrollOffset = Math.max(0, Math.min(scrollOffset, maxScroll));
 
-        // Use exact panel bounds for scissor to avoid drawing under the external scrollbar
-        graphics.enableScissor(panelX, panelY, panelX + panelWidth, panelY + panelHeight);
+        // Use exact panel bounds for scissor; start just below the content top plus the configured top padding
+        // so items are clipped to the item area and cannot render into the title/header region.
+        graphics.enableScissor(panelX, panelY + CONTENT_TOP_PADDING, panelX + panelWidth, panelY + panelHeight);
 
         // Account for top padding inside the panel so there is space between the title and the first row
         // (variables computed above are reused here)
+
+        String hoveredName = null;
+        double hoverX = 0, hoverY = 0; // mouse position for tooltip
+
+        // Compute item width so columns divide the available content width exactly
+        int itemWidth = computeItemWidthForLayout(contentWidth, cols);
 
         for (int visibleIndex = 0; visibleIndex < maxVisible; visibleIndex++) {
             int dataIndex = scrollOffset + visibleIndex;
@@ -111,16 +139,16 @@ public final class HistoryPanel {
             int col = visibleIndex % cols;
 
             // No extra per-item shift here: panelX is already adjusted in computeBounds when constrained.
-            int itemX = panelX + INNER_PADDING + col * (ITEM_WIDTH + ITEM_SPACING);
-            // Add top padding so the first row is offset from the title bar
+            int itemX = panelX + INNER_PADDING + col * (itemWidth + ITEM_SPACING);
+            // Place the first row at the content-top plus the configured top padding
             int itemY = panelY + CONTENT_TOP_PADDING + row * (ITEM_HEIGHT + ITEM_SPACING);
 
-            boolean hovered = mouseX >= itemX && mouseX < itemX + ITEM_WIDTH && mouseY >= itemY && mouseY < itemY + ITEM_HEIGHT;
+            boolean hovered = mouseX >= itemX && mouseX < itemX + itemWidth && mouseY >= itemY && mouseY < itemY + ITEM_HEIGHT;
             int bg = hovered ? 0x80CCCCCC : ((row % 2 == 0) ? 0x40FFFFFF : 0x20FFFFFF);
-            GuiRenderUtil.drawRoundedRect(graphics, itemX, itemY, ITEM_WIDTH, ITEM_HEIGHT, 3, bg);
+            GuiRenderUtil.drawRoundedRect(graphics, itemX, itemY, itemWidth, ITEM_HEIGHT, 3, bg);
 
             // Render tinted item icon (16x16) with tight padding
-            pose = graphics.pose();
+            var pose = graphics.pose();
             pose.pushPose();
             RenderSystem.setShaderColor(
                 ((info.color >> 16) & 0xFF) / 255.0f,
@@ -134,20 +162,61 @@ public final class HistoryPanel {
 
             // Text area (scaled)
             String name = info.blockName != null ? info.blockName : "";
-            String hexText = "(#" + info.hexColor + ")";
+            // If name is empty show a cyan/turquoise placeholder; otherwise show the real name in white
+            String displayName = name.isEmpty() ? "Unnamed" : name;
+            int nameColor = name.isEmpty() ? 0x00FFFF : 0xFFFFFF; // cyan/turquoise for placeholder
+            // Always format hex as '#RRGGBB' (no parentheses). In compact view we show it for all items;
+            // in enlarged view we fall back to only showing it when the name fits (previous behavior).
+            String hexText = (info.hexColor != null && !info.hexColor.isEmpty()) ? "#" + info.hexColor : null;
             int textLeft = itemX + 18; // thinner left padding
-            int textAvail = ITEM_WIDTH - 20; // balance margins left/right
+            int textAvail = itemWidth - 20; // balance margins left/right
+
+            // Decide whether the raw name fits entirely (in unscaled px space) in the available width.
+            // Only consider real names for the hex-layout decision; placeholder should not force hex rendering.
+            boolean nameFitsRaw = !name.isEmpty() && font.width(name) <= (int) Math.floor(textAvail / Math.max(0.001f, NAME_TEXT_SCALE));
 
             // Name (smaller)
-            String trimmedName = trimToWidthScaled(font, name, textAvail, NAME_TEXT_SCALE);
-            drawScaledString(graphics, font, trimmedName, textLeft, itemY + 2, NAME_TEXT_SCALE, 0xFFFFFF);
+            String trimmedName = trimToWidthScaled(font, displayName, textAvail, NAME_TEXT_SCALE);
+            drawScaledString(graphics, font, trimmedName, textLeft, itemY + 2, NAME_TEXT_SCALE, nameColor);
 
-            // Hex (smaller)
-            String trimmedHex = trimToWidthScaled(font, hexText, textAvail, HEX_TEXT_SCALE);
-            drawScaledString(graphics, font, trimmedHex, textLeft, itemY + 10, HEX_TEXT_SCALE, 0xAAAAAA);
+            // Hex (smaller) - show formatted '#FFFFFF' in compact view for all items; otherwise only if the name fits
+            if (hexText != null && (compactView || nameFitsRaw)) {
+                String trimmedHex = trimToWidthScaled(font, hexText, textAvail, HEX_TEXT_SCALE);
+                drawScaledString(graphics, font, trimmedHex, textLeft, itemY + 10, HEX_TEXT_SCALE, 0xAAAAAA);
+            }
+
+            // Collect hover info so we can render a tooltip after scissor is disabled (not clipped)
+            if (hovered && !name.isEmpty()) {
+                // Store into local variables on the stack via final copy - we'll render below after scissor
+                hoveredName = name;
+                hoverX = mouseX;
+                hoverY = mouseY;
+            }
         }
 
         graphics.disableScissor();
+        // If an item was hovered we want to render an unclipped tooltip with the full name
+        if (hoveredName != null && !hoveredName.isEmpty()) {
+            // renderTooltip expects integer coordinates in this MC version
+            graphics.renderTooltip(font, net.minecraft.network.chat.Component.literal(hoveredName), (int) hoverX, (int) hoverY);
+        }
+
+        // Redraw title on top of scissored content to avoid artifacts
+        var title = net.minecraft.network.chat.Component.literal("Recent Blocks");
+        graphics.drawCenteredString(font, title, panelX + panelWidth / 2, panelY - TITLE_BAR_HEIGHT + 4, 0xFFFFFF);
+
+        // Draw a small toggle in the title bar (top-right) to switch compact/enlarged views
+        int toggleX = panelX + panelWidth - INNER_PADDING - TOGGLE_SIZE;
+        int toggleY = panelY - TITLE_BAR_HEIGHT + (TITLE_BAR_HEIGHT - TOGGLE_SIZE) / 2;
+        int toggleBg = compactView ? 0xFF555555 : 0xFF808022; // different background to indicate state
+        GuiRenderUtil.drawRoundedRect(graphics, toggleX, toggleY, TOGGLE_SIZE, TOGGLE_SIZE, 3, toggleBg);
+        // draw a simple indicator: one bar for compact, two bars for enlarged
+        if (compactView) {
+            graphics.fill(toggleX + (TOGGLE_SIZE / 2) - 2, toggleY + 3, toggleX + (TOGGLE_SIZE / 2) + 2, toggleY + TOGGLE_SIZE - 3, 0xFFFFFFFF);
+        } else {
+            graphics.fill(toggleX + 3, toggleY + 3, toggleX + 5, toggleY + TOGGLE_SIZE - 3, 0xFFFFFFFF);
+            graphics.fill(toggleX + TOGGLE_SIZE - 5, toggleY + 3, toggleX + TOGGLE_SIZE - 3, toggleY + TOGGLE_SIZE - 3, 0xFFFFFFFF);
+        }
 
         // Optional scrollbar when overflow (use the padded rows count for consistent sizing)
         int totalRows = (int) Math.ceil(history.size() / (double) cols);
@@ -157,6 +226,7 @@ public final class HistoryPanel {
 
         // Draw rail constrained to the item area (exclude the title bar). This keeps the rail and
         // thumb visually aligned with the rows they control.
+        // Rail top should match the top of the item area so the thumb aligns with rows
         int railTop = panelY + CONTENT_TOP_PADDING;
         int railBottom = panelY + panelHeight;
         graphics.fill(scrollBarX, railTop, scrollBarX + SCROLLBAR_WIDTH, railBottom, 0xFF666666);
@@ -180,9 +250,36 @@ public final class HistoryPanel {
         if (history.isEmpty()) return false;
 
         Bounds b = computeBounds(screen, computePanelWidth(screen));
+
+        // Compute toggle bounds in the title bar so clicks on it will toggle views
+        int toggleX = b.x + b.width - INNER_PADDING - TOGGLE_SIZE;
+        int toggleY = b.y - TITLE_BAR_HEIGHT + (TITLE_BAR_HEIGHT - TOGGLE_SIZE) / 2;
+        boolean clickedToggle = mouseX >= toggleX && mouseX < toggleX + TOGGLE_SIZE && mouseY >= toggleY && mouseY < toggleY + TOGGLE_SIZE;
+        if (clickedToggle) {
+            // flip view
+            // Flip the shared compact/enlarged view for the instance
+            compactView = !compactView;
+            // log the new state so LOGGER is used and developers can trace toggles
+            try {
+                LOGGER.debug("HistoryPanel compact view toggled -> {}", compactView);
+            } catch (Exception ignored) {
+                // intentionally ignore logging errors in environments where logging might not be available
+            }
+            // clamp scroll offset to new visible range
+            int panelWidth = computePanelWidth(screen);
+            int contentWidth = Math.max(0, panelWidth - (INNER_PADDING * 2) - SCROLLBAR_WIDTH);
+            int cols = computeColumnsForLayout(screen, contentWidth);
+            int rowsVisible = Math.max(1, Math.max(0, b.height - CONTENT_TOP_PADDING) / (getItemWidth() + ITEM_SPACING));
+            int maxVisible = rowsVisible * cols;
+            int maxScroll = Math.max(0, history.size() - maxVisible);
+            scrollOffset = Math.max(0, Math.min(scrollOffset, maxScroll));
+            return true;
+        }
+
+        // If the click wasn't on the toggle, require the click be within the content bounds
         if (!b.contains(mouseX, mouseY)) return false;
 
-        int cols = computeColumns(b.width);
+        int cols = computeColumns(screen, b.width);
         // Account for the top padding when computing visible rows for hit detection
         int rowsVisible = Math.max(1, Math.max(0, b.height - CONTENT_TOP_PADDING) / (ITEM_HEIGHT + ITEM_SPACING));
         int maxVisible = rowsVisible * cols;
@@ -194,7 +291,14 @@ public final class HistoryPanel {
         relY -= CONTENT_TOP_PADDING;
         if (relY < 0) return false;
 
-        int col = relX / (ITEM_WIDTH + ITEM_SPACING);
+        // Adjust for the left inner padding used when rendering items
+        relX -= INNER_PADDING;
+        if (relX < 0) return false;
+        // Compute contentWidth (panel's usable width for items) which was missing here
+        int panelWidth = b.width;
+        int contentWidth = Math.max(0, panelWidth - (INNER_PADDING * 2) - SCROLLBAR_WIDTH);
+        int itemWidth = computeItemWidthForLayout(contentWidth, cols);
+        int col = relX / (itemWidth + ITEM_SPACING);
         int row = relY / (ITEM_HEIGHT + ITEM_SPACING);
         if (col < 0 || col >= cols) return false;
 
@@ -217,7 +321,9 @@ public final class HistoryPanel {
         Bounds b = computeBounds(screen, computePanelWidth(screen));
         if (!b.contains(mouseX, mouseY)) return false;
 
-        int cols = computeColumns(b.width);
+        int panelWidth = b.width;
+        int contentWidth = Math.max(0, panelWidth - (INNER_PADDING * 2) - SCROLLBAR_WIDTH);
+        int cols = computeColumnsForLayout(screen, contentWidth);
         // Use padded rows for scroll calculations so scroll amount matches visible items
         int rowsVisible = Math.max(1, Math.max(0, b.height - CONTENT_TOP_PADDING) / (ITEM_HEIGHT + ITEM_SPACING));
         int maxVisible = rowsVisible * cols;
@@ -283,20 +389,36 @@ public final class HistoryPanel {
         }
         // Use the available space (right half) directly so the panel naturally fills the right side.
         // Ensure at least ITEM_WIDTH plus inner padding is returned.
-        return Math.max(ITEM_WIDTH + INNER_PADDING * 2 + 6, available);
+        return Math.max(getItemWidth() + INNER_PADDING * 2 + 6, available);
     }
 
-    private int computeColumns(int contentWidth) {
+    private int computeColumns(Screen screen, int contentWidth) {
         // contentWidth is already panelWidth minus inner padding; compute how many cells fit
-        int computed = Math.max(1, (contentWidth + ITEM_SPACING) / (ITEM_WIDTH + ITEM_SPACING));
+        int computed = Math.max(1, (contentWidth + ITEM_SPACING) / (getItemWidth() + ITEM_SPACING));
         // If the panel is constrained (we'll place the scrollbar at the far right), allow one
-        // additional column to use the freed-up layout on wide displays. Keep an upper cap.
+        // additional column to use the freed-up layout on wide displays.
         if (this.leftBoundX >= 0) {
             computed = computed + 1;
         }
-        int upperCap = 8; // allow up to 8 columns on very wide panels
-        return Math.min(computed, upperCap);
+
+        // Cap columns based on the overall screen resolution:
+        // - For 1920-wide (1080p) or smaller screens, use up to 6 columns
+        // - For larger screens, allow up to 10 columns
+        int guiWidth = (screen != null) ? screen.width : 1920;
+        int windowPixelWidth;
+        try {
+            var mc = Minecraft.getInstance();
+            // Query the window width; if this fails we'll fall back to guiWidth via the catch
+            windowPixelWidth = mc.getWindow().getScreenWidth();
+        } catch (Exception ignored) {
+            windowPixelWidth = guiWidth;
+        }
+        int maxObservedWidth = Math.max(guiWidth, windowPixelWidth);
+        int dynamicCap = (maxObservedWidth > 1920) ? 10 : 6;
+
+        return Math.min(computed, dynamicCap);
     }
+
 
     private Bounds computeBounds(Screen screen, int panelWidth) {
         int panelX;
@@ -309,7 +431,7 @@ public final class HistoryPanel {
             if (panelX < leftBoundX) {
                 panelX = leftBoundX;
                 // Recompute panelWidth so the panel extends to the scrollbar rail (no gap)
-                panelWidth = Math.max(ITEM_WIDTH + INNER_PADDING * 2 + 6,
+                panelWidth = Math.max(getItemWidth() + INNER_PADDING * 2 + 6,
                         Math.max(0, screen.width - panelX - PANEL_MARGIN));
             }
         } else {
@@ -329,7 +451,6 @@ public final class HistoryPanel {
             // bottomBoundY - panelY clamped to screen, and subtract a small BOTTOM_INSET
             // to avoid overlapping bottom-aligned widgets.
             panelHeight = Math.max(ITEM_HEIGHT, Math.min(screen.height - panelY, this.bottomBoundY - panelY - BOTTOM_INSET));
-            LOGGER.info("HistoryPanel.computeBounds: requestedTitleTop={}, panelY={}, panelHeight={}, bottomBoundY={}", requestedTitleTop, panelY, panelHeight, this.bottomBoundY);
         } else {
             panelY = 60;
             // Subtract a small bottom inset so the panel doesn't reach all the way to the screen bottom
@@ -343,5 +464,38 @@ public final class HistoryPanel {
             // Use exact panel bounds so clicks on the external scrollbar are not treated as panel clicks
             return mx >= x && mx <= x + width && my >= y && my <= y + height;
         }
+    }
+
+    // Return the current effective item width depending on compact/enlarged state
+    private int getItemWidth() {
+        return compactView ? ITEM_WIDTH : ITEM_WIDTH * 2;
+    }
+
+    // Layout helpers that know about compact/enlarged view rules
+    private int computeColumnsForLayout(Screen screen, int contentWidth) {
+        if (!compactView) {
+            // Enlarged view: choose fixed columns so items line up perfectly.
+            // Use 3 columns on 1080p (<= 1920 width) and 5 columns on larger displays.
+            int guiWidth = (screen != null) ? screen.width : 1920;
+            int windowPixelWidth;
+            try {
+                windowPixelWidth = Minecraft.getInstance().getWindow().getScreenWidth();
+            } catch (Exception ignored) {
+                windowPixelWidth = guiWidth;
+            }
+            int maxObservedWidth = Math.max(guiWidth, windowPixelWidth);
+            return (maxObservedWidth <= 1920) ? 3 : 5;
+        }
+        // Compact: fall back to the previous computed columns behavior
+        return computeColumns(screen, contentWidth);
+    }
+
+    private int computeItemWidthForLayout(int contentWidth, int cols) {
+        if (cols <= 0) return ITEM_WIDTH;
+        int totalSpacing = ITEM_SPACING * Math.max(0, cols - 1);
+        int availableForItems = Math.max(0, contentWidth - totalSpacing);
+        int w = (availableForItems / cols);
+        // Ensure we don't shrink below the nominal compact width
+        return Math.max(w, ITEM_WIDTH);
     }
 }

@@ -64,7 +64,8 @@ public class BlockEditorScreen extends Screen {
     // Helper to compute grid and history layout so the left half of the screen is the grid
     private int computeGridStartX(int blockGridWidth) {
         // Reserve the left half of the screen for the custom grid (minus a small margin)
-        int leftAreaMargin = 20;
+        // Reduce left margin so the custom grid sits closer to the left edge
+        int leftAreaMargin = 5;
         // Use a larger reserved area on large screens to make room for an extra column
         int reservedPercent = (this.width >= LARGE_SCREEN_WIDTH_THRESHOLD) ? 60 : 50; // percent of total width
         int leftAreaWidth = Math.max(0, (this.width * reservedPercent / 100) - (leftAreaMargin * 2));
@@ -123,7 +124,19 @@ public class BlockEditorScreen extends Screen {
         // Custom name input box - placed with consistent gap after hex box
         int gap = 10; // slightly thinner gap
         int nameX = gridStartX + hexBox.getWidth() + gap;
-        nameBox = BlockEditorWidgets.createNameBox(this.font, nameX, hexY);
+
+        // Compute where the block preview will be drawn (aligned with rightmost column)
+        int rightmostCol = blocksPerRow - 1;
+        int blockPreviewX = gridStartX + (rightmostCol * (BLOCK_SIZE + BLOCK_PADDING)) + 8; // same alignment as render()
+        int previewPadding = 8; // space between name box and preview so they don't touch
+
+        // Determine the available width for the name box so it stops before the preview
+        int desiredNameRight = blockPreviewX - previewPadding;
+        int computedNameWidth = Math.max(40, desiredNameRight - nameX); // ensure a small minimum
+        // As a safety fallback, keep it at least 64px so hint text fits on very small screens
+        if (computedNameWidth < 64) computedNameWidth = 64;
+
+        nameBox = BlockEditorWidgets.createNameBox(this.font, nameX, hexY, computedNameWidth);
         this.addRenderableWidget(nameBox);
 
         // Buttons - positioned lower (moved down) so they don't overlap the block grid
@@ -172,6 +185,16 @@ public class BlockEditorScreen extends Screen {
         this.addRenderableWidget(clearRegistryButton);
 
         // Constrain history panel so it doesn't overlap the main grid or buttons; place it to the right of the block grid
+        // On very wide screens, prefer to give the history panel a minimum width so it can show
+        // up to 10 columns. Compute available width and, if necessary, shift the left bound left
+        // so the panel expands.
+        int desiredMinPanelWidth = 380; // enough to show ~10 columns with current ITEM_WIDTH/spacing
+        int panelMargin = 5; // match HistoryPanel.PANEL_MARGIN
+        int availableForPanel = Math.max(0, this.width - historyLeftBoundInit - panelMargin);
+        if (this.width > 1920 && availableForPanel < desiredMinPanelWidth) {
+            // Move left bound left so the available space becomes the desired minimum
+            historyLeftBoundInit = Math.max(0, this.width - panelMargin - desiredMinPanelWidth);
+        }
         historyPanel.setLeftBoundX(historyLeftBoundInit); // use grid-based bound so buttons stay left-aligned
         // Align the panel vertically so it starts at the color/name input row and ends at the button row.
         // This will make the history panel top align with the input boxes and bottom align with the buttons.
@@ -216,20 +239,8 @@ public class BlockEditorScreen extends Screen {
 
         // # symbol is now integrated into the hex input box
         
-        // Draw red border around name box if invalid (use actual nameBox position)
-        if (nameBox != null && !isNameBoxValid()) {
-            int borderColor = 0xFFFF4444; // Bright red
-            int boxX = nameBox.getX();
-            int boxY = nameBox.getY(); 
-            int boxWidth = nameBox.getWidth();
-            int boxHeight = nameBox.getHeight();
-            
-            // Draw red border (2 pixels thick)
-            graphics.fill(boxX - 2, boxY - 2, boxX + boxWidth + 2, boxY - 1, borderColor); // Top
-            graphics.fill(boxX - 2, boxY + boxHeight + 1, boxX + boxWidth + 2, boxY + boxHeight + 2, borderColor); // Bottom  
-            graphics.fill(boxX - 2, boxY - 1, boxX - 1, boxY + boxHeight + 1, borderColor); // Left
-            graphics.fill(boxX + boxWidth + 1, boxY - 1, boxX + boxWidth + 2, boxY + boxHeight + 1, borderColor); // Right (fixed x2/y2)
-        }
+        // NOTE: removed the red rectangle border in favor of coloring the text red when invalid
+        // Name text color is now handled in tick() to ensure the EditBox shows red text when invalid
 
         // Draw block preview to the right of the name text box, same size as selection grid blocks
         if (hexBox != null && nameBox != null) {
@@ -269,6 +280,14 @@ public class BlockEditorScreen extends Screen {
         int blockGridWidthRuntime = blocksPerRowRuntime * BLOCK_SIZE + (blocksPerRowRuntime - 1) * BLOCK_PADDING;
         int gridStartXRuntime = computeGridStartX(blockGridWidthRuntime);
         int runtimeHistoryLeftBound = gridStartXRuntime + blockGridWidthRuntime + HISTORY_GUTTER; // match gutter
+        // If screen is wide but the available width for the panel is too small to show 10 columns,
+        // shift the left bound left so the panel gets the desired minimum width.
+        int desiredMinPanelWidthRt = 380;
+        int panelMarginRt = 5;
+        int availableRt = Math.max(0, this.width - runtimeHistoryLeftBound - panelMarginRt);
+        if (this.width > 1920 && availableRt < desiredMinPanelWidthRt) {
+            runtimeHistoryLeftBound = Math.max(0, this.width - panelMarginRt - desiredMinPanelWidthRt);
+        }
         historyPanel.setLeftBoundX(runtimeHistoryLeftBound);
         // Also update vertical bounds each frame so the panel top starts at the input boxes
         // and the bottom aligns with the buttons. This keeps the red-box alignment you showed
@@ -282,25 +301,19 @@ public class BlockEditorScreen extends Screen {
         if (createButton != null) panelBottom = Math.max(panelBottom, createButton.getY() + createButton.getHeight() - 1);
         if (cancelButton != null) panelBottom = Math.max(panelBottom, cancelButton.getY() + cancelButton.getHeight() - 1);
         if (clearRegistryButton != null) panelBottom = Math.max(panelBottom, clearRegistryButton.getY() + clearRegistryButton.getHeight() - 1);
-         // Debug log to help diagnose vertical alignment issues (inspect latest.log or console)
-         LOGGER.debug("BlockEditorScreen: hexY={}, nameY={}, clearBtnBottom={}, panelTop={}, panelBottom={}",
-                 (hexBox != null ? hexBox.getY() : -1),
-                 (nameBox != null ? nameBox.getY() : -1),
-                 (clearRegistryButton != null ? clearRegistryButton.getY() + clearRegistryButton.getHeight() - 1 : -1),
-                 panelTop, panelBottom);
-         historyPanel.setVerticalBounds(panelTop, panelBottom);
-          historyPanel.render(this, graphics, this.font, mouseX, mouseY);
+        historyPanel.setVerticalBounds(panelTop, panelBottom);
+        historyPanel.render(this, graphics, this.font, mouseX, mouseY);
 
         // Render all widgets (buttons and text boxes) - THIS IS CRITICAL
         super.render(graphics, mouseX, mouseY, partialTick);
     }
 
     private void renderBlockGrid(GuiGraphics graphics, int mouseX, int mouseY) {
-         // Grid start X should be computed to occupy the left half
-         int blocksPerRow = computeBlocksPerRow();
-         int blockGridWidth = blocksPerRow * BLOCK_SIZE + (blocksPerRow - 1) * BLOCK_PADDING;
-         int startX = computeGridStartX(blockGridWidth);
-         int startY = 55;
+        // Grid start X should be computed to occupy the left half
+        int blocksPerRow = computeBlocksPerRow();
+        int blockGridWidth = blocksPerRow * BLOCK_SIZE + (blocksPerRow - 1) * BLOCK_PADDING;
+        int startX = computeGridStartX(blockGridWidth);
+        int startY = 55;
 
         // Filter blocks based on search
         String search = (searchBox != null ? searchBox.getValue() : "").toLowerCase();
@@ -557,6 +570,14 @@ public class BlockEditorScreen extends Screen {
             if (!nameValue.equals(cleanedName)) {
                 nameBox.setValue(cleanedName);
             }
+            // Update the edit box text color: red when invalid, white when valid
+            try {
+                int validColor = 16777215; // white
+                int invalidColor = 16711680; // red
+                nameBox.setTextColor(isNameBoxValid() ? validColor : invalidColor);
+            } catch (Exception ignored) {
+                // setTextColor may not exist or behave differently on some mappings; ignore failures
+            }
         }
         
         // Update Create Block button state based on validation
@@ -588,27 +609,27 @@ public class BlockEditorScreen extends Screen {
     }
 
     private int computeBlocksPerRow() {
-         // Detect large screens robustly across GUI scale/DPI settings by taking
-         // the maximum of several width measurements we can reasonably obtain.
-         int guiWidth = this.width; // scaled GUI units
-         int windowPixelWidth = guiWidth;
-         int guiScaledWidth = guiWidth;
-         if (this.minecraft != null) {
-             try {
-                 var window = this.minecraft.getWindow();
-                 if (window != null) {
-                     windowPixelWidth = window.getScreenWidth();
-                     guiScaledWidth = window.getGuiScaledWidth();
-                 }
-             } catch (Exception ignored) {
-                 // fall back to guiWidth
-             }
-         }
-         int maxObserved = Math.max(guiWidth, Math.max(windowPixelWidth, guiScaledWidth));
-         int desired = (maxObserved >= LARGE_SCREEN_WIDTH_THRESHOLD) ? LARGE_SCREEN_BLOCKS : DEFAULT_BLOCKS_PER_ROW;
+        // Detect large screens robustly across GUI scale/DPI settings by taking
+        // the maximum of several width measurements we can reasonably obtain.
+        int guiWidth = this.width; // scaled GUI units
+        int windowPixelWidth = guiWidth;
+        int guiScaledWidth = guiWidth;
+        if (this.minecraft != null) {
+            try {
+                var window = this.minecraft.getWindow();
+                // window is expected to be non-null here in the client environment; use directly
+                windowPixelWidth = window.getScreenWidth();
+                guiScaledWidth = window.getGuiScaledWidth();
+            } catch (Exception ignored) {
+                // fall back to guiWidth
+            }
+        }
+        int maxObserved = Math.max(guiWidth, Math.max(windowPixelWidth, guiScaledWidth));
+        int desired = (maxObserved >= LARGE_SCREEN_WIDTH_THRESHOLD) ? LARGE_SCREEN_BLOCKS : DEFAULT_BLOCKS_PER_ROW;
 
-        // Now ensure the desired number of columns actually fits inside the reserved left half
-        int leftAreaMargin = 20;
+       // Now ensure the desired number of columns actually fits inside the reserved left half
+        // Match the smaller left margin used for positioning so column calculation is consistent
+        int leftAreaMargin = 5;
         int leftAreaWidth = Math.max(0, (this.width / 2) - (leftAreaMargin * 2));
         // Compute how many full block cells fit (accounting for N*BLOCK_SIZE + (N-1)*BLOCK_PADDING)
         int maxColumns = Math.max(1, (leftAreaWidth + BLOCK_PADDING) / (BLOCK_SIZE + BLOCK_PADDING));
@@ -822,14 +843,18 @@ public class BlockEditorScreen extends Screen {
 
     @Override
     public boolean charTyped(char codePoint, int modifiers) {
-        // Try catching scroll events through char input
+        // If any text input is focused, defer to the default text handling so characters
+        // like 's' and 'w' can be typed into the box normally.
+        if ((nameBox != null && nameBox.isFocused()) || (hexBox != null && hexBox.isFocused()) || (searchBox != null && searchBox.isFocused())) {
+            return super.charTyped(codePoint, modifiers);
+        }
+
+        // Otherwise, use single-character input to provide quick history scrolling
         if (codePoint == 'w' || codePoint == 'W') {
-            LOGGER.debug("MANUAL SCROLL: UP with W key");
             scrollHistoryUp();
             return true;
         }
         if (codePoint == 's' || codePoint == 'S') {
-            LOGGER.debug("MANUAL SCROLL: DOWN with S key");
             scrollHistoryDown();
             return true;
         }
@@ -839,6 +864,7 @@ public class BlockEditorScreen extends Screen {
             }
             return true;
         }
+
         return super.charTyped(codePoint, modifiers);
     }
 
