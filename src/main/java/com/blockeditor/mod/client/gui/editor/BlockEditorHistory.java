@@ -1,5 +1,6 @@
 package com.blockeditor.mod.client.gui.editor;
 
+import com.blockeditor.mod.BlockEditorMod;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -75,7 +76,7 @@ public class BlockEditorHistory {
             rootTag.put("history", historyList);
             NbtIo.write(rootTag, historyFile);
         } catch (IOException e) {
-            System.err.println("Failed to save block history: " + e.getMessage());
+            BlockEditorMod.LOGGER.warn("Failed to save block history", e);
         }
     }
 
@@ -108,7 +109,7 @@ public class BlockEditorHistory {
                 }
             }
         } catch (IOException e) {
-            System.err.println("Failed to load block history: " + e.getMessage());
+            BlockEditorMod.LOGGER.warn("Failed to load block history", e);
         }
     }
 }

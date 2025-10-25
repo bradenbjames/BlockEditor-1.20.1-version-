@@ -66,7 +66,9 @@ public class PickBlockHandler {
                 try {
                     hexColor = normalizeHex(raw);
                     color = Integer.parseInt(hexColor, 16);
-                } catch (Exception ex) {
+                } catch (NumberFormatException ex) {
+                    // Warn and fall back to default pick behavior (event not canceled)
+                    com.blockeditor.mod.BlockEditorMod.LOGGER.warn("Malformed color on picked block entity: '{}'", raw);
                     return;
                 }
             } else {

@@ -38,17 +38,16 @@ public class ClearRegistryPacket {
                 // Clear WorldEdit integration mappings
                 try {
                     com.blockeditor.mod.integration.WorldEditIntegration.clearAllMappings();
-                    System.out.println("SERVER: Cleared WorldEdit integration mappings");
+                    BlockEditorMod.LOGGER.info("Cleared WorldEdit integration mappings");
                 } catch (Exception e) {
-                    System.err.println("SERVER ERROR: Failed to clear WorldEdit integration mappings: " + e.getMessage());
-                    e.printStackTrace();
+                    BlockEditorMod.LOGGER.error("Failed to clear WorldEdit integration mappings", e);
                 }
                 
                 // Send feedback to player
                 String message = "Cleared " + clearedCount + " user blocks from server registry.";
                 player.sendSystemMessage(Component.literal(message));
-                
-                System.out.println("Player " + player.getName().getString() + " cleared user block registry. Cleared " + clearedCount + " blocks.");
+
+                BlockEditorMod.LOGGER.info("Player {} cleared user block registry ({} blocks)", player.getName().getString(), clearedCount);
             }
         });
         context.setPacketHandled(true);

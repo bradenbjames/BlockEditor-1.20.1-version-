@@ -17,7 +17,7 @@ public class ModNetworking {
     );
 
     public static void register() {
-        System.out.println("ModNetworking.register called - registering packets");
+        BlockEditorMod.LOGGER.debug("Registering network packets");
 
         INSTANCE.registerMessage(0, CreateBlockPacket.class,
             CreateBlockPacket::encode,
@@ -36,12 +36,11 @@ public class ModNetworking {
             GivePickedBlockPacket::decode,
             GivePickedBlockPacket::handle
         );
-
-        System.out.println("ModNetworking.register completed - packets registered");
+        BlockEditorMod.LOGGER.debug("Packet registration complete");
     }
 
     public static void sendToServer(Object message) {
-        System.out.println("ModNetworking.sendToServer called with: " + message.getClass().getSimpleName());
+        BlockEditorMod.LOGGER.trace("Sending packet to server: {}", message.getClass().getSimpleName());
         INSTANCE.send(PacketDistributor.SERVER.noArg(), message);
     }
 }
