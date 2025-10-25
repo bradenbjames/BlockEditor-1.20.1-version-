@@ -16,41 +16,41 @@ public class ModBlocks {
 
     // Original block (stone texture)
     public static final RegistryObject<Block> DYNAMIC_BLOCK = BLOCKS.register("dynamic_block",
-        () -> new DynamicBlock());
+            DynamicBlock::new);
 
     // Additional blocks for different textures
     public static final RegistryObject<Block> DYNAMIC_BLOCK_DIRT = BLOCKS.register("dynamic_block_dirt",
-        () -> new DynamicBlock());
+            DynamicBlock::new);
 
     public static final RegistryObject<Block> DYNAMIC_BLOCK_SAND = BLOCKS.register("dynamic_block_sand",
-        () -> new DynamicBlock());
+            DynamicBlock::new);
 
     public static final RegistryObject<Block> DYNAMIC_BLOCK_WOOL = BLOCKS.register("dynamic_block_wool",
-        () -> new DynamicBlock());
+            DynamicBlock::new);
 
     public static final RegistryObject<Block> DYNAMIC_BLOCK_CONCRETE = BLOCKS.register("dynamic_block_concrete",
-        () -> new DynamicBlock());
+            DynamicBlock::new);
 
     public static final RegistryObject<Block> DYNAMIC_BLOCK_DEEPSLATE = BLOCKS.register("dynamic_block_deepslate",
-        () -> new DynamicBlock());
+            DynamicBlock::new);
 
     public static final RegistryObject<Block> DYNAMIC_BLOCK_WOOD = BLOCKS.register("dynamic_block_wood",
-        () -> new DynamicBlock());
+            DynamicBlock::new);
 
     public static final RegistryObject<Block> DYNAMIC_BLOCK_STONE = BLOCKS.register("dynamic_block_stone",
-        () -> new DynamicBlock());
+            DynamicBlock::new);
 
     public static final RegistryObject<Block> DYNAMIC_BLOCK_COBBLESTONE = BLOCKS.register("dynamic_block_cobblestone",
-        () -> new DynamicBlock());
+            DynamicBlock::new);
 
     public static final RegistryObject<Block> DYNAMIC_BLOCK_SMOOTH_STONE = BLOCKS.register("dynamic_block_smooth_stone",
-        () -> new DynamicBlock());
+            DynamicBlock::new);
 
     public static final RegistryObject<Block> DYNAMIC_BLOCK_TERRACOTTA = BLOCKS.register("dynamic_block_terracotta",
-        () -> new DynamicBlock());
+            DynamicBlock::new);
 
     public static final RegistryObject<Block> DYNAMIC_BLOCK_CONCRETE_POWDER = BLOCKS.register("dynamic_block_concrete_powder",
-        () -> new DynamicBlock());
+            DynamicBlock::new);
 
     public static final RegistryObject<Block> DYNAMIC_BLOCK_GLASS = BLOCKS.register("dynamic_block_glass",
         TransparentDynamicBlock::new);
@@ -59,22 +59,22 @@ public class ModBlocks {
         TintedDynamicBlock::new);
 
     public static final RegistryObject<Block> DYNAMIC_BLOCK_STAINED_GLASS = BLOCKS.register("dynamic_block_stained_glass",
-        TranslucentDynamicBlock::new);
+        TransparentDynamicBlock::new);
 
     public static final RegistryObject<Block> DYNAMIC_BLOCK_DIORITE = BLOCKS.register("dynamic_block_diorite",
-        () -> new DynamicBlock());
+            DynamicBlock::new);
 
     public static final RegistryObject<Block> DYNAMIC_BLOCK_CALCITE = BLOCKS.register("dynamic_block_calcite",
-        () -> new DynamicBlock());
+            DynamicBlock::new);
 
     public static final RegistryObject<Block> DYNAMIC_BLOCK_MUSHROOM_STEM = BLOCKS.register("dynamic_block_mushroom_stem",
-        () -> new DynamicBlock());
+            DynamicBlock::new);
 
     public static final RegistryObject<Block> DYNAMIC_BLOCK_DEAD_TUBE_CORAL = BLOCKS.register("dynamic_block_dead_tube_coral",
-        () -> new DynamicBlock());
+            DynamicBlock::new);
 
     public static final RegistryObject<Block> DYNAMIC_BLOCK_PEARLESCENT_FROGLIGHT = BLOCKS.register("dynamic_block_pearlescent_froglight",
-        () -> new DynamicBlock());
+            DynamicBlock::new);
 
     // User-created block variants for WorldEdit autocomplete (numbered system)
     // Wool blocks (up to 20 custom wool blocks)

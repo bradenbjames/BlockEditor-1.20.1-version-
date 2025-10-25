@@ -50,7 +50,9 @@ public class GivePickedBlockPacket {
             Block block = state.getBlock();
             ResourceLocation blockId = BuiltInRegistries.BLOCK.getKey(block);
             // Use the actual mod id constant instead of a hardcoded namespace
-            if (blockId == null || !com.blockeditor.mod.BlockEditorMod.MOD_ID.equals(blockId.getNamespace())) return;
+            if (!com.blockeditor.mod.BlockEditorMod.MOD_ID.equals(blockId.getNamespace())) {
+                return;
+            }
 
             String path = blockId.getPath();
             boolean isDynamicOrUser = path.startsWith("dynamic_block") || path.startsWith("u_") || path.startsWith("user_");

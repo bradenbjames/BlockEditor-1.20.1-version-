@@ -10,6 +10,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.network.NetworkEvent;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Supplier;
 
@@ -57,24 +58,7 @@ public class CreateBlockPacket {
                 return;
             }
 
-            String blockPath = blockId.getPath();
-            String blockType = "stone"; // default
-            if (blockPath.contains("wool")) blockType = "wool";
-            else if (blockPath.contains("concrete_powder")) blockType = "concrete_powder";
-            else if (blockPath.contains("concrete")) blockType = "concrete";
-            else if (blockPath.contains("terracotta")) blockType = "terracotta";
-            else if (blockPath.contains("glass")) blockType = "glass";
-            else if (blockPath.contains("diorite")) blockType = "diorite";
-            else if (blockPath.contains("calcite")) blockType = "calcite";
-            else if (blockPath.contains("mushroom_stem")) blockType = "mushroom_stem";
-            else if (blockPath.contains("dead_tube_coral")) blockType = "dead_tube_coral";
-            else if (blockPath.contains("pearlescent_froglight")) blockType = "pearlescent_froglight";
-            else if (blockPath.contains("wood")) blockType = "wood";
-            else if (blockPath.contains("dirt")) blockType = "dirt";
-            else if (blockPath.contains("sand")) blockType = "sand";
-            else if (blockPath.contains("deepslate")) blockType = "deepslate";
-            else if (blockPath.contains("cobblestone")) blockType = "cobblestone";
-            else if (blockPath.contains("smooth_stone")) blockType = "smooth_stone";
+            String blockType = getString(blockId);
 
             // Parse and normalize color (used if creating a new mapping)
             String normalizedHex = normalizeHex(packet.hexColor);
@@ -260,6 +244,28 @@ public class CreateBlockPacket {
         });
 
         context.setPacketHandled(true);
+    }
+
+    private static @NotNull String getString(ResourceLocation blockId) {
+        String blockPath = blockId.getPath();
+        String blockType = "stone"; // default
+        if (blockPath.contains("wool")) blockType = "wool";
+        else if (blockPath.contains("concrete_powder")) blockType = "concrete_powder";
+        else if (blockPath.contains("concrete")) blockType = "concrete";
+        else if (blockPath.contains("terracotta")) blockType = "terracotta";
+        else if (blockPath.contains("glass")) blockType = "glass";
+        else if (blockPath.contains("diorite")) blockType = "diorite";
+        else if (blockPath.contains("calcite")) blockType = "calcite";
+        else if (blockPath.contains("mushroom_stem")) blockType = "mushroom_stem";
+        else if (blockPath.contains("dead_tube_coral")) blockType = "dead_tube_coral";
+        else if (blockPath.contains("pearlescent_froglight")) blockType = "pearlescent_froglight";
+        else if (blockPath.contains("wood")) blockType = "wood";
+        else if (blockPath.contains("dirt")) blockType = "dirt";
+        else if (blockPath.contains("sand")) blockType = "sand";
+        else if (blockPath.contains("deepslate")) blockType = "deepslate";
+        else if (blockPath.contains("cobblestone")) blockType = "cobblestone";
+        else if (blockPath.contains("smooth_stone")) blockType = "smooth_stone";
+        return blockType;
     }
 
     private static String normalizeHex(String raw) {

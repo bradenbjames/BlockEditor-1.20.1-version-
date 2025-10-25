@@ -3,7 +3,6 @@ package com.blockeditor.mod.client;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
-import com.blockeditor.mod.registry.ModBlocks;
 
 import java.util.HashMap;
 import java.util.Map;

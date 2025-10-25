@@ -56,17 +56,12 @@ public final class HistoryPanel {
     public static boolean isCompactView() {
         return compactView;
     }
-
     @SuppressWarnings("unused")
     public static void setCompactView(boolean value) {
         compactView = value;
     }
 
     private static final Logger LOGGER = LogUtils.getLogger();
-
-    public void setOnItemClick(BiConsumer<CreatedBlockInfo, Integer> onItemClick) {
-        this.onItemClick = onItemClick;
-    }
 
     // Allow the screen to constrain the panel to the right side of a given X
     public void setLeftBoundX(int x) {
@@ -257,19 +252,17 @@ public final class HistoryPanel {
         boolean clickedToggle = mouseX >= toggleX && mouseX < toggleX + TOGGLE_SIZE && mouseY >= toggleY && mouseY < toggleY + TOGGLE_SIZE;
         if (clickedToggle) {
             // flip view
-            // Flip the shared compact/enlarged view for the instance
             compactView = !compactView;
-            // log the new state so LOGGER is used and developers can trace toggles
+            // clamp scroll offset to new visible range
+            int panelWidth = computePanelWidth(screen);
             try {
                 LOGGER.debug("HistoryPanel compact view toggled -> {}", compactView);
             } catch (Exception ignored) {
                 // intentionally ignore logging errors in environments where logging might not be available
             }
-            // clamp scroll offset to new visible range
-            int panelWidth = computePanelWidth(screen);
             int contentWidth = Math.max(0, panelWidth - (INNER_PADDING * 2) - SCROLLBAR_WIDTH);
             int cols = computeColumnsForLayout(screen, contentWidth);
-            int rowsVisible = Math.max(1, Math.max(0, b.height - CONTENT_TOP_PADDING) / (getItemWidth() + ITEM_SPACING));
+            int rowsVisible = Math.max(1, Math.max(0, computeBounds(screen, panelWidth).height - CONTENT_TOP_PADDING) / (ITEM_HEIGHT + ITEM_SPACING));
             int maxVisible = rowsVisible * cols;
             int maxScroll = Math.max(0, history.size() - maxVisible);
             scrollOffset = Math.max(0, Math.min(scrollOffset, maxScroll));
@@ -279,7 +272,8 @@ public final class HistoryPanel {
         // If the click wasn't on the toggle, require the click be within the content bounds
         if (!b.contains(mouseX, mouseY)) return false;
 
-        int cols = computeColumns(screen, b.width);
+        int contentWidth = Math.max(0, b.width - (INNER_PADDING * 2) - SCROLLBAR_WIDTH);
+        int cols = computeColumnsForLayout(screen, contentWidth);
         // Account for the top padding when computing visible rows for hit detection
         int rowsVisible = Math.max(1, Math.max(0, b.height - CONTENT_TOP_PADDING) / (ITEM_HEIGHT + ITEM_SPACING));
         int maxVisible = rowsVisible * cols;
@@ -294,9 +288,7 @@ public final class HistoryPanel {
         // Adjust for the left inner padding used when rendering items
         relX -= INNER_PADDING;
         if (relX < 0) return false;
-        // Compute contentWidth (panel's usable width for items) which was missing here
-        int panelWidth = b.width;
-        int contentWidth = Math.max(0, panelWidth - (INNER_PADDING * 2) - SCROLLBAR_WIDTH);
+
         int itemWidth = computeItemWidthForLayout(contentWidth, cols);
         int col = relX / (itemWidth + ITEM_SPACING);
         int row = relY / (ITEM_HEIGHT + ITEM_SPACING);
@@ -404,21 +396,22 @@ public final class HistoryPanel {
         // Cap columns based on the overall screen resolution:
         // - For 1920-wide (1080p) or smaller screens, use up to 6 columns
         // - For larger screens, allow up to 10 columns
-        int guiWidth = (screen != null) ? screen.width : 1920;
-        int windowPixelWidth;
-        try {
-            var mc = Minecraft.getInstance();
-            // Query the window width; if this fails we'll fall back to guiWidth via the catch
-            windowPixelWidth = mc.getWindow().getScreenWidth();
-        } catch (Exception ignored) {
-            windowPixelWidth = guiWidth;
-        }
-        int maxObservedWidth = Math.max(guiWidth, windowPixelWidth);
-        int dynamicCap = (maxObservedWidth > 1920) ? 10 : 6;
+        int dynamicCap = getDynamicCap(screen);
 
         return Math.min(computed, dynamicCap);
     }
 
+    private static int getDynamicCap(Screen screen) {
+        int guiWidth = (screen != null) ? screen.width : 1920;
+        int windowPixelWidth;
+        try {
+            windowPixelWidth = Minecraft.getInstance().getWindow().getScreenWidth();
+        } catch (Exception ignored) {
+            windowPixelWidth = guiWidth;
+        }
+        int maxObservedWidth = Math.max(guiWidth, windowPixelWidth);
+        return (maxObservedWidth > 1920) ? 10 : 6;
+    }
 
     private Bounds computeBounds(Screen screen, int panelWidth) {
         int panelX;
@@ -426,11 +419,9 @@ public final class HistoryPanel {
             // If constrained, place the panel so its right edge sits directly left of the scrollbar rail.
             panelX = screen.width - panelWidth - PANEL_MARGIN;
             // Ensure we still respect the provided left bound. If our computed X would start left of the
-            // requested leftBoundX, clamp the X to leftBoundX and expand the width so the panel still
-            // reaches the scrollbar rail if possible.
+            // leftBoundX, clamp to leftBoundX and expand the panel width to fill to the rail.
             if (panelX < leftBoundX) {
                 panelX = leftBoundX;
-                // Recompute panelWidth so the panel extends to the scrollbar rail (no gap)
                 panelWidth = Math.max(getItemWidth() + INNER_PADDING * 2 + 6,
                         Math.max(0, screen.width - panelX - PANEL_MARGIN));
             }
@@ -459,7 +450,19 @@ public final class HistoryPanel {
         return new Bounds(panelX, panelY, panelWidth, panelHeight);
     }
 
-    private record Bounds(int x, int y, int width, int height) {
+    private static final class Bounds {
+        final int x;
+        final int y;
+        final int width;
+        final int height;
+
+        Bounds(int x, int y, int width, int height) {
+            this.x = x;
+            this.y = y;
+            this.width = width;
+            this.height = height;
+        }
+
         boolean contains(double mx, double my) {
             // Use exact panel bounds so clicks on the external scrollbar are not treated as panel clicks
             return mx >= x && mx <= x + width && my >= y && my <= y + height;
@@ -497,5 +500,9 @@ public final class HistoryPanel {
         int w = (availableForItems / cols);
         // Ensure we don't shrink below the nominal compact width
         return Math.max(w, ITEM_WIDTH);
+    }
+
+    public void setOnItemClick(BiConsumer<CreatedBlockInfo, Integer> handler) {
+        this.onItemClick = handler;
     }
 }

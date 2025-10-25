@@ -2,6 +2,33 @@
   "parent": "be:block/tinted_cube_all_translucent",
   "render_type": "translucent",
   "textures": {
-    "all": "minecraft:block/white_stained_glass"
-  }
+    "all": "minecraft:block/white_stained_glass",
+    "overlay": "be:block/stained_glass_overlay"
+  },
+  "elements": [
+    {
+      "from": [0, 0, 0],
+      "to": [16, 16, 16],
+      "faces": {
+        "down":  { "texture": "#all", "tintindex": 0 },
+        "up":    { "texture": "#all", "tintindex": 0 },
+        "north": { "texture": "#all", "tintindex": 0 },
+        "south": { "texture": "#all", "tintindex": 0 },
+        "west":  { "texture": "#all", "tintindex": 0 },
+        "east":  { "texture": "#all", "tintindex": 0 }
+      }
+    },
+    {
+      "from": [0.5, 0.5, 0.5],
+      "to": [15.5, 15.5, 15.5],
+      "faces": {
+        "down":  { "texture": "#overlay", "tintindex": 0 },
+        "up":    { "texture": "#overlay", "tintindex": 0 },
+        "north": { "texture": "#overlay", "tintindex": 0 },
+        "south": { "texture": "#overlay", "tintindex": 0 },
+        "west":  { "texture": "#overlay", "tintindex": 0 },
+        "east":  { "texture": "#overlay", "tintindex": 0 }
+      }
+    }
+  ]
 }
