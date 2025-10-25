@@ -1,25 +1,52 @@
 # BlockEditor - Custom Block Creator
 
 [![Minecraft](https://img.shields.io/badge/Minecraft-1.20.1-brightgreen.svg)](https://minecraft.net/)
-[![Version](https://img.shields.io/badge/Version-1.0.2-informational.svg)](#)
+[![Version](https://img.shields.io/badge/Version-1.0.3-informational.svg)](#)
 [![Forge](https://img.shields.io/badge/Forge-47.3.0+-orange.svg)](https://files.minecraftforge.net/)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-Create and customize blocks with any color, texture, and **custom names** in Minecraft! Now with enhanced WorldEdit integration and smart UI features.
+Create and customize blocks with any color, texture, and **custom names** in Minecraft! Now with enhanced WorldEdit integration, smart UI features, and **world-based pick block functionality**.
 
-![Block Editor Interface](./images/1.0.2/Screenshot%202025-10-21%20192157.png)
-*Enhanced Block Editor interface with custom naming, recent blocks history, and middle-click shortcuts*
+![Block Editor Interface](./images/1.0.3/Screenshot%202025-10-24%20235709.png)
+*Latest Block Editor interface (v1.0.3) featuring world-based middle-click pick block functionality and enhanced UI*
 
 ![Block Selection](./images/1.0.2/Screenshot%202025-10-21%20192346.png)
 *Choose from 17 different block textures with full color customization*
 
-## ✨ New Features (v1.0.2)
+## ✨ New Features (v1.0.3)
+
+### 🖱️ **Enhanced Pick Block System**
+- **World-Based Middle-Click**: Middle-click any custom block in the world to instantly pick it up
+- **Smart Inventory Search**: Automatically searches your inventory for matching blocks first
+- **Server Integration**: If block not found locally, requests the exact block from server
+- **Perfect Block Matching**: Maintains all properties including color, texture, and custom names
+- **Seamless Workflow**: Middle-click → Block equipped → Ready to build immediately
+
+### 🎯 **Advanced Block Detection**
+- **Custom Block Recognition**: Detects `dynamic_block`, `user_`, and `u_` prefixed blocks
+- **Property Preservation**: Extracts and maintains Color, MimicBlock, and CustomName data
+- **Robust Color Handling**: Supports both integer and string hex color formats
+- **Fallback Protection**: Graceful handling of missing or corrupted block data
+
+### 🔄 **Improved User Experience**
+- **Status Messages**: Clear feedback when picking blocks or requesting from server
+- **Event Cancellation**: Prevents default pick block behavior for custom blocks
+- **Cross-Session Compatibility**: Works with existing v1.0.2 history and naming features
+- **Performance Optimized**: Efficient NBT reading and inventory scanning
+
+## ✨ Previous Features (v1.0.2)
 
 ### 🏷️ **Custom Block Naming**
 - **Name Your Blocks**: Give each block a unique custom name (e.g., "wall", "roof", "floor")
 - **WorldEdit Ready**: Use custom names directly in WorldEdit commands: `//set be:wall`, `//replace stone be:roof`
 - **Smart Validation**: Automatic duplicate name detection with intelligent numbering (wall, wall2, wall3...)
 - **Persistent Names**: Custom names are saved and work across world restarts
+
+### 🖱️ **Enhanced Pick Block Integration**
+- **World-to-Inventory**: Middle-click custom blocks in the world to add them to your inventory
+- **Smart Block Matching**: Advanced algorithm matches Color + OriginalBlock + CustomName
+- **Server Synchronization**: Seamless client-server communication for block reconstruction
+- **Inventory Priority**: Always checks existing inventory first before creating new blocks
 
 ### 🖱️ **Middle-Click Block History**
 - **Instant Access**: Middle-click any block in the Recent Blocks panel to instantly equip it
@@ -66,7 +93,14 @@ Create and customize blocks with any color, texture, and **custom names** in Min
 
 ## 🎮 Usage Guide
 
-### 🏗️ **Basic Block Creation**
+### � **Enhanced Pick Block Workflow**
+1. **In-World Picking**: Middle-click any custom block in the world
+2. **Automatic Detection**: System identifies custom blocks and extracts properties
+3. **Inventory Search**: Searches your inventory for matching block first
+4. **Server Request**: If not found, automatically requests block from server
+5. **Instant Equip**: Block appears in your hand ready for immediate use
+
+### �🏗️ **Basic Block Creation**
 1. **Open Editor**: Press **G** (default) to open Block Editor
 2. **Choose Texture**: Click any block type from the grid
 3. **Set Color**: Enter hex color (e.g., `FF0000`) in the color field
@@ -168,7 +202,16 @@ Medieval Castle Theme:
 
 ## 📋 **Version History**
 
-### v1.0.2 (Current)
+### v1.0.3 (Current)
+- ✨ **World-based middle-click pick block system**
+- ✨ **Enhanced block detection** for custom blocks in the world
+- ✨ **Smart inventory search** with perfect property matching
+- ✨ **Server integration** for seamless block reconstruction
+- ✨ **Advanced NBT handling** supporting multiple color formats
+- 🔧 **Improved user feedback** with status messages
+- 🐛 **Event handling optimization** preventing conflicts with vanilla pick block
+
+### v1.0.2
 - ✨ **Custom block naming system**
 - ✨ **Enhanced WorldEdit integration** with custom names (`/bset`, `/breplace`)
 - ✨ **Middle-click block history shortcuts**
