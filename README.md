@@ -10,9 +10,6 @@ Create and customize blocks with any color, texture, and **custom names** in Min
 ![Block Editor Interface](./images/1.0.3/Screenshot%202025-10-24%20235709.png)
 *Latest Block Editor interface (v1.0.3) featuring world-based middle-click pick block functionality and enhanced UI*
 
-![Block Selection](./images/1.0.2/Screenshot%202025-10-21%20192346.png)
-*Choose from 17 different block textures with full color customization*
-
 ## ✨ New Features (v1.0.3)
 
 ### 🖱️ **Enhanced Pick Block System**
