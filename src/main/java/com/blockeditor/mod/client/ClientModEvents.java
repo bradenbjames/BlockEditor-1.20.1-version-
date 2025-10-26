@@ -106,7 +106,12 @@ public class ClientModEvents {
         event.register((state, level, pos, tintIndex) -> {
             if (tintIndex != 0) return 0xFFFFFF; // Only tint layer 0
             if (level != null && pos != null && level.getBlockEntity(pos) instanceof DynamicBlockEntity blockEntity) {
-                return blockEntity.getColor();
+                int color = blockEntity.getColor();
+                // Debug logging for glass blocks
+                if (state.getBlock().toString().contains("glass")) {
+                    System.out.println("BlockColor Debug: Block=" + state.getBlock() + ", Color=" + String.format("#%06X", color) + ", Pos=" + pos);
+                }
+                return color;
             }
             return 0xFFFFFF; // Default white
         },

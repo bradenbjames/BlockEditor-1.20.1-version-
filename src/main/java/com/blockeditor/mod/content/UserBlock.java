@@ -20,7 +20,7 @@ import org.slf4j.Logger;
  * UserBlock is a specialized DynamicBlock that represents user-created custom blocks.
  * These blocks appear in WorldEdit autocomplete with "USER_" prefix followed by their type.
  */
-public class UserBlock extends DynamicBlock {
+public class UserBlock extends DynamicBlock implements IUserBlock {
     private static final Logger LOGGER = LogUtils.getLogger();
     private final String blockType;
 

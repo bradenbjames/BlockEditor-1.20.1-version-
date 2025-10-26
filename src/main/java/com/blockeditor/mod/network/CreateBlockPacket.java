@@ -253,6 +253,8 @@ public class CreateBlockPacket {
         else if (blockPath.contains("concrete_powder")) blockType = "concrete_powder";
         else if (blockPath.contains("concrete")) blockType = "concrete";
         else if (blockPath.contains("terracotta")) blockType = "terracotta";
+        else if (blockPath.contains("tinted_glass")) blockType = "tinted_glass";
+        else if (blockPath.contains("stained_glass")) blockType = "stained_glass";
         else if (blockPath.contains("glass")) blockType = "glass";
         else if (blockPath.contains("diorite")) blockType = "diorite";
         else if (blockPath.contains("calcite")) blockType = "calcite";
@@ -446,6 +448,50 @@ public class CreateBlockPacket {
             case "glass19" -> ModBlocks.USER_GLASS_19.get();
             case "glass20" -> ModBlocks.USER_GLASS_20.get();
             
+            // Tinted Glass blocks
+            case "tinted_glass1" -> ModBlocks.USER_TINTED_GLASS_1.get();
+            case "tinted_glass2" -> ModBlocks.USER_TINTED_GLASS_2.get();
+            case "tinted_glass3" -> ModBlocks.USER_TINTED_GLASS_3.get();
+            case "tinted_glass4" -> ModBlocks.USER_TINTED_GLASS_4.get();
+            case "tinted_glass5" -> ModBlocks.USER_TINTED_GLASS_5.get();
+            case "tinted_glass6" -> ModBlocks.USER_TINTED_GLASS_6.get();
+            case "tinted_glass7" -> ModBlocks.USER_TINTED_GLASS_7.get();
+            case "tinted_glass8" -> ModBlocks.USER_TINTED_GLASS_8.get();
+            case "tinted_glass9" -> ModBlocks.USER_TINTED_GLASS_9.get();
+            case "tinted_glass10" -> ModBlocks.USER_TINTED_GLASS_10.get();
+            case "tinted_glass11" -> ModBlocks.USER_TINTED_GLASS_11.get();
+            case "tinted_glass12" -> ModBlocks.USER_TINTED_GLASS_12.get();
+            case "tinted_glass13" -> ModBlocks.USER_TINTED_GLASS_13.get();
+            case "tinted_glass14" -> ModBlocks.USER_TINTED_GLASS_14.get();
+            case "tinted_glass15" -> ModBlocks.USER_TINTED_GLASS_15.get();
+            case "tinted_glass16" -> ModBlocks.USER_TINTED_GLASS_16.get();
+            case "tinted_glass17" -> ModBlocks.USER_TINTED_GLASS_17.get();
+            case "tinted_glass18" -> ModBlocks.USER_TINTED_GLASS_18.get();
+            case "tinted_glass19" -> ModBlocks.USER_TINTED_GLASS_19.get();
+            case "tinted_glass20" -> ModBlocks.USER_TINTED_GLASS_20.get();
+
+            // Stained Glass blocks
+            case "stained_glass1" -> ModBlocks.USER_STAINED_GLASS_1.get();
+            case "stained_glass2" -> ModBlocks.USER_STAINED_GLASS_2.get();
+            case "stained_glass3" -> ModBlocks.USER_STAINED_GLASS_3.get();
+            case "stained_glass4" -> ModBlocks.USER_STAINED_GLASS_4.get();
+            case "stained_glass5" -> ModBlocks.USER_STAINED_GLASS_5.get();
+            case "stained_glass6" -> ModBlocks.USER_STAINED_GLASS_6.get();
+            case "stained_glass7" -> ModBlocks.USER_STAINED_GLASS_7.get();
+            case "stained_glass8" -> ModBlocks.USER_STAINED_GLASS_8.get();
+            case "stained_glass9" -> ModBlocks.USER_STAINED_GLASS_9.get();
+            case "stained_glass10" -> ModBlocks.USER_STAINED_GLASS_10.get();
+            case "stained_glass11" -> ModBlocks.USER_STAINED_GLASS_11.get();
+            case "stained_glass12" -> ModBlocks.USER_STAINED_GLASS_12.get();
+            case "stained_glass13" -> ModBlocks.USER_STAINED_GLASS_13.get();
+            case "stained_glass14" -> ModBlocks.USER_STAINED_GLASS_14.get();
+            case "stained_glass15" -> ModBlocks.USER_STAINED_GLASS_15.get();
+            case "stained_glass16" -> ModBlocks.USER_STAINED_GLASS_16.get();
+            case "stained_glass17" -> ModBlocks.USER_STAINED_GLASS_17.get();
+            case "stained_glass18" -> ModBlocks.USER_STAINED_GLASS_18.get();
+            case "stained_glass19" -> ModBlocks.USER_STAINED_GLASS_19.get();
+            case "stained_glass20" -> ModBlocks.USER_STAINED_GLASS_20.get();
+
             // Diorite blocks
             case "diorite1" -> ModBlocks.USER_DIORITE_1.get();
             case "diorite2" -> ModBlocks.USER_DIORITE_2.get();

@@ -54,15 +54,28 @@ public class DynamicBlockEntity extends BlockEntity {
     }
 
     public int getColor() {
-        // For UserBlocks, check if we need to apply color data (only if still default white)
-        if (color == 0xFFFFFF && getBlockState().getBlock() instanceof com.blockeditor.mod.content.UserBlock) {
+        // For UserBlocks (including specialized glass variants), check if we need to apply color data (only if still default white)
+        if (color == 0xFFFFFF && getBlockState().getBlock() instanceof IUserBlock) {
             checkAndApplyUserBlockData();
         }
         
+        // Debug logging for glass blocks
+        if (getBlockState().getBlock().toString().contains("glass")) {
+            LOGGER.info("DynamicBlockEntity.getColor(): Block={}, Color={}, Pos={}",
+                getBlockState().getBlock(), String.format("#%06X", color), getBlockPos());
+        }
+
         return color;
     }
 
     public void setColor(int color) {
+        // Debug logging for glass blocks
+        if (getBlockState().getBlock().toString().contains("glass")) {
+            LOGGER.info("DynamicBlockEntity.setColor(): Block={}, Old Color={}, New Color={}, Pos={}",
+                getBlockState().getBlock(), String.format("#%06X", this.color),
+                String.format("#%06X", color), getBlockPos());
+        }
+
         this.color = color;
         setChanged();
         if (level != null && !level.isClientSide) {
