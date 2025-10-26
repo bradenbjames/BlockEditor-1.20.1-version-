@@ -6,6 +6,7 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.network.chat.Component;
 
 import java.util.Locale;
+import java.util.function.Consumer;
 
 public final class BlockEditorWidgets {
     private BlockEditorWidgets() {}
@@ -41,6 +42,12 @@ public final class BlockEditorWidgets {
         return Button.builder(Component.literal(label), btn -> {
             if (onClick != null) onClick.run();
         }).bounds(x, y, width, 20).build();
+    }
+
+    // Factory for the Apple-style pixelated toggle
+    public static PixelatedToggleButton createAppleStyleToggle(int x, int y, boolean initialState, Consumer<Boolean> onToggle) {
+        // width chosen to approximate iOS-like toggle proportions while matching pixel-art style
+        return new PixelatedToggleButton(x, y, 36, 20, initialState, onToggle);
     }
 
     private static String sanitizeHex(String hex) {
