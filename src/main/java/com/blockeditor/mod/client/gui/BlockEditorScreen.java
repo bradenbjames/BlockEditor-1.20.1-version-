@@ -375,7 +375,12 @@ public class BlockEditorScreen extends Screen {
             }
         }
         
-        // Let the history panel handle clicks first (for its toggles)
+        // Let the history panel handle drag start first
+        if (historyPanel.mousePressed(this, mouseX, mouseY, button)) {
+            return true;
+        }
+        
+        // Let the history panel handle clicks first (for its toggles and folder expand/collapse)
         if (historyPanel.mouseClicked(this, mouseX, mouseY, button)) {
             return true;
         }
@@ -417,7 +422,20 @@ public class BlockEditorScreen extends Screen {
 
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        // Let history panel handle drag drop
+        if (historyPanel.mouseReleased(this, mouseX, mouseY, button)) {
+            return true;
+        }
         return super.mouseReleased(mouseX, mouseY, button);
+    }
+
+    @Override
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
+        // Let history panel track dragging
+        if (historyPanel.mouseDragged(this, mouseX, mouseY, button, dragX, dragY)) {
+            return true;
+        }
+        return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
     }
 
     @Override
@@ -787,6 +805,8 @@ public class BlockEditorScreen extends Screen {
         if (this.minecraft != null && this.minecraft.player != null) {
             // Clear client-side history first
             BlockEditorHistory.getHistory().clear();
+            // Also clear folders
+            BlockEditorHistory.getFolders().clear();
             saveHistoryToFile();
             
             // Also delete the history file completely

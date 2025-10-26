@@ -1,6 +1,7 @@
 package com.blockeditor.mod.client.gui.editor;
 
 import com.blockeditor.mod.client.gui.editor.BlockEditorHistory.CreatedBlockInfo;
+import com.blockeditor.mod.client.gui.editor.BlockEditorHistory.BlockFolder;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -54,6 +55,22 @@ public final class HistoryPanel {
     private static boolean fullStackMode = false;
 
     private static final int TOGGLE_SIZE = 12;
+    
+    // iOS-style toggle button for full stack mode (only visible in survival)
+    private PixelatedToggleButton fullStackToggleButton = null;
+
+    // Drag-and-drop state
+    private CreatedBlockInfo draggedBlock = null;
+    private BlockFolder draggedFromFolder = null; // null if dragged from main list
+    private double dragStartX = 0;
+    private double dragStartY = 0;
+    // Drag initiation threshold and candidate tracking so simple clicks don't trigger drag
+    private static final double DRAG_THRESHOLD_PX_SQ = 36.0; // 6px squared
+    private CreatedBlockInfo dragCandidateBlock = null;
+    private BlockFolder dragCandidateFromFolder = null;
+    private double mouseDownX = 0;
+    private double mouseDownY = 0;
+    private boolean isDragging = false;
 
     // Public accessors so other screens / code can read/modify the view state for the running instance
     @SuppressWarnings("unused")
@@ -76,6 +93,51 @@ public final class HistoryPanel {
 
     private static final Logger LOGGER = LogUtils.getLogger();
 
+    // Represents an item in the display list (either a folder or a block)
+    private static class DisplayItem {
+        final BlockFolder folder;        // when this represents a folder
+        final CreatedBlockInfo block;    // when this represents a block
+        final BlockFolder parentFolder;  // non-null when this block is inside a folder
+        final boolean isFolder;
+
+        DisplayItem(BlockFolder folder) {
+            this.folder = folder;
+            this.block = null;
+            this.parentFolder = null;
+            this.isFolder = true;
+        }
+
+        DisplayItem(CreatedBlockInfo block, BlockFolder parentFolder) {
+            this.folder = null;
+            this.block = block;
+            this.parentFolder = parentFolder;
+            this.isFolder = false;
+        }
+    }
+
+    // Build the flat display list: folders, then their contents (if expanded), then main history
+    private List<DisplayItem> buildDisplayList() {
+        List<DisplayItem> display = new java.util.ArrayList<>();
+        List<BlockFolder> folders = BlockEditorHistory.getFolders();
+        
+        // Add folders and their contents
+        for (BlockFolder folder : folders) {
+            display.add(new DisplayItem(folder));
+            if (folder.expanded) {
+                for (CreatedBlockInfo block : folder.blocks) {
+                    display.add(new DisplayItem(block, folder));
+                }
+            }
+        }
+        
+        // Add main history
+        for (CreatedBlockInfo block : BlockEditorHistory.getHistory()) {
+            display.add(new DisplayItem(block, null));
+        }
+        
+        return display;
+    }
+
     // Allow the screen to constrain the panel to the right side of a given X
     public void setLeftBoundX(int x) {
         this.leftBoundX = x;
@@ -88,7 +150,7 @@ public final class HistoryPanel {
     }
 
     public void render(Screen screen, GuiGraphics graphics, Font font, int mouseX, int mouseY) {
-        List<CreatedBlockInfo> history = BlockEditorHistory.getHistory();
+        List<DisplayItem> displayList = buildDisplayList();
 
         int panelWidth = computePanelWidth(screen);
         // Compute effective content width accounting for symmetric inner padding and the
@@ -109,7 +171,7 @@ public final class HistoryPanel {
         // Title and debug overlay will be redrawn after content is rendered (after scissor is disabled)
         // to ensure the title bar is always on top and covers any artifact fragments from the content
 
-        if (history.isEmpty()) {
+        if (displayList.isEmpty()) {
             var none = net.minecraft.network.chat.Component.literal("No blocks yet").withStyle(s -> s.withColor(0xAAAAAA));
             graphics.drawCenteredString(font, none, panelX + panelWidth / 2, panelY + 20, 0);
             return;
@@ -122,7 +184,7 @@ public final class HistoryPanel {
         int effectivePanelHeight = Math.max(0, panelHeight - CONTENT_TOP_PADDING);
         int rowsVisible = Math.max(1, effectivePanelHeight / (ITEM_HEIGHT + ITEM_SPACING));
         int maxVisible = rowsVisible * cols;
-        int maxScroll = Math.max(0, history.size() - maxVisible);
+        int maxScroll = Math.max(0, displayList.size() - maxVisible);
         scrollOffset = Math.max(0, Math.min(scrollOffset, maxScroll));
 
         // Use exact panel bounds for scissor; start just below the content top plus the configured top padding
@@ -140,8 +202,8 @@ public final class HistoryPanel {
 
         for (int visibleIndex = 0; visibleIndex < maxVisible; visibleIndex++) {
             int dataIndex = scrollOffset + visibleIndex;
-            if (dataIndex >= history.size()) break;
-            CreatedBlockInfo info = history.get(dataIndex);
+            if (dataIndex >= displayList.size()) break;
+            DisplayItem item = displayList.get(dataIndex);
 
             int row = visibleIndex / cols;
             int col = visibleIndex % cols;
@@ -152,57 +214,141 @@ public final class HistoryPanel {
             int itemY = panelY + CONTENT_TOP_PADDING + row * (ITEM_HEIGHT + ITEM_SPACING);
 
             boolean hovered = mouseX >= itemX && mouseX < itemX + itemWidth && mouseY >= itemY && mouseY < itemY + ITEM_HEIGHT;
-            int bg = hovered ? 0x80CCCCCC : ((row % 2 == 0) ? 0x40FFFFFF : 0x20FFFFFF);
-            GuiRenderUtil.drawRoundedRect(graphics, itemX, itemY, itemWidth, ITEM_HEIGHT, 3, bg);
-
-            // Render tinted item icon (16x16) with tight padding
-            var pose = graphics.pose();
-            pose.pushPose();
-            RenderSystem.setShaderColor(
-                ((info.color >> 16) & 0xFF) / 255.0f,
-                ((info.color >> 8) & 0xFF) / 255.0f,
-                (info.color & 0xFF) / 255.0f,
-                1.0f
-            );
-            graphics.renderItem(info.originalBlock.asItem().getDefaultInstance(), itemX + 1, itemY + 1);
-            RenderSystem.setShaderColor(1, 1, 1, 1);
-            pose.popPose();
-
-            // Text area (scaled)
-            String name = info.blockName != null ? info.blockName : "";
-            // If name is empty show a cyan/turquoise placeholder; otherwise show the real name in white
-            String displayName = name.isEmpty() ? "Unnamed" : name;
-            int nameColor = name.isEmpty() ? 0x00FFFF : 0xFFFFFF; // cyan/turquoise for placeholder
-            // Always format hex as '#RRGGBB' (no parentheses). In compact view we show it for all items;
-            // in enlarged view we fall back to only showing it when the name fits (previous behavior).
-            String hexText = (info.hexColor != null && !info.hexColor.isEmpty()) ? "#" + info.hexColor : null;
-            int textLeft = itemX + 18; // thinner left padding
-            int textAvail = itemWidth - 20; // balance margins left/right
-
-            // Decide whether the raw name fits entirely (in unscaled px space) in the available width.
-            // Only consider real names for the hex-layout decision; placeholder should not force hex rendering.
-            boolean nameFitsRaw = !name.isEmpty() && font.width(name) <= (int) Math.floor(textAvail / Math.max(0.001f, NAME_TEXT_SCALE));
-
-            // Name (smaller)
-            String trimmedName = trimToWidthScaled(font, displayName, textAvail, NAME_TEXT_SCALE);
-            drawScaledString(graphics, font, trimmedName, textLeft, itemY + 2, NAME_TEXT_SCALE, nameColor);
-
-            // Hex (smaller) - show formatted '#FFFFFF' in compact view for all items; otherwise only if the name fits
-            if (hexText != null && (compactView || nameFitsRaw)) {
-                String trimmedHex = trimToWidthScaled(font, hexText, textAvail, HEX_TEXT_SCALE);
-                drawScaledString(graphics, font, trimmedHex, textLeft, itemY + 10, HEX_TEXT_SCALE, 0xAAAAAA);
+            if (item.isFolder) {
+                // Tinted folder background
+                int alpha = hovered ? 0x99 : 0x66; // more opaque on hover
+                int tintBg = ((alpha & 0xFF) << 24) | (item.folder.color & 0xFFFFFF);
+                GuiRenderUtil.drawRoundedRect(graphics, itemX, itemY, itemWidth, ITEM_HEIGHT, 3, tintBg);
+            } else {
+                boolean insideFolder = item.parentFolder != null;
+                if (insideFolder) {
+                    // Tint items with the folder color when shown under an expanded folder
+                    int alpha = hovered ? 0x99 : 0x66; // more opaque on hover
+                    int tintBg = ((alpha & 0xFF) << 24) | (item.parentFolder.color & 0xFFFFFF);
+                    GuiRenderUtil.drawRoundedRect(graphics, itemX, itemY, itemWidth, ITEM_HEIGHT, 3, tintBg);
+                } else {
+                    int bg = hovered ? 0x80CCCCCC : ((row % 2 == 0) ? 0x40FFFFFF : 0x20FFFFFF);
+                    GuiRenderUtil.drawRoundedRect(graphics, itemX, itemY, itemWidth, ITEM_HEIGHT, 3, bg);
+                }
             }
 
-            // Collect hover info so we can render a tooltip after scissor is disabled (not clipped)
-            if (hovered && !name.isEmpty()) {
-                // Store into local variables on the stack via final copy - we'll render below after scissor
-                hoveredName = name;
-                hoverX = mouseX;
-                hoverY = mouseY;
+            if (item.isFolder) {
+                // Render folder card (looks like a block card but with text and arrow)
+                BlockFolder folder = item.folder;
+                
+                // Folder name text (same scale and position as block name)
+                String folderName = folder.name != null ? folder.name : "Unnamed Folder";
+                int nameColor = 0xFFFFFF;
+                int textLeft = itemX + 4; // left padding
+                int textAvail = itemWidth - 16; // reserve space for arrow on right
+                String trimmedName = trimToWidthScaled(font, folderName, textAvail, NAME_TEXT_SCALE);
+                drawScaledString(graphics, font, trimmedName, textLeft, itemY + 6, NAME_TEXT_SCALE, nameColor);
+                
+                // Arrow icon on the right (▼ expanded, ► collapsed)
+                int arrowX = itemX + itemWidth - 10;
+                int arrowY = itemY + (ITEM_HEIGHT - 7) / 2;
+                GuiRenderUtil.drawSmallArrow(graphics, arrowX, arrowY, folder.expanded, 0xFFAAAAAA);
+                
+                // Tooltip with folder info
+                if (hovered) {
+                    hoveredName = folderName + " (" + folder.blocks.size() + " blocks)";
+                    hoverX = mouseX;
+                    hoverY = mouseY;
+                }
+            } else {
+                // Render block card (existing code)
+                CreatedBlockInfo info = item.block;
+                
+                // Render tinted item icon (16x16) with tight padding
+                var pose = graphics.pose();
+                pose.pushPose();
+                RenderSystem.setShaderColor(
+                    ((info.color >> 16) & 0xFF) / 255.0f,
+                    ((info.color >> 8) & 0xFF) / 255.0f,
+                    (info.color & 0xFF) / 255.0f,
+                    1.0f
+                );
+                graphics.renderItem(info.originalBlock.asItem().getDefaultInstance(), itemX + 1, itemY + 1);
+                RenderSystem.setShaderColor(1, 1, 1, 1);
+                pose.popPose();
+
+                // Text area (scaled)
+                String name = info.blockName != null ? info.blockName : "";
+                // If name is empty show a cyan/turquoise placeholder; otherwise show the real name in white
+                String displayName = name.isEmpty() ? "Unnamed" : name;
+                int nameColor = name.isEmpty() ? 0x00FFFF : 0xFFFFFF; // cyan/turquoise for placeholder
+                // Always format hex as '#RRGGBB' (no parentheses). In compact view we show it for all items;
+                // in enlarged view we fall back to only showing it when the name fits (previous behavior).
+                String hexText = (info.hexColor != null && !info.hexColor.isEmpty()) ? "#" + info.hexColor : null;
+                int textLeft = itemX + 18; // thinner left padding
+                int textAvail = itemWidth - 20; // balance margins left/right
+
+                // Decide whether the raw name fits entirely (in unscaled px space) in the available width.
+                // Only consider real names for the hex-layout decision; placeholder should not force hex rendering.
+                boolean nameFitsRaw = !name.isEmpty() && font.width(name) <= (int) Math.floor(textAvail / Math.max(0.001f, NAME_TEXT_SCALE));
+
+                // Name (smaller)
+                String trimmedName = trimToWidthScaled(font, displayName, textAvail, NAME_TEXT_SCALE);
+                drawScaledString(graphics, font, trimmedName, textLeft, itemY + 2, NAME_TEXT_SCALE, nameColor);
+
+                // Hex (smaller) - show formatted '#FFFFFF' in compact view for all items; otherwise only if the name fits
+                if (hexText != null && (compactView || nameFitsRaw)) {
+                    String trimmedHex = trimToWidthScaled(font, hexText, textAvail, HEX_TEXT_SCALE);
+                    drawScaledString(graphics, font, trimmedHex, textLeft, itemY + 10, HEX_TEXT_SCALE, 0xAAAAAA);
+                }
+
+                // Collect hover info so we can render a tooltip after scissor is disabled (not clipped)
+                if (hovered && !name.isEmpty()) {
+                    // Store into local variables on the stack via final copy - we'll render below after scissor
+                    hoveredName = name;
+                    hoverX = mouseX;
+                    hoverY = mouseY;
+                }
             }
+            // Removed left stripe to eliminate thin sliver artifacts on card edges
         }
 
         graphics.disableScissor();
+        
+        // Render dragged item card following mouse (semi-transparent full card)
+        if (isDragging && draggedBlock != null) {
+            int dragCardX = (int) mouseX - (getItemWidth() / 2);
+            int dragCardY = (int) mouseY - (ITEM_HEIGHT / 2);
+            int dragCardWidth = getItemWidth();
+            
+            // Semi-transparent background
+            GuiRenderUtil.drawRoundedRect(graphics, dragCardX, dragCardY, dragCardWidth, ITEM_HEIGHT, 3, 0x80FFFFFF);
+            
+            // Render tinted item icon
+            var pose = graphics.pose();
+            pose.pushPose();
+            RenderSystem.setShaderColor(
+                ((draggedBlock.color >> 16) & 0xFF) / 255.0f,
+                ((draggedBlock.color >> 8) & 0xFF) / 255.0f,
+                (draggedBlock.color & 0xFF) / 255.0f,
+                0.6f  // Semi-transparent
+            );
+            graphics.renderItem(draggedBlock.originalBlock.asItem().getDefaultInstance(), dragCardX + 1, dragCardY + 1);
+            RenderSystem.setShaderColor(1, 1, 1, 1);
+            pose.popPose();
+            
+            // Text (name and hex)
+            String name = draggedBlock.blockName != null ? draggedBlock.blockName : "";
+            String displayName = name.isEmpty() ? "Unnamed" : name;
+            int nameColor = (name.isEmpty() ? 0x00FFFF : 0xFFFFFF) & 0x80FFFFFF; // semi-transparent
+            String hexText = (draggedBlock.hexColor != null && !draggedBlock.hexColor.isEmpty()) ? "#" + draggedBlock.hexColor : null;
+            int textLeft = dragCardX + 18;
+            int textAvail = dragCardWidth - 20;
+            
+            String trimmedName = trimToWidthScaled(font, displayName, textAvail, NAME_TEXT_SCALE);
+            drawScaledString(graphics, font, trimmedName, textLeft, dragCardY + 2, NAME_TEXT_SCALE, nameColor);
+            
+            if (hexText != null) {
+                String trimmedHex = trimToWidthScaled(font, hexText, textAvail, HEX_TEXT_SCALE);
+                drawScaledString(graphics, font, trimmedHex, textLeft, dragCardY + 10, HEX_TEXT_SCALE, 0x80AAAAAA);
+            }
+        }
+        
         // If an item was hovered we want to render an unclipped tooltip with the full name
         if (hoveredName != null && !hoveredName.isEmpty()) {
             // renderTooltip expects integer coordinates in this MC version
@@ -213,20 +359,40 @@ public final class HistoryPanel {
         var title = net.minecraft.network.chat.Component.literal("Recent Blocks");
         graphics.drawCenteredString(font, title, panelX + panelWidth / 2, panelY - TITLE_BAR_HEIGHT + 4, 0xFFFFFF);
 
-        // Check if player is in survival mode to show the full stack toggle
-        boolean inSurvival = false;
-        var mc = net.minecraft.client.Minecraft.getInstance();
-        if (mc.player != null) {
-            inSurvival = !mc.player.getAbilities().instabuild; // instabuild is false in survival
-        }
+        // Draw "+" button for creating new folders (to the left of the title)
+            // "+" button for creating new folders (move to top-right)
+            int addButtonSize = 12;
+            // Check if player is in survival mode to know if the full-stack toggle is visible on right
+            boolean inSurvival = false;
+            var mcForAdd = net.minecraft.client.Minecraft.getInstance();
+            if (mcForAdd.player != null) {
+                inSurvival = !mcForAdd.player.getAbilities().instabuild;
+            }
+            int rightInset = INNER_PADDING;
+            int fullStackToggleWidth = 24;
+            int gap = 4;
+            int addButtonX;
+            int toggleY = panelY - TITLE_BAR_HEIGHT + (TITLE_BAR_HEIGHT - TOGGLE_SIZE) / 2 + 1;
+            if (inSurvival) {
+                int fullStackToggleX = panelX + panelWidth - INNER_PADDING - fullStackToggleWidth;
+                addButtonX = fullStackToggleX - gap - addButtonSize;
+            } else {
+                addButtonX = panelX + panelWidth - rightInset - addButtonSize;
+            }
+            int addButtonY = panelY - TITLE_BAR_HEIGHT + (TITLE_BAR_HEIGHT - addButtonSize) / 2;
+            boolean addButtonHovered = mouseX >= addButtonX && mouseX < addButtonX + addButtonSize &&
+                                       mouseY >= addButtonY && mouseY < addButtonY + addButtonSize;
+            int addButtonBg = addButtonHovered ? 0xFF555555 : 0xFF333333;
+            GuiRenderUtil.drawRoundedRect(graphics, addButtonX, addButtonY, addButtonSize, addButtonSize, 3, addButtonBg);
+            graphics.drawCenteredString(font, "+", addButtonX + addButtonSize / 2, addButtonY + 2, 0xFFFFFF);
 
-        // Draw toggles in the title bar (top-right area)
-        int toggleSpacing = TOGGLE_SIZE + 4; // spacing between toggles
-        int baseToggleX = panelX + panelWidth - INNER_PADDING - TOGGLE_SIZE;
-
-        // Draw compact/enlarged toggle (always shown)
-        int compactToggleX = baseToggleX;
-        int toggleY = panelY - TITLE_BAR_HEIGHT + (TITLE_BAR_HEIGHT - TOGGLE_SIZE) / 2;
+        // Draw toggles in the title bar
+        // Nudge toggles down by 1px to avoid overlapping the title bar's top seam, which
+        // can make the top edge look uneven at small sizes.
+        // toggleY computed above for the + button is reused here
+        int compactToggleX = panelX + INNER_PADDING;
+        
+        // Draw compact/enlarged toggle on the LEFT side (always shown)
         int toggleBg = compactView ? 0xFF555555 : 0xFF808022; // different background to indicate state
         GuiRenderUtil.drawRoundedRect(graphics, compactToggleX, toggleY, TOGGLE_SIZE, TOGGLE_SIZE, 3, toggleBg);
         // draw a simple indicator: one bar for compact, two bars for enlarged
@@ -237,25 +403,41 @@ public final class HistoryPanel {
             graphics.fill(compactToggleX + TOGGLE_SIZE - 5, toggleY + 3, compactToggleX + TOGGLE_SIZE - 3, toggleY + TOGGLE_SIZE - 3, 0xFFFFFFFF);
         }
 
-        // Draw full stack toggle (only in survival mode)
+        // Draw full stack toggle on the RIGHT side (only in survival mode)
         if (inSurvival) {
-            int fullStackToggleX = baseToggleX - toggleSpacing;
-            int fullStackBg = fullStackMode ? 0xFF226622 : 0xFF555555; // green when enabled
-            GuiRenderUtil.drawRoundedRect(graphics, fullStackToggleX, toggleY, TOGGLE_SIZE, TOGGLE_SIZE, 3, fullStackBg);
-
-            // Draw stack indicator: single block for x1, stack symbol for x64
-            if (fullStackMode) {
-                // Draw a "64" or stack symbol - using two stacked rectangles
-                graphics.fill(fullStackToggleX + 2, toggleY + 2, fullStackToggleX + TOGGLE_SIZE - 2, toggleY + 6, 0xFFFFFFFF);
-                graphics.fill(fullStackToggleX + 3, toggleY + 7, fullStackToggleX + TOGGLE_SIZE - 1, toggleY + TOGGLE_SIZE - 1, 0xFFFFFFFF);
+            int fullStackToggleX = panelX + panelWidth - INNER_PADDING - 24; // 24 is the toggle width
+            
+            // Create or update the toggle button position
+            if (fullStackToggleButton == null) {
+                fullStackToggleButton = new PixelatedToggleButton(
+                    fullStackToggleX, 
+                    toggleY, 
+                    24,  // width for iOS-style toggle (wider than tall)
+                    TOGGLE_SIZE, 
+                    fullStackMode,
+                    (state) -> fullStackMode = state
+                );
             } else {
-                // Draw single block symbol
-                graphics.fill(fullStackToggleX + 3, toggleY + 3, fullStackToggleX + TOGGLE_SIZE - 3, toggleY + TOGGLE_SIZE - 3, 0xFFFFFFFF);
+                // Update position in case panel moved, and sync state
+                fullStackToggleButton = new PixelatedToggleButton(
+                    fullStackToggleX, 
+                    toggleY, 
+                    24, 
+                    TOGGLE_SIZE, 
+                    fullStackMode,
+                    (state) -> fullStackMode = state
+                );
             }
+            
+            // Render the toggle button
+            fullStackToggleButton.render(graphics, (int) mouseX, (int) mouseY, 0);
+        } else {
+            // Not in survival mode, clear the button
+            fullStackToggleButton = null;
         }
 
         // Optional scrollbar when overflow (use the padded rows count for consistent sizing)
-        int totalRows = (int) Math.ceil(history.size() / (double) cols);
+        int totalRows = (int) Math.ceil(displayList.size() / (double) cols);
         // Place the scrollbar rail flush with the panel's right edge so it visually aligns
         // with the content area; we've reserved SCROLLBAR_WIDTH from contentWidth above.
         int scrollBarX = panelX + panelWidth - SCROLLBAR_WIDTH;
@@ -279,12 +461,31 @@ public final class HistoryPanel {
             int thumbY = railTop + (scrollRowOffset * (effectivePanelHeight - thumbHeight)) / maxScrollRows;
             graphics.fill(scrollBarX, thumbY, scrollBarX + SCROLLBAR_WIDTH, thumbY + thumbHeight, 0xFFCCCCCC);
         }
+        
+        // Render tooltips for toggles (after all other rendering so they appear on top)
+        
+        // Check "+" button hover (reuse variables from above)
+        if (addButtonHovered) {
+            graphics.renderTooltip(font, net.minecraft.network.chat.Component.literal("Create New Folder"), (int) mouseX, (int) mouseY);
+        }
+        
+        // Check compact toggle hover
+        boolean compactToggleHovered = mouseX >= compactToggleX && mouseX < compactToggleX + TOGGLE_SIZE &&
+                                       mouseY >= toggleY && mouseY < toggleY + TOGGLE_SIZE;
+        if (compactToggleHovered) {
+            String compactTooltip = compactView ? "Switch to Large View" : "Switch to Compact View";
+            graphics.renderTooltip(font, net.minecraft.network.chat.Component.literal(compactTooltip), (int) mouseX, (int) mouseY);
+        }
+        
+        // Check full stack toggle hover (only if in survival mode)
+        if (inSurvival && fullStackToggleButton != null && fullStackToggleButton.isHovered((int) mouseX, (int) mouseY)) {
+            String fullStackTooltip = fullStackMode ? "Full Stack Mode (x64)" : "Single Item Mode (x1)";
+            graphics.renderTooltip(font, net.minecraft.network.chat.Component.literal(fullStackTooltip), (int) mouseX, (int) mouseY);
+        }
     }
 
     public boolean mouseClicked(Screen screen, double mouseX, double mouseY, int button) {
-        List<CreatedBlockInfo> history = BlockEditorHistory.getHistory();
-        if (history.isEmpty()) return false;
-
+        List<DisplayItem> displayList = buildDisplayList();
         Bounds b = computeBounds(screen, computePanelWidth(screen));
 
         // Check if player is in survival mode for full stack toggle
@@ -295,12 +496,35 @@ public final class HistoryPanel {
         }
 
         // Compute toggle bounds in the title bar
-        int toggleSpacing = TOGGLE_SIZE + 4;
-        int baseToggleX = b.x + b.width - INNER_PADDING - TOGGLE_SIZE;
-        int toggleY = b.y - TITLE_BAR_HEIGHT + (TITLE_BAR_HEIGHT - TOGGLE_SIZE) / 2;
+        // Match the 1px vertical nudge applied in render() so hitboxes align visually
+        int toggleY = b.y - TITLE_BAR_HEIGHT + (TITLE_BAR_HEIGHT - TOGGLE_SIZE) / 2 + 1;
 
-        // Check compact/enlarged toggle (rightmost)
-        int compactToggleX = baseToggleX;
+        // Check "+" button for creating folders (top-right)
+        int addButtonSize = 12;
+        int rightInset = INNER_PADDING;
+        int fullStackToggleWidth = 24;
+        int gap = 4;
+        int addButtonX;
+        if (inSurvival) {
+            int fullStackToggleX = b.x + b.width - INNER_PADDING - fullStackToggleWidth;
+            addButtonX = fullStackToggleX - gap - addButtonSize;
+        } else {
+            addButtonX = b.x + b.width - rightInset - addButtonSize;
+        }
+        int addButtonY = b.y - TITLE_BAR_HEIGHT + (TITLE_BAR_HEIGHT - addButtonSize) / 2;
+        boolean clickedAddButton = mouseX >= addButtonX && mouseX < addButtonX + addButtonSize &&
+                                   mouseY >= addButtonY && mouseY < addButtonY + addButtonSize;
+        if (clickedAddButton) {
+            // Open folder creation dialog (name + color)
+            Minecraft.getInstance().setScreen(new FolderDialogScreen((Screen) screen, (folderName, colorRgb) -> {
+                String effectiveName = (folderName == null || folderName.trim().isEmpty()) ? "New Folder" : folderName.trim();
+                BlockEditorHistory.createFolder(effectiveName, colorRgb);
+            }));
+            return true;
+        }
+
+        // Check compact/enlarged toggle (LEFT side)
+        int compactToggleX = b.x + INNER_PADDING;
         boolean clickedCompactToggle = mouseX >= compactToggleX && mouseX < compactToggleX + TOGGLE_SIZE &&
                                       mouseY >= toggleY && mouseY < toggleY + TOGGLE_SIZE;
         if (clickedCompactToggle) {
@@ -316,18 +540,15 @@ public final class HistoryPanel {
             int cols = computeColumnsForLayout(screen, contentWidth);
             int rowsVisible = Math.max(1, Math.max(0, computeBounds(screen, panelWidth).height - CONTENT_TOP_PADDING) / (ITEM_HEIGHT + ITEM_SPACING));
             int maxVisible = rowsVisible * cols;
-            int maxScroll = Math.max(0, history.size() - maxVisible);
+            int maxScroll = Math.max(0, displayList.size() - maxVisible);
             scrollOffset = Math.max(0, Math.min(scrollOffset, maxScroll));
             return true;
         }
 
-        // Check full stack toggle (left of compact toggle, only in survival)
-        if (inSurvival) {
-            int fullStackToggleX = baseToggleX - toggleSpacing;
-            boolean clickedFullStackToggle = mouseX >= fullStackToggleX && mouseX < fullStackToggleX + TOGGLE_SIZE &&
-                                            mouseY >= toggleY && mouseY < toggleY + TOGGLE_SIZE;
-            if (clickedFullStackToggle) {
-                fullStackMode = !fullStackMode;
+        // Check full stack toggle (RIGHT side, only in survival)
+        if (inSurvival && fullStackToggleButton != null) {
+            if (fullStackToggleButton.mouseClicked(mouseX, mouseY, button)) {
+                fullStackMode = fullStackToggleButton.isToggled();
                 try {
                     LOGGER.debug("HistoryPanel full stack mode toggled -> {}", fullStackMode);
                 } catch (Exception ignored) {
@@ -366,17 +587,27 @@ public final class HistoryPanel {
         if (visibleIndex < 0 || visibleIndex >= maxVisible) return false;
 
         int dataIndex = scrollOffset + visibleIndex;
-        if (dataIndex < 0 || dataIndex >= history.size()) return false;
+        if (dataIndex < 0 || dataIndex >= displayList.size()) return false;
 
-        if (onItemClick != null) {
-            onItemClick.accept(history.get(dataIndex), button);
+        DisplayItem item = displayList.get(dataIndex);
+        
+        // If it's a folder, toggle it
+        if (item.isFolder) {
+            item.folder.expanded = !item.folder.expanded;
+            BlockEditorHistory.saveHistoryToFile();
+            return true;
+        }
+
+        // Otherwise, it's a block - pass to the click handler
+        if (onItemClick != null && item.block != null) {
+            onItemClick.accept(item.block, button);
         }
         return true;
     }
 
     public boolean mouseScrolled(Screen screen, double mouseX, double mouseY, double delta) {
-        List<CreatedBlockInfo> history = BlockEditorHistory.getHistory();
-        if (history.isEmpty()) return false;
+        List<DisplayItem> displayList = buildDisplayList();
+        if (displayList.isEmpty()) return false;
 
         Bounds b = computeBounds(screen, computePanelWidth(screen));
         if (!b.contains(mouseX, mouseY)) return false;
@@ -387,7 +618,7 @@ public final class HistoryPanel {
         // Use padded rows for scroll calculations so scroll amount matches visible items
         int rowsVisible = Math.max(1, Math.max(0, b.height - CONTENT_TOP_PADDING) / (ITEM_HEIGHT + ITEM_SPACING));
         int maxVisible = rowsVisible * cols;
-        int maxScroll = Math.max(0, history.size() - maxVisible);
+        int maxScroll = Math.max(0, displayList.size() - maxVisible);
 
         if (delta > 0) {
             scrollOffset = Math.max(0, scrollOffset - cols); // scroll by a row
@@ -568,6 +799,150 @@ public final class HistoryPanel {
         int w = (availableForItems / cols);
         // Ensure we don't shrink below the nominal compact width
         return Math.max(w, ITEM_WIDTH);
+    }
+
+    // Drag-and-drop support
+    public boolean mousePressed(Screen screen, double mouseX, double mouseY, int button) {
+        if (button != 0) return false; // Only left-click drag
+        
+        List<DisplayItem> displayList = buildDisplayList();
+        Bounds b = computeBounds(screen, computePanelWidth(screen));
+        
+        if (!b.contains(mouseX, mouseY)) return false;
+
+        int contentWidth = Math.max(0, b.width - (INNER_PADDING * 2) - SCROLLBAR_WIDTH);
+        int cols = computeColumnsForLayout(screen, contentWidth);
+        int rowsVisible = Math.max(1, Math.max(0, b.height - CONTENT_TOP_PADDING) / (ITEM_HEIGHT + ITEM_SPACING));
+        int maxVisible = rowsVisible * cols;
+
+        int relX = (int) (mouseX - b.x);
+        int relY = (int) (mouseY - b.y);
+        relY -= CONTENT_TOP_PADDING;
+        if (relY < 0) return false;
+        relX -= INNER_PADDING;
+        if (relX < 0) return false;
+
+        int itemWidth = computeItemWidthForLayout(contentWidth, cols);
+        int col = relX / (itemWidth + ITEM_SPACING);
+        int row = relY / (ITEM_HEIGHT + ITEM_SPACING);
+        if (col < 0 || col >= cols) return false;
+
+        int visibleIndex = row * cols + col;
+        if (visibleIndex < 0 || visibleIndex >= maxVisible) return false;
+
+        int dataIndex = scrollOffset + visibleIndex;
+        if (dataIndex < 0 || dataIndex >= displayList.size()) return false;
+
+        DisplayItem item = displayList.get(dataIndex);
+        
+        // Prepare a drag candidate for blocks (not folders); don't start dragging yet
+        if (!item.isFolder && item.block != null) {
+            dragCandidateBlock = item.block;
+            // Determine source folder (if any) for the candidate
+            dragCandidateFromFolder = null;
+            for (BlockFolder folder : BlockEditorHistory.getFolders()) {
+                if (folder.blocks.contains(item.block)) {
+                    dragCandidateFromFolder = folder;
+                    break;
+                }
+            }
+            // Record initial press position; defer actual drag until threshold exceeded
+            mouseDownX = mouseX;
+            mouseDownY = mouseY;
+            dragStartX = mouseX;
+            dragStartY = mouseY;
+            isDragging = false;
+            draggedBlock = null;
+            draggedFromFolder = null;
+            return true; // capture for potential drag sequence
+        }
+        
+        return false;
+    }
+
+    public boolean mouseDragged(Screen screen, double mouseX, double mouseY, int button, double dragX, double dragY) {
+        // Only begin dragging after moving past the threshold from the press point
+        if (!isDragging && dragCandidateBlock != null) {
+            double dx = mouseX - mouseDownX;
+            double dy = mouseY - mouseDownY;
+            if ((dx * dx + dy * dy) >= DRAG_THRESHOLD_PX_SQ) {
+                // Start actual drag
+                draggedBlock = dragCandidateBlock;
+                draggedFromFolder = dragCandidateFromFolder;
+                isDragging = true;
+            }
+        }
+        // Dragging is tracked, rendering happens in render()
+        return isDragging && draggedBlock != null;
+    }
+
+    public boolean mouseReleased(Screen screen, double mouseX, double mouseY, int button) {
+        // If we never started a drag, clear candidate and let normal click handling proceed
+        if (!isDragging || draggedBlock == null) {
+            dragCandidateBlock = null;
+            dragCandidateFromFolder = null;
+            isDragging = false;
+            draggedBlock = null;
+            draggedFromFolder = null;
+            return false;
+        }
+        
+        List<DisplayItem> displayList = buildDisplayList();
+        Bounds b = computeBounds(screen, computePanelWidth(screen));
+        
+        // Check if we dropped on a folder
+        if (b.contains(mouseX, mouseY)) {
+            int contentWidth = Math.max(0, b.width - (INNER_PADDING * 2) - SCROLLBAR_WIDTH);
+            int cols = computeColumnsForLayout(screen, contentWidth);
+            int rowsVisible = Math.max(1, Math.max(0, b.height - CONTENT_TOP_PADDING) / (ITEM_HEIGHT + ITEM_SPACING));
+            int maxVisible = rowsVisible * cols;
+
+            int relX = (int) (mouseX - b.x);
+            int relY = (int) (mouseY - b.y);
+            relY -= CONTENT_TOP_PADDING;
+            relX -= INNER_PADDING;
+
+            if (relX >= 0 && relY >= 0) {
+                int itemWidth = computeItemWidthForLayout(contentWidth, cols);
+                int col = relX / (itemWidth + ITEM_SPACING);
+                int row = relY / (ITEM_HEIGHT + ITEM_SPACING);
+
+                if (col >= 0 && col < cols) {
+                    int visibleIndex = row * cols + col;
+                    if (visibleIndex >= 0 && visibleIndex < maxVisible) {
+                        int dataIndex = scrollOffset + visibleIndex;
+                        if (dataIndex >= 0 && dataIndex < displayList.size()) {
+                            DisplayItem item = displayList.get(dataIndex);
+                            
+                            // Dropped on a folder - add block to it
+                            if (item.isFolder) {
+                                BlockEditorHistory.moveBlockToFolder(draggedBlock, item.folder);
+                                // Clear drag state after successful drop
+                                dragCandidateBlock = null;
+                                dragCandidateFromFolder = null;
+                                isDragging = false;
+                                draggedBlock = null;
+                                draggedFromFolder = null;
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Dropped outside any folder - move to main list
+        if (draggedFromFolder != null) {
+            BlockEditorHistory.moveBlockToFolder(draggedBlock, null);
+        }
+        
+        // Clear drag state
+        dragCandidateBlock = null;
+        dragCandidateFromFolder = null;
+        isDragging = false;
+        draggedBlock = null;
+        draggedFromFolder = null;
+        return true;
     }
 
     public void setOnItemClick(BiConsumer<CreatedBlockInfo, Integer> handler) {

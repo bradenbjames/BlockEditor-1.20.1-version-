@@ -17,40 +17,37 @@ public final class PixelatedToggleButton {
         this.toggled = initialState;
         this.onToggle = onToggle;
     }
+    
+    // Check if mouse is hovering over the toggle
+    public boolean isHovered(int mouseX, int mouseY) {
+        return mouseX >= x && mouseX < x + width && mouseY >= y && mouseY < y + height;
+    }
 
     // Render using the project's GuiGraphics and GuiRenderUtil helpers so it matches other UI code
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         boolean hovered = mouseX >= x && mouseX < x + width && mouseY >= y && mouseY < y + height;
 
-        // Colors
-        int trackOn = 0xFF4CD964;
-        int trackOff = 0xFF2F3437;
-        int knob = 0xFFFFFFFF;
-        int knobInner = hovered ? 0xFFFFFFFF : 0xFFF2F2F2;
-        int border = 0xFF1F1F1F;
+        // Colors - iOS style
+        int trackOn = 0xFF4CD964;  // iOS green
+        int trackOff = 0xFFE5E5EA; // Light gray when off
+        int knobColor = 0xFFFFFFFF; // White knob
+        int border = 0xFF1C1C1E;   // Dark border
 
         int trackColor = toggled ? trackOn : trackOff;
-        if (hovered) trackColor = lighten(trackColor, 0.06f);
+        if (hovered) trackColor = lighten(trackColor, 0.04f);
 
-        // Draw pixelated rounded track. Use a small radius to achieve "pixelated rounded" look
-        int radius = Math.max(1, height / 4);
-        GuiRenderUtil.drawRoundedRect(graphics, x, y, width, height, radius, trackColor);
+    // Track: fill then crisp 1px outline to avoid "egg" edges
+    GuiRenderUtil.drawPillFilled(graphics, x, y, width, height, trackColor);
+    GuiRenderUtil.drawPillOutline(graphics, x, y, width, height, border);
 
-        // subtle top/bottom border lines for clarity
-        graphics.fill(x + 1, y, x + width - 1, y + 1, border);
-        graphics.fill(x + 1, y + height - 1, x + width - 1, y + height, border);
-
-        // Knob geometry: square-ish pixelated knob with small padding
-        int knobSize = Math.max(4, height - 4);
+        // Knob: circular knob that slides left/right
+        int knobSize = height - 4; // Slightly smaller than track height for padding
         int knobY = y + 2;
         int knobX = toggled ? (x + width - knobSize - 2) : (x + 2);
 
-        // Draw knob background (outer)
-        graphics.fill(knobX, knobY, knobX + knobSize, knobY + knobSize, knob);
-        // Inner highlight/depth
-        graphics.fill(knobX + 1, knobY + 1, knobX + knobSize - 1, knobY + knobSize - 1, knobInner);
-        // subtle shadow bottom edge
-        graphics.fill(knobX, knobY + knobSize - 1, knobX + knobSize, knobY + knobSize, 0x33000000);
+        // Knob: fill + 1px outline, no extra shadows (keeps pixel-crisp)
+        GuiRenderUtil.drawPillFilled(graphics, knobX, knobY, knobSize, knobSize, knobColor);
+        GuiRenderUtil.drawPillOutline(graphics, knobX, knobY, knobSize, knobSize, border);
     }
 
     // Mouse click handling: return true if the click was handled
