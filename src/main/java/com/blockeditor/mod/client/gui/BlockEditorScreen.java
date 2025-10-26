@@ -359,29 +359,45 @@ public class BlockEditorScreen extends Screen {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        // Reset confirmation state if user clicks elsewhere (not on the clear button)
-        if (showingClearConfirmation && clearRegistryButton != null) {
-            if (!clearRegistryButton.isMouseOver(mouseX, mouseY)) {
-                showingClearConfirmation = false;
-                updateClearButtonText();
+        // Handle middle-click (button 2) to toggle full stack mode in survival
+        if (button == 2) { // Middle mouse button
+            // Only allow middle-click toggle in survival mode
+            if (this.minecraft.player != null && !this.minecraft.player.getAbilities().instabuild) {
+                HistoryPanel.setFullStackMode(!HistoryPanel.isFullStackMode());
+
+                // Show feedback message
+                String modeText = HistoryPanel.isFullStackMode() ? "Full Stack (x64)" : "Single Block (x1)";
+                this.minecraft.player.displayClientMessage(
+                    Component.literal("§7Block creation mode: §f" + modeText),
+                    true // Action bar message
+                );
+                return true;
             }
         }
         
-        // Delegate to history panel for item clicks
+        // Let the history panel handle clicks first (for its toggles)
         if (historyPanel.mouseClicked(this, mouseX, mouseY, button)) {
             return true;
         }
 
-        // Handle block selection clicks - MUST match renderBlockGrid positions
+        // Handle clicks on the block grid
+        if (button == 0) { // Left click
+            handleBlockGridClick(mouseX, mouseY);
+        }
+
+        // Pass to parent for other UI elements (buttons, text boxes, etc.)
+        return super.mouseClicked(mouseX, mouseY, button);
+    }
+
+    // ...existing code...
+
+    private void handleBlockGridClick(double mouseX, double mouseY) {
         // Use the same grid width math as renderBlockGrid for consistent alignment
-        //int centerX3 = this.width / 2 - 40 - MAIN_CONTENT_SHIFT; // Shifted left
-        //int blockGridWidth3 = BLOCKS_PER_ROW * BLOCK_SIZE + (BLOCKS_PER_ROW - 1) * BLOCK_PADDING;
-        //int startX = centerX3 - (blockGridWidth3 / 2);
         int blocksPerRow = computeBlocksPerRow();
         int blockGridWidth3 = blocksPerRow * BLOCK_SIZE + (blocksPerRow - 1) * BLOCK_PADDING;
         int startX = computeGridStartX(blockGridWidth3);
-         int startY = 55;  // Must match renderBlockGrid
-         // use GRID_MAX_ROWS directly
+        int startY = 55;  // Must match renderBlockGrid
+        // use GRID_MAX_ROWS directly
 
         for (int row = 0; row < GRID_MAX_ROWS; row++) {
             for (int col = 0; col < blocksPerRow; col++) {
@@ -393,52 +409,10 @@ public class BlockEditorScreen extends Screen {
 
                 if (mouseX >= x && mouseX < x + BLOCK_SIZE && mouseY >= y && mouseY < y + BLOCK_SIZE) {
                     selectedBlock = filteredBlocks.get(index);
-                    return true;
+                    return;
                 }
             }
         }
-
-        // Check hex box click: select all on click
-        if (hexBox != null) {
-            int hx = hexBox.getX();
-            int hy = hexBox.getY();
-            int hw = hexBox.getWidth();
-            int hh = hexBox.getHeight();
-            if (mouseX >= hx && mouseX < hx + hw && mouseY >= hy && mouseY < hy + hh) {
-                boolean result = super.mouseClicked(mouseX, mouseY, button);
-                if (hexBox.isFocused()) {
-                    hexBox.setHighlightPos(0);
-                    hexBox.setCursorPosition(hexBox.getValue().length());
-                }
-                return result;
-            }
-        }
-        
-        // Check name box click - select all text when clicked only if it has placeholder or any text? Keep current behavior
-        if (nameBox != null) {
-            int nx = nameBox.getX();
-            int ny = nameBox.getY();
-            int nw = nameBox.getWidth();
-            int nh = nameBox.getHeight();
-            if (mouseX >= nx && mouseX < nx + nw && mouseY >= ny && mouseY < ny + nh) {
-                boolean result = super.mouseClicked(mouseX, mouseY, button);
-                if (nameBox.isFocused() && nameBox.getValue().trim().isEmpty()) {
-                    nameBox.setHighlightPos(0);
-                    nameBox.setCursorPosition(nameBox.getValue().length());
-                }
-                return result;
-            }
-        }
-        
-        // If clicked outside text boxes, unfocus them
-        if (hexBox != null && hexBox.isFocused()) {
-            hexBox.setFocused(false);
-        }
-        if (nameBox != null && nameBox.isFocused()) {
-            nameBox.setFocused(false);
-        }
-
-        return super.mouseClicked(mouseX, mouseY, button);
     }
 
     @Override
@@ -730,12 +704,23 @@ public class BlockEditorScreen extends Screen {
             String packetNameBoxRaw = nameBox.getValue();
             String customName = packetNameBoxRaw.trim();
             
+            // Determine stack size based on game mode and toggle state
+            int stackSize = 1; // default
+            if (this.minecraft.player != null && !this.minecraft.player.getAbilities().instabuild) {
+                // In survival mode, check the full stack toggle
+                if (HistoryPanel.isFullStackMode()) {
+                    stackSize = 64;
+                }
+            }
+            // In creative mode, always use 1 regardless of toggle state
+
             try {
                 ModNetworking.sendToServer(new CreateBlockPacket(
                     hexColor.toUpperCase(),
                     mimicBlockId.toString(),
                     blockId.toString(),
-                    customName
+                    customName,
+                    stackSize
                 ));
             } catch (Exception e) {
                 LOGGER.error("CLIENT ERROR: Failed to send CreateBlockPacket", e);

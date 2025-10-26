@@ -49,6 +49,10 @@ public final class HistoryPanel {
     // Toggle state: true = compact (current), false = enlarged (double width)
     // Persist the compact/enlarged toggle for the running game instance (static so it survives screen re-opens)
     private static boolean compactView = true;
+
+    // Full stack toggle: true = create full stacks (64) in survival mode, false = create single items
+    private static boolean fullStackMode = false;
+
     private static final int TOGGLE_SIZE = 12;
 
     // Public accessors so other screens / code can read/modify the view state for the running instance
@@ -59,6 +63,15 @@ public final class HistoryPanel {
     @SuppressWarnings("unused")
     public static void setCompactView(boolean value) {
         compactView = value;
+    }
+
+    // Public accessors for full stack mode
+    public static boolean isFullStackMode() {
+        return fullStackMode;
+    }
+
+    public static void setFullStackMode(boolean value) {
+        fullStackMode = value;
     }
 
     private static final Logger LOGGER = LogUtils.getLogger();
@@ -200,17 +213,45 @@ public final class HistoryPanel {
         var title = net.minecraft.network.chat.Component.literal("Recent Blocks");
         graphics.drawCenteredString(font, title, panelX + panelWidth / 2, panelY - TITLE_BAR_HEIGHT + 4, 0xFFFFFF);
 
-        // Draw a small toggle in the title bar (top-right) to switch compact/enlarged views
-        int toggleX = panelX + panelWidth - INNER_PADDING - TOGGLE_SIZE;
+        // Check if player is in survival mode to show the full stack toggle
+        boolean inSurvival = false;
+        var mc = net.minecraft.client.Minecraft.getInstance();
+        if (mc.player != null) {
+            inSurvival = !mc.player.getAbilities().instabuild; // instabuild is false in survival
+        }
+
+        // Draw toggles in the title bar (top-right area)
+        int toggleSpacing = TOGGLE_SIZE + 4; // spacing between toggles
+        int baseToggleX = panelX + panelWidth - INNER_PADDING - TOGGLE_SIZE;
+
+        // Draw compact/enlarged toggle (always shown)
+        int compactToggleX = baseToggleX;
         int toggleY = panelY - TITLE_BAR_HEIGHT + (TITLE_BAR_HEIGHT - TOGGLE_SIZE) / 2;
         int toggleBg = compactView ? 0xFF555555 : 0xFF808022; // different background to indicate state
-        GuiRenderUtil.drawRoundedRect(graphics, toggleX, toggleY, TOGGLE_SIZE, TOGGLE_SIZE, 3, toggleBg);
+        GuiRenderUtil.drawRoundedRect(graphics, compactToggleX, toggleY, TOGGLE_SIZE, TOGGLE_SIZE, 3, toggleBg);
         // draw a simple indicator: one bar for compact, two bars for enlarged
         if (compactView) {
-            graphics.fill(toggleX + (TOGGLE_SIZE / 2) - 2, toggleY + 3, toggleX + (TOGGLE_SIZE / 2) + 2, toggleY + TOGGLE_SIZE - 3, 0xFFFFFFFF);
+            graphics.fill(compactToggleX + (TOGGLE_SIZE / 2) - 2, toggleY + 3, compactToggleX + (TOGGLE_SIZE / 2) + 2, toggleY + TOGGLE_SIZE - 3, 0xFFFFFFFF);
         } else {
-            graphics.fill(toggleX + 3, toggleY + 3, toggleX + 5, toggleY + TOGGLE_SIZE - 3, 0xFFFFFFFF);
-            graphics.fill(toggleX + TOGGLE_SIZE - 5, toggleY + 3, toggleX + TOGGLE_SIZE - 3, toggleY + TOGGLE_SIZE - 3, 0xFFFFFFFF);
+            graphics.fill(compactToggleX + 3, toggleY + 3, compactToggleX + 5, toggleY + TOGGLE_SIZE - 3, 0xFFFFFFFF);
+            graphics.fill(compactToggleX + TOGGLE_SIZE - 5, toggleY + 3, compactToggleX + TOGGLE_SIZE - 3, toggleY + TOGGLE_SIZE - 3, 0xFFFFFFFF);
+        }
+
+        // Draw full stack toggle (only in survival mode)
+        if (inSurvival) {
+            int fullStackToggleX = baseToggleX - toggleSpacing;
+            int fullStackBg = fullStackMode ? 0xFF226622 : 0xFF555555; // green when enabled
+            GuiRenderUtil.drawRoundedRect(graphics, fullStackToggleX, toggleY, TOGGLE_SIZE, TOGGLE_SIZE, 3, fullStackBg);
+
+            // Draw stack indicator: single block for x1, stack symbol for x64
+            if (fullStackMode) {
+                // Draw a "64" or stack symbol - using two stacked rectangles
+                graphics.fill(fullStackToggleX + 2, toggleY + 2, fullStackToggleX + TOGGLE_SIZE - 2, toggleY + 6, 0xFFFFFFFF);
+                graphics.fill(fullStackToggleX + 3, toggleY + 7, fullStackToggleX + TOGGLE_SIZE - 1, toggleY + TOGGLE_SIZE - 1, 0xFFFFFFFF);
+            } else {
+                // Draw single block symbol
+                graphics.fill(fullStackToggleX + 3, toggleY + 3, fullStackToggleX + TOGGLE_SIZE - 3, toggleY + TOGGLE_SIZE - 3, 0xFFFFFFFF);
+            }
         }
 
         // Optional scrollbar when overflow (use the padded rows count for consistent sizing)
@@ -246,12 +287,23 @@ public final class HistoryPanel {
 
         Bounds b = computeBounds(screen, computePanelWidth(screen));
 
-        // Compute toggle bounds in the title bar so clicks on it will toggle views
-        int toggleX = b.x + b.width - INNER_PADDING - TOGGLE_SIZE;
+        // Check if player is in survival mode for full stack toggle
+        boolean inSurvival = false;
+        var mc = net.minecraft.client.Minecraft.getInstance();
+        if (mc.player != null) {
+            inSurvival = !mc.player.getAbilities().instabuild;
+        }
+
+        // Compute toggle bounds in the title bar
+        int toggleSpacing = TOGGLE_SIZE + 4;
+        int baseToggleX = b.x + b.width - INNER_PADDING - TOGGLE_SIZE;
         int toggleY = b.y - TITLE_BAR_HEIGHT + (TITLE_BAR_HEIGHT - TOGGLE_SIZE) / 2;
-        boolean clickedToggle = mouseX >= toggleX && mouseX < toggleX + TOGGLE_SIZE && mouseY >= toggleY && mouseY < toggleY + TOGGLE_SIZE;
-        if (clickedToggle) {
-            // flip view
+
+        // Check compact/enlarged toggle (rightmost)
+        int compactToggleX = baseToggleX;
+        boolean clickedCompactToggle = mouseX >= compactToggleX && mouseX < compactToggleX + TOGGLE_SIZE &&
+                                      mouseY >= toggleY && mouseY < toggleY + TOGGLE_SIZE;
+        if (clickedCompactToggle) {
             compactView = !compactView;
             // clamp scroll offset to new visible range
             int panelWidth = computePanelWidth(screen);
@@ -267,6 +319,22 @@ public final class HistoryPanel {
             int maxScroll = Math.max(0, history.size() - maxVisible);
             scrollOffset = Math.max(0, Math.min(scrollOffset, maxScroll));
             return true;
+        }
+
+        // Check full stack toggle (left of compact toggle, only in survival)
+        if (inSurvival) {
+            int fullStackToggleX = baseToggleX - toggleSpacing;
+            boolean clickedFullStackToggle = mouseX >= fullStackToggleX && mouseX < fullStackToggleX + TOGGLE_SIZE &&
+                                            mouseY >= toggleY && mouseY < toggleY + TOGGLE_SIZE;
+            if (clickedFullStackToggle) {
+                fullStackMode = !fullStackMode;
+                try {
+                    LOGGER.debug("HistoryPanel full stack mode toggled -> {}", fullStackMode);
+                } catch (Exception ignored) {
+                    // intentionally ignore logging errors
+                }
+                return true;
+            }
         }
 
         // If the click wasn't on the toggle, require the click be within the content bounds

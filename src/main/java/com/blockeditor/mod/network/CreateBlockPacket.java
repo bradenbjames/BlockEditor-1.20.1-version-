@@ -20,12 +20,19 @@ public class CreateBlockPacket {
     private final String mimicBlockId;
     private final String blockType;
     private final String customName;
+    private final int stackSize;
 
-    public CreateBlockPacket(String hexColor, String mimicBlockId, String blockType, String customName) {
+    public CreateBlockPacket(String hexColor, String mimicBlockId, String blockType, String customName, int stackSize) {
         this.hexColor = hexColor;
         this.mimicBlockId = mimicBlockId;
         this.blockType = blockType;
         this.customName = customName;
+        this.stackSize = stackSize;
+    }
+
+    // Legacy constructor for backward compatibility
+    public CreateBlockPacket(String hexColor, String mimicBlockId, String blockType, String customName) {
+        this(hexColor, mimicBlockId, blockType, customName, 1);
     }
 
     public static void encode(CreateBlockPacket packet, FriendlyByteBuf buf) {
@@ -33,10 +40,11 @@ public class CreateBlockPacket {
         buf.writeUtf(packet.mimicBlockId);
         buf.writeUtf(packet.blockType);
         buf.writeUtf(packet.customName);
+        buf.writeInt(packet.stackSize);
     }
 
     public static CreateBlockPacket decode(FriendlyByteBuf buf) {
-        return new CreateBlockPacket(buf.readUtf(), buf.readUtf(), buf.readUtf(), buf.readUtf());
+        return new CreateBlockPacket(buf.readUtf(), buf.readUtf(), buf.readUtf(), buf.readUtf(), buf.readInt());
     }
 
     public static void handle(CreateBlockPacket packet, Supplier<NetworkEvent.Context> contextSupplier) {
@@ -158,7 +166,7 @@ public class CreateBlockPacket {
             String storedHex = String.format("%06X", storedColor);
             String storedMimic = data.mimicBlock();
 
-            ItemStack coloredBlock = new ItemStack(userBlock);
+            ItemStack coloredBlock = new ItemStack(userBlock, Math.max(1, Math.min(64, packet.stackSize)));
             CompoundTag tag = new CompoundTag();
             tag.putString("Color", storedHex);
             tag.putString("OriginalBlock", storedMimic);
