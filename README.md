@@ -1,7 +1,7 @@
 # BlockEditor - Custom Block Creator
 
 [![Minecraft](https://img.shields.io/badge/Minecraft-1.20.1-brightgreen.svg)](https://minecraft.net/)
-[![Version](https://img.shields.io/badge/Version-1.0.3-informational.svg)](#)
+[![Version](https://img.shields.io/badge/Version-1.0.4-informational.svg)](#)
 [![Forge](https://img.shields.io/badge/Forge-47.3.0+-orange.svg)](https://files.minecraftforge.net/)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
@@ -9,8 +9,34 @@
 
 Create and customize blocks with any color, texture, and **custom names** in Minecraft! Now with enhanced WorldEdit integration, smart UI features, and **world-based pick block functionality**.
 
-![Block Editor Interface](./images/1.0.3/Screenshot%202025-10-24%20235709.png)
-*Latest Block Editor interface (v1.0.3) featuring world-based middle-click pick block functionality and enhanced UI*
+![Block Editor Interface](./images/1.0.4/Screenshot%202025-10-26%20183801.png)
+*Latest Block Editor interface (v1.0.4) featuring folder organization, color-tinted groups, and improved dialog layout*
+
+## ✨ New Features (v1.0.4)
+
+### 🗂️ Foldered History with Color Tinting
+- Create folders from the Recent Blocks panel (top-right “+”).
+- Expanded folders tint child items to match the folder color for quick visual grouping.
+- Expand/collapse with pixel-perfect arrows; lighter hover makes items stand out.
+- Drag-and-drop items into folders or back to the main list.
+
+### 🎨 Folder Dialog: Name + 48-Color Palette
+- New modal dialog to name a folder and choose a color by hex or preset.
+- 48 curated, distinct preset colors arranged in a wrapping grid.
+- Clean, consistent spacing between labels, fields, and the palette.
+
+### 🔧 UX & Stability
+- Clear Registry also clears folders and history storage.
+- Survival-only “Full Stack” toggle (right) and compact/large toggle (left).
+- Drag threshold so single clicks don’t start drags; clicks work reliably.
+- Folder colors persist to disk and restore across sessions.
+
+### 📸 Screenshots (v1.0.4)
+![v1.0.4 - History Panel](./images/1.0.4/Screenshot%202025-10-26%20183544.png)
+![v1.0.4 - History Panel Alt](./images/1.0.4/Screenshot%202025-10-26%20183603.png)
+![v1.0.4 - Folder Items Tinted](./images/1.0.4/Screenshot%202025-10-26%20183609.png)
+![v1.0.4 - Folder Dialog](./images/1.0.4/Screenshot%202025-10-26%20183626.png)
+![v1.0.4 - UI Overview](./images/1.0.4/Screenshot%202025-10-26%20183801.png)
 
 ## ✨ New Features (v1.0.3)
 
@@ -201,7 +227,16 @@ Medieval Castle Theme:
 
 ## 📋 **Version History**
 
-### v1.0.3 (Current)
+### v1.0.4 (Current)
+- 🗂️ Folder organization in the Recent Blocks panel (expand/collapse)
+- 🎨 Folder color tinting with persistent storage
+- 🖱️ Drag-and-drop items into/out of folders
+- 🎛️ Survival-only full-stack toggle; compact/large view toggle
+- 🎨 Folder dialog with name + 48-color palette and polished layout
+- 🧹 Clear Registry removes folders/history entirely
+- 🐛 Drag threshold prevents accidental dragging on click
+
+### v1.0.3
 - ✨ **World-based middle-click pick block system**
 - ✨ **Enhanced block detection** for custom blocks in the world
 - ✨ **Smart inventory search** with perfect property matching
