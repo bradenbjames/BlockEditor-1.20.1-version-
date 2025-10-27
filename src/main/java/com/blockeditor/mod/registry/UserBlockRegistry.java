@@ -37,6 +37,18 @@ public class UserBlockRegistry extends SavedData {
         nextAvailableNumbers.put("dirt", 1);
         nextAvailableNumbers.put("sand", 1);
         nextAvailableNumbers.put("deepslate", 1);
+        nextAvailableNumbers.put("tinted_glass", 1);
+        nextAvailableNumbers.put("stained_glass", 1);
+        nextAvailableNumbers.put("terracotta", 1);
+        nextAvailableNumbers.put("concrete_powder", 1);
+        nextAvailableNumbers.put("glass", 1);
+        nextAvailableNumbers.put("diorite", 1);
+        nextAvailableNumbers.put("calcite", 1);
+        nextAvailableNumbers.put("mushroom_stem", 1);
+        nextAvailableNumbers.put("dead_tube_coral", 1);
+        nextAvailableNumbers.put("pearlescent_froglight", 1);
+        nextAvailableNumbers.put("cobblestone", 1);
+        nextAvailableNumbers.put("smooth_stone", 1);
     }
     
     /**
@@ -209,6 +221,18 @@ public class UserBlockRegistry extends SavedData {
         nextAvailableNumbers.put("dirt", 1);
         nextAvailableNumbers.put("sand", 1);
         nextAvailableNumbers.put("deepslate", 1);
+        nextAvailableNumbers.put("tinted_glass", 1);
+        nextAvailableNumbers.put("stained_glass", 1);
+        nextAvailableNumbers.put("terracotta", 1);
+        nextAvailableNumbers.put("concrete_powder", 1);
+        nextAvailableNumbers.put("glass", 1);
+        nextAvailableNumbers.put("diorite", 1);
+        nextAvailableNumbers.put("calcite", 1);
+        nextAvailableNumbers.put("mushroom_stem", 1);
+        nextAvailableNumbers.put("dead_tube_coral", 1);
+        nextAvailableNumbers.put("pearlescent_froglight", 1);
+        nextAvailableNumbers.put("cobblestone", 1);
+        nextAvailableNumbers.put("smooth_stone", 1);
         
         setDirty(); // Mark as dirty to save changes
         return clearedCount;

@@ -302,10 +302,13 @@ public class BlockEditorScreen extends Screen {
         if (cancelButton != null) panelBottom = Math.max(panelBottom, cancelButton.getY() + cancelButton.getHeight() - 1);
         if (clearRegistryButton != null) panelBottom = Math.max(panelBottom, clearRegistryButton.getY() + clearRegistryButton.getHeight() - 1);
         historyPanel.setVerticalBounds(panelTop, panelBottom);
-        historyPanel.render(this, graphics, this.font, mouseX, mouseY);
+    historyPanel.render(this, graphics, this.font, mouseX, mouseY);
 
-        // Render all widgets (buttons and text boxes) - THIS IS CRITICAL
-        super.render(graphics, mouseX, mouseY, partialTick);
+    // Render all widgets (buttons and text boxes)
+    super.render(graphics, mouseX, mouseY, partialTick);
+
+    // Render overlay (context menus) last so they sit above everything
+    historyPanel.renderOverlay(graphics, this.font, mouseX, mouseY);
     }
 
     private void renderBlockGrid(GuiGraphics graphics, int mouseX, int mouseY) {
@@ -359,6 +362,15 @@ public class BlockEditorScreen extends Screen {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        // Handle hex box click - select all text
+        if (hexBox != null && hexBox.isMouseOver(mouseX, mouseY) && button == 0) {
+            if (!hexBox.isFocused()) {
+                hexBox.setFocused(true);
+                hexBox.setHighlightPos(0);
+                hexBox.moveCursorToEnd();
+            }
+        }
+        
         // Handle middle-click (button 2) to toggle full stack mode in survival
         if (button == 2) { // Middle mouse button
             // Only allow middle-click toggle in survival mode
@@ -648,6 +660,7 @@ public class BlockEditorScreen extends Screen {
         
         String trimmedName = customName.trim();
         
+        // Check main history
         for (int i = 0; i < BlockEditorHistory.getHistory().size(); i++) {
             BlockEditorHistory.CreatedBlockInfo info = BlockEditorHistory.getHistory().get(i);
             if (info.blockName != null) {
@@ -656,6 +669,18 @@ public class BlockEditorScreen extends Screen {
                 }
             }
         }
+        
+        // Check all folders
+        for (BlockEditorHistory.BlockFolder folder : BlockEditorHistory.getFolders()) {
+            for (BlockEditorHistory.CreatedBlockInfo info : folder.blocks) {
+                if (info.blockName != null) {
+                    if (info.blockName.equalsIgnoreCase(trimmedName)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        
         return false;
     }
 

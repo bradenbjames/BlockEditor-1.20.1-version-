@@ -72,6 +72,15 @@ public final class HistoryPanel {
     private double mouseDownY = 0;
     private boolean isDragging = false;
 
+        // Context menu state
+        private BlockFolder contextMenuFolder = null;
+        private CreatedBlockInfo contextMenuBlock = null;
+        private int contextMenuX = 0;
+        private int contextMenuY = 0;
+        private int contextMenuWidth = 60;
+        private static final int CONTEXT_MENU_HEIGHT = 14;
+        private String contextMenuLabel = "Delete";
+
     // Public accessors so other screens / code can read/modify the view state for the running instance
     @SuppressWarnings("unused")
     public static boolean isCompactView() {
@@ -240,21 +249,20 @@ public final class HistoryPanel {
                 String folderName = folder.name != null ? folder.name : "Unnamed Folder";
                 int nameColor = 0xFFFFFF;
                 int textLeft = itemX + 4; // left padding
-                int textAvail = itemWidth - 16; // reserve space for arrow on right
+                int textAvail = itemWidth - 24; // reserve space for count + arrow on right
                 String trimmedName = trimToWidthScaled(font, folderName, textAvail, NAME_TEXT_SCALE);
                 drawScaledString(graphics, font, trimmedName, textLeft, itemY + 6, NAME_TEXT_SCALE, nameColor);
                 
-                // Arrow icon on the right (▼ expanded, ► collapsed)
+                // Block count to the left of the arrow (italicized)
+                String count = "§o" + folder.blocks.size();
+                int countWidth = (int) (font.width(count) * NAME_TEXT_SCALE);
                 int arrowX = itemX + itemWidth - 10;
+                int countX = arrowX - countWidth - 3; // 3px spacing before arrow
+                drawScaledString(graphics, font, count, countX, itemY + 6, NAME_TEXT_SCALE, 0xFFAAAAAA);
+                
+                // Arrow icon on the right (▼ expanded, ► collapsed)
                 int arrowY = itemY + (ITEM_HEIGHT - 7) / 2;
                 GuiRenderUtil.drawSmallArrow(graphics, arrowX, arrowY, folder.expanded, 0xFFAAAAAA);
-                
-                // Tooltip with folder info
-                if (hovered) {
-                    hoveredName = folderName + " (" + folder.blocks.size() + " blocks)";
-                    hoverX = mouseX;
-                    hoverY = mouseY;
-                }
             } else {
                 // Render block card (existing code)
                 CreatedBlockInfo info = item.block;
@@ -391,16 +399,17 @@ public final class HistoryPanel {
         // can make the top edge look uneven at small sizes.
         // toggleY computed above for the + button is reused here
         int compactToggleX = panelX + INNER_PADDING;
+        int compactToggleY = panelY - TITLE_BAR_HEIGHT + (TITLE_BAR_HEIGHT - TOGGLE_SIZE) / 2;
         
         // Draw compact/enlarged toggle on the LEFT side (always shown)
         int toggleBg = compactView ? 0xFF555555 : 0xFF808022; // different background to indicate state
-        GuiRenderUtil.drawRoundedRect(graphics, compactToggleX, toggleY, TOGGLE_SIZE, TOGGLE_SIZE, 3, toggleBg);
+        GuiRenderUtil.drawRoundedRect(graphics, compactToggleX, compactToggleY, TOGGLE_SIZE, TOGGLE_SIZE, 3, toggleBg);
         // draw a simple indicator: one bar for compact, two bars for enlarged
         if (compactView) {
-            graphics.fill(compactToggleX + (TOGGLE_SIZE / 2) - 2, toggleY + 3, compactToggleX + (TOGGLE_SIZE / 2) + 2, toggleY + TOGGLE_SIZE - 3, 0xFFFFFFFF);
+            graphics.fill(compactToggleX + (TOGGLE_SIZE / 2) - 2, compactToggleY + 3, compactToggleX + (TOGGLE_SIZE / 2) + 2, compactToggleY + TOGGLE_SIZE - 3, 0xFFFFFFFF);
         } else {
-            graphics.fill(compactToggleX + 3, toggleY + 3, compactToggleX + 5, toggleY + TOGGLE_SIZE - 3, 0xFFFFFFFF);
-            graphics.fill(compactToggleX + TOGGLE_SIZE - 5, toggleY + 3, compactToggleX + TOGGLE_SIZE - 3, toggleY + TOGGLE_SIZE - 3, 0xFFFFFFFF);
+            graphics.fill(compactToggleX + 3, compactToggleY + 3, compactToggleX + 5, compactToggleY + TOGGLE_SIZE - 3, 0xFFFFFFFF);
+            graphics.fill(compactToggleX + TOGGLE_SIZE - 5, compactToggleY + 3, compactToggleX + TOGGLE_SIZE - 3, compactToggleY + TOGGLE_SIZE - 3, 0xFFFFFFFF);
         }
 
         // Draw full stack toggle on the RIGHT side (only in survival mode)
@@ -471,7 +480,7 @@ public final class HistoryPanel {
         
         // Check compact toggle hover
         boolean compactToggleHovered = mouseX >= compactToggleX && mouseX < compactToggleX + TOGGLE_SIZE &&
-                                       mouseY >= toggleY && mouseY < toggleY + TOGGLE_SIZE;
+                                       mouseY >= compactToggleY && mouseY < compactToggleY + TOGGLE_SIZE;
         if (compactToggleHovered) {
             String compactTooltip = compactView ? "Switch to Large View" : "Switch to Compact View";
             graphics.renderTooltip(font, net.minecraft.network.chat.Component.literal(compactTooltip), (int) mouseX, (int) mouseY);
@@ -482,9 +491,83 @@ public final class HistoryPanel {
             String fullStackTooltip = fullStackMode ? "Full Stack Mode (x64)" : "Single Item Mode (x1)";
             graphics.renderTooltip(font, net.minecraft.network.chat.Component.literal(fullStackTooltip), (int) mouseX, (int) mouseY);
         }
+        
+            // Note: overlay is rendered by the parent screen after all widgets for top-most z-order
     }
 
+            private void renderContextMenu(GuiGraphics graphics, Font font, int mouseX, int mouseY) {
+                // Check if mouse is over the menu
+                boolean hovered = mouseX >= contextMenuX && mouseX < contextMenuX + contextMenuWidth &&
+                                 mouseY >= contextMenuY && mouseY < contextMenuY + CONTEXT_MENU_HEIGHT;
+
+                // Ensure the context menu renders above any 3D item icons by disabling depth test
+                // and translating far forward on the GUI Z axis.
+                RenderSystem.disableDepthTest();
+                var poseTop = graphics.pose();
+                poseTop.pushPose();
+                poseTop.translate(0, 0, 400.0f);
+
+                int bgColor = hovered ? 0xFF444444 : 0xFF2B2B2B;
+
+                // Draw rounded rect background with dynamic width
+                GuiRenderUtil.drawRoundedRect(graphics, contextMenuX, contextMenuY, contextMenuWidth, CONTEXT_MENU_HEIGHT, 3, bgColor);
+
+                // Draw centered label at 0.8 scale
+                poseTop.pushPose();
+                poseTop.scale(0.8f, 0.8f, 1.0f);
+
+                String text = contextMenuLabel;
+                int textWidth = (int) (font.width(text) * 0.8f);
+                int textHeight = (int) (font.lineHeight * 0.8f);
+
+                int centeredX = (int) ((contextMenuX + contextMenuWidth / 2.0f - textWidth / 2.0f) / 0.8f);
+                int centeredY = (int) ((contextMenuY + CONTEXT_MENU_HEIGHT / 2.0f - textHeight / 2.0f) / 0.8f);
+
+                graphics.drawString(font, text, centeredX, centeredY, hovered ? 0xFFFFFF : 0xCCCCCC, false);
+
+                // Pop inner (scale) and outer (z-translate) poses, and restore depth state
+                poseTop.popPose();
+                poseTop.popPose();
+                RenderSystem.enableDepthTest();
+            }
+
     public boolean mouseClicked(Screen screen, double mouseX, double mouseY, int button) {
+            // Handle context menu clicks first
+            if (contextMenuFolder != null || contextMenuBlock != null) {
+                boolean clickedOnMenu = mouseX >= contextMenuX && mouseX < contextMenuX + contextMenuWidth &&
+                                       mouseY >= contextMenuY && mouseY < contextMenuY + CONTEXT_MENU_HEIGHT;
+
+                if (clickedOnMenu && button == 0) {
+                    if (contextMenuFolder != null) {
+                        final BlockFolder toDelete = contextMenuFolder; // capture before clearing
+                        int itemCount = toDelete.blocks.size();
+                        String message = "Delete folder and all " + itemCount + " item" + (itemCount == 1 ? "" : "s") + " inside?";
+                        Minecraft.getInstance().setScreen(new ConfirmationDialog(
+                            screen,
+                            "Delete Folder?",
+                            message,
+                            () -> BlockEditorHistory.deleteFolder(toDelete)
+                        ));
+                    } else if (contextMenuBlock != null) {
+                        final CreatedBlockInfo toDelete = contextMenuBlock; // capture before clearing
+                        Minecraft.getInstance().setScreen(new ConfirmationDialog(
+                            screen,
+                            "Delete Item?",
+                            "Delete this item from history?",
+                            () -> BlockEditorHistory.deleteBlock(toDelete)
+                        ));
+                    }
+                    contextMenuFolder = null;
+                    contextMenuBlock = null;
+                    return true;
+                }
+
+                // Click outside menu - close it
+                contextMenuFolder = null;
+                contextMenuBlock = null;
+                return true;
+            }
+        
         List<DisplayItem> displayList = buildDisplayList();
         Bounds b = computeBounds(screen, computePanelWidth(screen));
 
@@ -525,10 +608,13 @@ public final class HistoryPanel {
 
         // Check compact/enlarged toggle (LEFT side)
         int compactToggleX = b.x + INNER_PADDING;
+        int compactToggleY = b.y - TITLE_BAR_HEIGHT + (TITLE_BAR_HEIGHT - TOGGLE_SIZE) / 2;
         boolean clickedCompactToggle = mouseX >= compactToggleX && mouseX < compactToggleX + TOGGLE_SIZE &&
-                                      mouseY >= toggleY && mouseY < toggleY + TOGGLE_SIZE;
+                                      mouseY >= compactToggleY && mouseY < compactToggleY + TOGGLE_SIZE;
         if (clickedCompactToggle) {
             compactView = !compactView;
+            // Save the preference
+            BlockEditorHistory.saveHistoryToFile();
             // clamp scroll offset to new visible range
             int panelWidth = computePanelWidth(screen);
             try {
@@ -591,18 +677,54 @@ public final class HistoryPanel {
 
         DisplayItem item = displayList.get(dataIndex);
         
-        // If it's a folder, toggle it
+        // If it's a folder
         if (item.isFolder) {
+            // Right-click opens context menu
+            if (button == 1) {
+                contextMenuFolder = item.folder;
+                contextMenuBlock = null;
+                contextMenuLabel = "Delete Folder";
+                // compute dynamic width at 0.8 scale with padding
+                int padding = 10;
+                int textW = (int) (Minecraft.getInstance().font.width(contextMenuLabel) * 0.8f);
+                contextMenuWidth = Math.max(40, textW + padding);
+                // clamp position to screen bounds
+                contextMenuX = (int) Math.min(mouseX, screen.width - contextMenuWidth - 5);
+                contextMenuY = (int) Math.min(mouseY, screen.height - CONTEXT_MENU_HEIGHT - 5);
+                return true;
+            }
+            // Left-click toggles expand/collapse
             item.folder.expanded = !item.folder.expanded;
             BlockEditorHistory.saveHistoryToFile();
             return true;
         }
 
-        // Otherwise, it's a block - pass to the click handler
+        // Otherwise, it's a block
+        if (button == 1 && item.block != null) {
+            // Right-click on a block opens delete item menu
+            contextMenuFolder = null;
+            contextMenuBlock = item.block;
+            contextMenuLabel = "Delete Item";
+            int padding = 10;
+            int textW = (int) (Minecraft.getInstance().font.width(contextMenuLabel) * 0.8f);
+            contextMenuWidth = Math.max(40, textW + padding);
+            contextMenuX = (int) Math.min(mouseX, screen.width - contextMenuWidth - 5);
+            contextMenuY = (int) Math.min(mouseY, screen.height - CONTEXT_MENU_HEIGHT - 5);
+            return true;
+        }
+
+        // Left click on block - pass to the click handler
         if (onItemClick != null && item.block != null) {
             onItemClick.accept(item.block, button);
         }
         return true;
+    }
+
+    // Public overlay render to be called at the very end by the parent screen
+    public void renderOverlay(GuiGraphics graphics, Font font, int mouseX, int mouseY) {
+        if (contextMenuFolder != null || contextMenuBlock != null) {
+            renderContextMenu(graphics, font, mouseX, mouseY);
+        }
     }
 
     public boolean mouseScrolled(Screen screen, double mouseX, double mouseY, double delta) {
@@ -854,7 +976,7 @@ public final class HistoryPanel {
             isDragging = false;
             draggedBlock = null;
             draggedFromFolder = null;
-            return true; // capture for potential drag sequence
+            return false; // don't consume: allow normal click handling to run
         }
         
         return false;

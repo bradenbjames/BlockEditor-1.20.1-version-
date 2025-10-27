@@ -103,9 +103,21 @@ public class BlockEditorHistory {
     }
 
     public static void deleteFolder(BlockFolder folder) {
-        // Move blocks back to main history
-        createdBlocksHistory.addAll(folder.blocks);
+        if (folder == null) return;
+        // Remove folder and all its items permanently
         folders.remove(folder);
+        // Do not move items back to history; they are deleted with the folder
+        saveHistoryToFile();
+    }
+
+    public static void deleteBlock(CreatedBlockInfo block) {
+        if (block == null) return;
+        // Remove from main history
+        createdBlocksHistory.remove(block);
+        // Remove from any folder that may contain it
+        for (BlockFolder f : folders) {
+            f.blocks.remove(block);
+        }
         saveHistoryToFile();
     }
 
@@ -132,6 +144,9 @@ public class BlockEditorHistory {
             }
             File historyFile = new File(configDir, "blockeditor_history.dat");
             CompoundTag rootTag = new CompoundTag();
+            
+            // Save UI preferences
+            rootTag.putBoolean("compactView", com.blockeditor.mod.client.gui.editor.HistoryPanel.isCompactView());
             
             // Save main history
             ListTag historyList = new ListTag();
@@ -187,6 +202,11 @@ public class BlockEditorHistory {
             CompoundTag rootTag = NbtIo.read(historyFile);
             if (rootTag == null) {
                 return;
+            }
+            
+            // Load UI preferences
+            if (rootTag.contains("compactView")) {
+                com.blockeditor.mod.client.gui.editor.HistoryPanel.setCompactView(rootTag.getBoolean("compactView"));
             }
             
             // Load main history

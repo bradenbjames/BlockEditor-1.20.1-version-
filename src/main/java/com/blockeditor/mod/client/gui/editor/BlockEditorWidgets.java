@@ -20,8 +20,16 @@ public final class BlockEditorWidgets {
         if (initialHex != null) {
             box.setValue(sanitizeHex(initialHex));
         }
-        // Allow only hex characters while typing
-        box.setFilter(s -> s != null && s.matches("[0-9A-Fa-f]{0,6}"));
+        // Allow only hex characters - but be permissive during typing/pasting
+        box.setFilter(s -> {
+            if (s == null) return false;
+            // Allow empty string
+            if (s.isEmpty()) return true;
+            // Remove any # prefix if present
+            String cleaned = s.startsWith("#") ? s.substring(1) : s;
+            // Allow hex characters up to 6 chars
+            return cleaned.matches("[0-9A-Fa-f]{0,6}");
+        });
         box.setHint(Component.literal("Hex (RRGGBB)"));
         return box;
     }
