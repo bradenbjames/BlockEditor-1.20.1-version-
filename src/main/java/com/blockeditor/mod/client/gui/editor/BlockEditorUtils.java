@@ -1,12 +1,12 @@
 package com.blockeditor.mod.client.gui.editor;
 
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.block.Block;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.util.Identifier;
+import net.minecraft.block.Block;
+
 
 public class BlockEditorUtils {
     public static boolean isFullSolidBlock(Block block) {
-        ResourceLocation key = ForgeRegistries.BLOCKS.getKey(block);
+        Identifier key = net.minecraft.registry.Registries.BLOCK.getId(block);
         String blockId = key != null ? key.getPath().toLowerCase() : "";
         String[] allowedBlocks = {
             "white_wool", "sand", "stone", "smooth_stone", "white_concrete", "oak_planks", "bamboo_planks",

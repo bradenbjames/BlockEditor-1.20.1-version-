@@ -1,9 +1,9 @@
 package com.blockeditor.mod.content;
 
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.block.SoundType;
-import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.sound.BlockSoundGroup;
+import net.minecraft.block.AbstractBlock;
+import net.minecraft.block.BlockState;
 
 /**
  * A DynamicBlock variant intended for transparent blocks like glass.
@@ -14,19 +14,14 @@ import net.minecraft.world.level.block.state.BlockState;
 public class TransparentDynamicBlock extends DynamicBlock {
 
     public TransparentDynamicBlock() {
-        super(BlockBehaviour.Properties.of()
-            .noOcclusion()
+        super(AbstractBlock.Settings.create()
+            .nonOpaque()
             .strength(0.3f)
-            .sound(SoundType.GLASS));
+            .sounds(BlockSoundGroup.GLASS));
     }
 
     @Override
-    public boolean propagatesSkylightDown(BlockState state, net.minecraft.world.level.BlockGetter level, BlockPos pos) {
-        return true;
-    }
-
-    @Override
-    public float getShadeBrightness(BlockState state, net.minecraft.world.level.BlockGetter level, BlockPos pos) {
+    public float getAmbientOcclusionLightLevel(BlockState state, net.minecraft.world.BlockView world, BlockPos pos) {
         return 1.0F;
     }
 

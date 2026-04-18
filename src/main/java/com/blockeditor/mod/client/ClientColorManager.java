@@ -1,8 +1,8 @@
 package com.blockeditor.mod.client;
 
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.Block;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.item.ItemStack;
+import net.minecraft.block.Block;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -44,7 +44,7 @@ public class ClientColorManager {
         
         Integer savedColor = getSavedColor(blockType);
         String savedMimicBlock = getSavedMimicBlock(blockType);
-        CompoundTag tag = new CompoundTag();
+        NbtCompound tag = new NbtCompound();
         if (savedColor != null) {
             tag.putString("Color", String.format("%06X", savedColor));
 
@@ -62,9 +62,9 @@ public class ClientColorManager {
         // Store custom name in NBT and set display name
         if (customName != null && !customName.isEmpty()) {
             tag.putString("CustomName", customName);
-            stack.setHoverName(net.minecraft.network.chat.Component.literal(customName));
+            stack.setCustomName(net.minecraft.text.Text.literal(customName));
         }
-        stack.setTag(tag);
+        stack.setNbt(tag);
 
         return stack;
     }
@@ -73,7 +73,7 @@ public class ClientColorManager {
      * Registers a new custom block creation and updates the corresponding user block
      */
     public static void registerCustomBlockCreation(ItemStack customBlock) {
-        CompoundTag tag = customBlock.getTag();
+        NbtCompound tag = customBlock.getNbt();
         if (tag == null) return;
         
         String mimicBlock = tag.getString("OriginalBlock");

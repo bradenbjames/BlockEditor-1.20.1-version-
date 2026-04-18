@@ -1,7 +1,7 @@
 package com.blockeditor.mod.client.gui.editor;
 
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.world.level.block.Block;
+import net.minecraft.registry.Registries;
+import net.minecraft.block.Block;
 
 public final class BlockAllowList {
     private BlockAllowList() {}
@@ -29,7 +29,7 @@ public final class BlockAllowList {
     };
 
     public static boolean isAllowed(Block block) {
-        String id = BuiltInRegistries.BLOCK.getKey(block).getPath().toLowerCase();
+        String id = Registries.BLOCK.getId(block).getPath().toLowerCase();
         for (String allow : ALLOWED) {
             if (id.equals(allow)) return true;
         }

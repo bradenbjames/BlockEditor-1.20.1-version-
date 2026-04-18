@@ -1,11 +1,11 @@
 package com.blockeditor.mod.client.gui.editor;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.DrawContext;
 
 public final class GuiRenderUtil {
     private GuiRenderUtil() {}
 
-    public static void drawRoundedRect(GuiGraphics graphics, int x, int y, int width, int height, int radius, int color) {
+    public static void drawRoundedRect(DrawContext graphics, int x, int y, int width, int height, int radius, int color) {
         radius = Math.min(radius, Math.min(width / 2, height / 2));
         if (radius <= 0) {
             graphics.fill(x, y, x + width, y + height, color);
@@ -34,7 +34,7 @@ public final class GuiRenderUtil {
     }
     
     // Draw a smooth pill shape (filled). Keeps perfectly straight top/bottom across the center segment.
-    public static void drawPillFilled(GuiGraphics graphics, int x, int y, int width, int height, int color) {
+    public static void drawPillFilled(DrawContext graphics, int x, int y, int width, int height, int color) {
         int r = height / 2;
         if (r <= 0) {
             graphics.fill(x, y, x + width, y + height, color);
@@ -70,7 +70,7 @@ public final class GuiRenderUtil {
     }
 
     // 1px outline for a pill. Drawn after the fill for a crisp border with straight top/bottom edges.
-    public static void drawPillOutline(GuiGraphics graphics, int x, int y, int width, int height, int color) {
+    public static void drawPillOutline(DrawContext graphics, int x, int y, int width, int height, int color) {
         int r = height / 2;
         if (r <= 0) return;
 
@@ -116,13 +116,13 @@ public final class GuiRenderUtil {
     }
 
     // Backwards-compatible: draw a filled pill (used by older call sites)
-    public static void drawPill(GuiGraphics graphics, int x, int y, int width, int height, int color) {
+    public static void drawPill(DrawContext graphics, int x, int y, int width, int height, int color) {
         drawPillFilled(graphics, x, y, width, height, color);
     }
 
     // Draw a tiny 7x7 pixel arrow icon at (x,y). If down==true, draws a down triangle; otherwise right triangle.
     // This avoids font glyph inconsistencies so arrows are always the same size.
-    public static void drawSmallArrow(GuiGraphics g, int x, int y, boolean down, int color) {
+    public static void drawSmallArrow(DrawContext g, int x, int y, boolean down, int color) {
         // 7x7 bitmap masks (bit 6 is leftmost). 1 = pixel on
         final int[] RIGHT = new int[]{
             0b0001000,

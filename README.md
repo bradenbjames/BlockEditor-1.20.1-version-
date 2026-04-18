@@ -2,7 +2,8 @@
 
 [![Minecraft](https://img.shields.io/badge/Minecraft-1.20.1-brightgreen.svg)](https://minecraft.net/)
 [![Version](https://img.shields.io/badge/Version-1.0.4-informational.svg)](#)
-[![Forge](https://img.shields.io/badge/Forge-47.3.0+-orange.svg)](https://files.minecraftforge.net/)
+[![Fabric](https://img.shields.io/badge/Fabric_Loader-0.19.2+-orange.svg)](https://fabricmc.net/)
+[![Fabric API](https://img.shields.io/badge/Fabric_API-0.92.2+-yellow.svg)](https://modrinth.com/mod/fabric-api)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 [View the CurseForge page description](./CURSEFORGE.md)
@@ -143,28 +144,36 @@ Create and customize blocks with any color, texture, and **custom names** in Min
 Use your custom-named blocks in any WorldEdit command:
 
 ```bash
-# Basic usage with custom names
+# Basic usage with custom names (bare names work!)
+/bset wall
+/breplace stone floor  
+/bset accent
+
+# Also works with be: prefix
 /bset be:wall
-/breplace stone be:floor  
-/bset be:accent
+/breplace stone be:floor
 
 # Complex building operations
 //copy
 //paste
-/bset 50% be:wall,30% be:floor,20% be:accent
 
 # Selection and replacement
 //sel cuboid
 //pos1
 //pos2
-/breplace minecraft:stone be:custom_stone
+/breplace minecraft:stone custom_stone
 ```
 
 **Pro Tip**: Create blocks with descriptive names like "red_brick", "blue_roof", "green_wall" for easy WorldEdit use!
 
 ### 📋 **Commands**
-- `/be clear` - Clear all custom blocks from registry
-- **WorldEdit Commands**: Use `/bset be:your_block_name` and `/breplace from_block be:your_block_name`
+- `/blockeditor list` - List all custom block name mappings
+- `/blockeditor test <name>` - Check if a custom block name resolves correctly
+- `/blockeditor clear` - Info on clearing the registry
+- `/bset <pattern>` - WorldEdit set using custom block names (e.g., `/bset blue`)
+- `/breplace <from> <to>` - WorldEdit replace using custom block names (e.g., `/breplace stone blue`)
+
+**Note**: With `/bset` and `/breplace`, you can use bare custom names directly — no `be:` prefix needed!
 
 ## 🎨 **Color & Naming System**
 
@@ -189,7 +198,7 @@ Use your custom-named blocks in any WorldEdit command:
 ## 🔧 **Technical Specifications**
 
 - **Minecraft Version**: 1.20.1
-- **Mod Loader**: Forge 47.3.0+
+- **Mod Loader**: Fabric (Loader 0.19.2+, Fabric API 0.92.2+)
 - **Side**: Client & Server (works in multiplayer)
 - **Dependencies**: None required (WorldEdit optional but recommended)
 - **Performance**: Optimized for large builds and multiplayer servers
@@ -197,10 +206,11 @@ Use your custom-named blocks in any WorldEdit command:
 ## 🚀 **Installation**
 
 1. **Download**: Get latest release from [Releases](../../releases)
-2. **Forge**: Install Minecraft Forge 47.3.0+ for MC 1.20.1
-3. **Install**: Place `.jar` in your `mods` folder
-4. **Optional**: Install WorldEdit for enhanced building features
-5. **Launch**: Start Minecraft with Forge profile
+2. **Fabric**: Install [Fabric Loader](https://fabricmc.net/use/installer/) 0.19.2+ for MC 1.20.1
+3. **Fabric API**: Download [Fabric API](https://modrinth.com/mod/fabric-api) and place it in your `mods` folder
+4. **Install**: Place `be-1.0.4.jar` in your `mods` folder
+5. **Optional**: Install WorldEdit for Fabric for enhanced building features
+6. **Launch**: Start Minecraft with your Fabric profile
 
 ## 💡 **Pro Building Tips**
 
@@ -280,7 +290,7 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 ## 🙏 **Acknowledgments**
 
-- Built for Minecraft 1.20.1 with Forge
+- Built for Minecraft 1.20.1 with Fabric
 - WorldEdit integration for enhanced building
 - Community feedback for feature improvements
 

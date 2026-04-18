@@ -1,14 +1,14 @@
 package com.blockeditor.mod.client.gui.editor;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.item.ItemStack;
 
 public final class InventoryHelper {
     private InventoryHelper() {}
 
     public static void findAndEquipBlock(BlockEditorHistory.CreatedBlockInfo blockInfo) {
-        Minecraft minecraft = Minecraft.getInstance();
+        MinecraftClient minecraft = MinecraftClient.getInstance();
         if (minecraft.player == null) {
             return;
         }
@@ -16,14 +16,14 @@ public final class InventoryHelper {
         String targetColor = blockInfo.hexColor.toUpperCase();
         String targetCustomName = blockInfo.blockName;
 
-        net.minecraft.world.entity.player.Inventory inventory = minecraft.player.getInventory();
+        net.minecraft.entity.player.PlayerInventory inventory = minecraft.player.getInventory();
 
         int foundSlot = -1;
-        for (int slot = 0; slot < inventory.getContainerSize(); slot++) {
-            ItemStack stack = inventory.getItem(slot);
+        for (int slot = 0; slot < inventory.size(); slot++) {
+            ItemStack stack = inventory.getStack(slot);
             if (stack.isEmpty()) continue;
 
-            CompoundTag tag = stack.getTag();
+            NbtCompound tag = stack.getNbt();
             if (tag != null && tag.contains("Color") && tag.contains("CustomName")) {
                 String stackColor = tag.getString("Color").toUpperCase();
                 String stackCustomName = tag.getString("CustomName");
@@ -38,25 +38,25 @@ public final class InventoryHelper {
         if (foundSlot != -1) {
             // If the item exists in the hotbar, just select it.
             if (foundSlot < 9) {
-                inventory.selected = foundSlot;
-                minecraft.player.displayClientMessage(
-                    net.minecraft.network.chat.Component.literal("§a✓ Equipped: §f" + targetCustomName + " §7(#" + targetColor + ")"),
+                inventory.selectedSlot = foundSlot;
+                minecraft.player.sendMessage(
+                    net.minecraft.text.Text.literal("§a✓ Equipped: §f" + targetCustomName + " §7(#" + targetColor + ")"),
                     true
                 );
-                if (minecraft.screen != null) {
-                    minecraft.screen.onClose();
+                if (minecraft.currentScreen != null) {
+                    minecraft.currentScreen.close();
                 }
                 return;
             }
             // Found in main inventory: request server-authoritative move into the hotbar (swaps if hotbar is full)
-            if (minecraft.gameMode != null) {
-                minecraft.gameMode.handlePickItem(foundSlot);
-                minecraft.player.displayClientMessage(
-                    net.minecraft.network.chat.Component.literal("§a✓ Equipped from inventory: §f" + targetCustomName + " §7(#" + targetColor + ")"),
+            if (minecraft.interactionManager != null) {
+                minecraft.interactionManager.pickFromInventory(foundSlot);
+                minecraft.player.sendMessage(
+                    net.minecraft.text.Text.literal("§a✓ Equipped from inventory: §f" + targetCustomName + " §7(#" + targetColor + ")"),
                     true
                 );
-                if (minecraft.screen != null) {
-                    minecraft.screen.onClose();
+                if (minecraft.currentScreen != null) {
+                    minecraft.currentScreen.close();
                 }
                 return;
             }
@@ -66,19 +66,19 @@ public final class InventoryHelper {
         // Not found in hotbar or gameMode unavailable: request server to recreate and give the item based on history entry
         try {
             // Determine mimic block id and dynamic block type id
-            var mimicKey = net.minecraftforge.registries.ForgeRegistries.BLOCKS.getKey(blockInfo.originalBlock);
+            var mimicKey = net.minecraft.registry.Registries.BLOCK.getId(blockInfo.originalBlock);
             if (mimicKey == null) {
-                minecraft.player.displayClientMessage(
-                    net.minecraft.network.chat.Component.literal("§cInternal error: Missing block id for history entry"),
+                minecraft.player.sendMessage(
+                    net.minecraft.text.Text.literal("§cInternal error: Missing block id for history entry"),
                     true
                 );
                 return;
             }
             var dynamicBlock = TextureBlockResolver.resolve(blockInfo.originalBlock);
-            var dynamicKey = net.minecraftforge.registries.ForgeRegistries.BLOCKS.getKey(dynamicBlock);
+            var dynamicKey = net.minecraft.registry.Registries.BLOCK.getId(dynamicBlock);
             if (dynamicKey == null) {
-                minecraft.player.displayClientMessage(
-                    net.minecraft.network.chat.Component.literal("§cInternal error: Could not resolve block type"),
+                minecraft.player.sendMessage(
+                    net.minecraft.text.Text.literal("§cInternal error: Could not resolve block type"),
                     true
                 );
                 return;
@@ -87,7 +87,7 @@ public final class InventoryHelper {
             // Only treat blockInfo.blockName as a custom name if it differs from the auto-generated default
             String computedDefaultName;
             {
-                var rl = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(blockInfo.originalBlock);
+                var rl = net.minecraft.registry.Registries.BLOCK.getId(blockInfo.originalBlock);
                 String path = rl.getPath();
                 // Mirror BlockEditorHistory default naming
                 if (path.startsWith("dynamic_block_")) {
@@ -113,30 +113,30 @@ public final class InventoryHelper {
                 )
             );
 
-            minecraft.player.displayClientMessage(
-                net.minecraft.network.chat.Component.literal("§7Requesting picked block from server..."),
+            minecraft.player.sendMessage(
+                net.minecraft.text.Text.literal("§7Requesting picked block from server..."),
                 true
             );
 
             // Optionally close the screen so the item appears in hand
-            if (minecraft.screen != null) {
-                minecraft.screen.onClose();
+            if (minecraft.currentScreen != null) {
+                minecraft.currentScreen.close();
             }
         } catch (Exception ex) {
-            minecraft.player.displayClientMessage(
-                net.minecraft.network.chat.Component.literal("§cFailed to request block from server: " + ex.getMessage()),
+            minecraft.player.sendMessage(
+                net.minecraft.text.Text.literal("§cFailed to request block from server: " + ex.getMessage()),
                 true
             );
         }
     }
 
-    private static int findBestHotbarSlot(net.minecraft.world.entity.player.Inventory inventory) {
-        int currentSlot = inventory.selected;
-        if (inventory.getItem(currentSlot).isEmpty()) {
+    private static int findBestHotbarSlot(net.minecraft.entity.player.PlayerInventory inventory) {
+        int currentSlot = inventory.selectedSlot;
+        if (inventory.getStack(currentSlot).isEmpty()) {
             return currentSlot;
         }
         for (int slot = 0; slot < 9; slot++) {
-            if (inventory.getItem(slot).isEmpty()) {
+            if (inventory.getStack(slot).isEmpty()) {
                 return slot;
             }
         }

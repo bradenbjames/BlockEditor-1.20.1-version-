@@ -2,14 +2,12 @@ package com.blockeditor.mod.integration;
 
 import com.blockeditor.mod.BlockEditorMod;
 import com.blockeditor.mod.registry.UserBlockRegistry;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraftforge.event.server.ServerStartedEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.registry.Registries;
+import net.minecraft.util.Identifier;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.world.World;
+import net.minecraft.block.Block;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -17,19 +15,20 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * WorldEdit Integration that creates command aliases for custom blocks
- * Since we can't modify the block registry after registration, we'll use a different approach
+ * WorldEdit Integration that creates command aliases for custom blocks.
+ * Register callbacks in BlockEditorMod.onInitialize().
  */
-@Mod.EventBusSubscriber(modid = BlockEditorMod.MOD_ID)
 public class WorldEditBlockAliasManager {
-    
+
     private static final Logger LOGGER = LogManager.getLogger();
     private static final Map<String, String> customAliases = new ConcurrentHashMap<>();
-    
-    @SubscribeEvent
-    public static void onServerStarted(ServerStartedEvent event) {
+
+    /**
+     * Called from ServerLifecycleEvents.SERVER_STARTED callback.
+     */
+    public static void onServerStarted(net.minecraft.server.MinecraftServer server) {
         LOGGER.info("WorldEdit Block Alias Manager: Server started, loading existing custom block mappings");
-        loadExistingMappings(event.getServer().getLevel(Level.OVERWORLD));
+        loadExistingMappings(server.getWorld(World.OVERWORLD));
     }
     
     /**
@@ -38,10 +37,10 @@ public class WorldEditBlockAliasManager {
     public static void registerCustomBlockAlias(String customName, String internalIdentifier) {
         try {
             String actualBlockName = "u_" + internalIdentifier;
-            ResourceLocation actualId = new ResourceLocation(BlockEditorMod.MOD_ID, actualBlockName);
+            Identifier actualId = new Identifier(BlockEditorMod.MOD_ID, actualBlockName);
             
             // Verify the actual block exists
-            Block actualBlock = ForgeRegistries.BLOCKS.getValue(actualId);
+            Block actualBlock = Registries.BLOCK.get(actualId);
             if (actualBlock != null) {
                 customAliases.put(customName, actualBlockName);
                 LOGGER.info("Stored custom block mapping: {} -> {}", customName, actualBlockName);
@@ -101,7 +100,7 @@ public class WorldEditBlockAliasManager {
     /**
      * Loads existing custom name mappings from the server's UserBlockRegistry
      */
-    private static void loadExistingMappings(ServerLevel level) {
+    private static void loadExistingMappings(ServerWorld level) {
         if (level == null) return;
         
         try {

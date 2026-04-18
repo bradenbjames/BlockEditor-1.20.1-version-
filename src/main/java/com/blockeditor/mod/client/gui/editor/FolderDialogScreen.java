@@ -1,11 +1,11 @@
 package com.blockeditor.mod.client.gui.editor;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.network.chat.Component;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.gui.widget.TextFieldWidget;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.text.Text;
 
 import java.util.Arrays;
 import java.util.List;
@@ -18,10 +18,10 @@ public class FolderDialogScreen extends Screen {
     private final Screen parent;
     private final BiConsumer<String, Integer> onConfirm;
 
-    private EditBox nameBox;
-    private EditBox colorBox; // hex RRGGBB
-    private Button createBtn;
-    private Button cancelBtn;
+    private TextFieldWidget nameBox;
+    private TextFieldWidget colorBox; // hex RRGGBB
+    private ButtonWidget createBtn;
+    private ButtonWidget cancelBtn;
 
     // Expanded preset palette (48 colors) chosen to be visually distinct across hue/saturation
     private final List<Integer> presets = Arrays.asList(
@@ -47,7 +47,7 @@ public class FolderDialogScreen extends Screen {
     private int dialogHeight = 220;
 
     public FolderDialogScreen(Screen parent, BiConsumer<String, Integer> onConfirm) {
-        super(Component.literal("Create Folder"));
+        super(Text.literal("Create Folder"));
         this.parent = parent;
         this.onConfirm = onConfirm;
     }
@@ -59,29 +59,29 @@ public class FolderDialogScreen extends Screen {
     int y = (this.height - dialogHeight) / 2;
 
     // Name input (tighter vertical spacing to free room for palette)
-    nameBox = new EditBox(this.font, x + 16, y + 44, dialogWidth - 32, 20, Component.literal("Folder Name"));
+    nameBox = new TextFieldWidget(this.textRenderer, x + 16, y + 44, dialogWidth - 32, 20, Text.literal("Folder Name"));
         nameBox.setMaxLength(48);
-        nameBox.setValue("");
-        this.addRenderableWidget(nameBox);
+        nameBox.setText("");
+        this.addDrawableChild(nameBox);
 
         // Color input (hex)
-    colorBox = new EditBox(this.font, x + 16, y + 90, 110, 20, Component.literal("RRGGBB"));
+    colorBox = new TextFieldWidget(this.textRenderer, x + 16, y + 90, 110, 20, Text.literal("RRGGBB"));
         colorBox.setMaxLength(6);
-        colorBox.setValue(String.format("%06X", presets.get(0)));
-        this.addRenderableWidget(colorBox);
+        colorBox.setText(String.format("%06X", presets.get(0)));
+        this.addDrawableChild(colorBox);
 
         int btnWidth = 90;
         int btnY = y + dialogHeight - 28;
-        createBtn = Button.builder(Component.literal("Create"), b -> onCreate())
-            .pos(x + dialogWidth - btnWidth - 16, btnY)
+        createBtn = ButtonWidget.builder(Text.literal("Create"), b -> onCreate())
+            .position(x + dialogWidth - btnWidth - 16, btnY)
             .size(btnWidth, 20)
             .build();
-        cancelBtn = Button.builder(Component.literal("Cancel"), b -> onCancel())
-            .pos(x + 16, btnY)
+        cancelBtn = ButtonWidget.builder(Text.literal("Cancel"), b -> onCancel())
+            .position(x + 16, btnY)
             .size(btnWidth, 20)
             .build();
-        this.addRenderableWidget(createBtn);
-        this.addRenderableWidget(cancelBtn);
+        this.addDrawableChild(createBtn);
+        this.addDrawableChild(cancelBtn);
 
     // Palette position (grid under color input, full-width content area)
     paletteX = x + 16;
@@ -89,8 +89,8 @@ public class FolderDialogScreen extends Screen {
     }
 
     private void onCreate() {
-        String name = nameBox != null ? nameBox.getValue().trim() : "";
-        String hex = colorBox != null ? colorBox.getValue().trim().toUpperCase() : "66CCFF";
+        String name = nameBox != null ? nameBox.getText().trim() : "";
+        String hex = colorBox != null ? colorBox.getText().trim().toUpperCase() : "66CCFF";
         hex = hex.replaceAll("[^0-9A-F]", "");
         if (hex.length() != 6) {
             hex = "66CCFF";
@@ -99,15 +99,15 @@ public class FolderDialogScreen extends Screen {
         if (onConfirm != null) {
             onConfirm.accept(name, rgb);
         }
-        Minecraft.getInstance().setScreen(parent);
+        MinecraftClient.getInstance().setScreen(parent);
     }
 
     private void onCancel() {
-        Minecraft.getInstance().setScreen(parent);
+        MinecraftClient.getInstance().setScreen(parent);
     }
 
     @Override
-    public boolean isPauseScreen() {
+    public boolean shouldPause() {
         return false;
     }
 
@@ -116,13 +116,13 @@ public class FolderDialogScreen extends Screen {
         super.tick();
         if (nameBox != null) nameBox.tick();
         if (colorBox != null) {
-            String v = colorBox.getValue().toUpperCase().replaceAll("[^0-9A-F]", "");
-            if (!v.equals(colorBox.getValue())) colorBox.setValue(v);
+            String v = colorBox.getText().toUpperCase().replaceAll("[^0-9A-F]", "");
+            if (!v.equals(colorBox.getText())) colorBox.setText(v);
         }
     }
 
     @Override
-    public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+    public void render(DrawContext g, int mouseX, int mouseY, float partialTick) {
         // Dim background
         g.fill(0, 0, this.width, this.height, 0xA0000000);
 
@@ -132,12 +132,12 @@ public class FolderDialogScreen extends Screen {
         // Panel
         g.fill(x, y, x + dialogWidth, y + dialogHeight, 0xFF2B2B2B);
         g.fill(x, y, x + dialogWidth, y + 22, 0xFF3B3B3B);
-        g.drawString(this.font, this.title, x + 10, y + 7, 0xFFFFFF, false);
+        g.drawText(this.textRenderer, this.title, x + 10, y + 7, 0xFFFFFF, false);
 
     // Labels (reduced spacing to keep palette above buttons)
-    g.drawString(this.font, Component.literal("Name:"), x + 16, y + 28, 0xCCCCCC, false);
-    g.drawString(this.font, Component.literal("Color (hex):"), x + 16, y + 74, 0xCCCCCC, false);
-    g.drawString(this.font, Component.literal("Palette:"), x + 16, y + 116, 0xCCCCCC, false);
+    g.drawText(this.textRenderer, Text.literal("Name:"), x + 16, y + 28, 0xCCCCCC, false);
+    g.drawText(this.textRenderer, Text.literal("Color (hex):"), x + 16, y + 74, 0xCCCCCC, false);
+    g.drawText(this.textRenderer, Text.literal("Palette:"), x + 16, y + 116, 0xCCCCCC, false);
 
         // Draw palette as a grid that wraps within the dialog width
         int contentLeft = x + 16;
@@ -188,7 +188,7 @@ public class FolderDialogScreen extends Screen {
             if (mouseX >= cx && mouseX < cx + swatchSize && mouseY >= cy && mouseY < cy + swatchSize) {
                 int rgb = presets.get(i) & 0xFFFFFF;
                 if (colorBox != null) {
-                    colorBox.setValue(String.format("%06X", rgb));
+                    colorBox.setText(String.format("%06X", rgb));
                 }
                 return true;
             }

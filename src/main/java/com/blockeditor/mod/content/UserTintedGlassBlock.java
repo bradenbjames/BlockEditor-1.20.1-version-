@@ -2,14 +2,14 @@ package com.blockeditor.mod.content;
 
 import com.blockeditor.mod.registry.UserBlockRegistry;
 import com.mojang.logging.LogUtils;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.registry.Registries;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.util.Identifier;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.world.World;
+import net.minecraft.block.BlockState;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -31,13 +31,13 @@ public class UserTintedGlassBlock extends TintedDynamicBlock implements IUserBlo
     }
 
     @Override
-    public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
+    public void onPlaced(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
         // Call the parent method first
-        super.setPlacedBy(level, pos, state, placer, stack);
+        super.onPlaced(world, pos, state, placer, stack);
 
         // Then handle UserBlock-specific logic (copied from UserBlock)
-        if (!level.isClientSide && level.getBlockEntity(pos) instanceof DynamicBlockEntity blockEntity) {
-            CompoundTag tag = stack.getTag();
+        if (!world.isClient && world.getBlockEntity(pos) instanceof DynamicBlockEntity blockEntity) {
+            NbtCompound tag = stack.getNbt();
 
             if (tag != null && tag.contains("Color")) {
                 // NBT color data was provided (from WorldEdit command)
@@ -65,11 +65,11 @@ public class UserTintedGlassBlock extends TintedDynamicBlock implements IUserBlo
 
             // No NBT color data, try to load from user block registry
             LOGGER.info("UserTintedGlassBlock: No NBT color data found, trying registry lookup");
-            if (level instanceof net.minecraft.server.level.ServerLevel serverLevel) {
+            if (world instanceof net.minecraft.server.world.ServerWorld serverLevel) {
                 UserBlockRegistry registry = UserBlockRegistry.get(serverLevel);
 
                 // Extract the number from this block's registry name
-                ResourceLocation blockId = BuiltInRegistries.BLOCK.getKey(this);
+                Identifier blockId = Registries.BLOCK.getId(this);
                 String blockName = blockId.getPath(); // e.g., "u_tinted_glass1"
                 LOGGER.info("UserTintedGlassBlock: Block registry name: {}", blockName);
 
@@ -134,16 +134,16 @@ public class UserTintedGlassBlock extends TintedDynamicBlock implements IUserBlo
     }
 
     @Override
-    public ItemStack getCloneItemStack(net.minecraft.world.level.BlockGetter level, BlockPos pos, BlockState state) {
-        if (level.getBlockEntity(pos) instanceof DynamicBlockEntity blockEntity) {
+    public ItemStack getPickStack(net.minecraft.world.BlockView world, BlockPos pos, BlockState state) {
+        if (world.getBlockEntity(pos) instanceof DynamicBlockEntity blockEntity) {
             // Create the item stack with the correct block
             ItemStack stack = new ItemStack(this);
 
             // Create NBT data with the block entity's color and mimic block
-            CompoundTag tag = new CompoundTag();
+            NbtCompound tag = new NbtCompound();
             tag.putString("Color", String.format("%06X", blockEntity.getColor()));
             tag.putString("OriginalBlock", blockEntity.getMimicBlock());
-            stack.setTag(tag);
+            stack.setNbt(tag);
 
             return stack;
         }

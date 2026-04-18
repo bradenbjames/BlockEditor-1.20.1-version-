@@ -1,10 +1,10 @@
 package com.blockeditor.mod.client.gui.editor;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.network.chat.Component;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.text.Text;
 
 /**
  * Simple confirmation dialog for destructive actions.
@@ -14,11 +14,11 @@ public class ConfirmationDialog extends Screen {
     private final String message;
     private final Runnable onConfirm;
     
-    private Button yesButton;
-    private Button noButton;
+    private ButtonWidget yesButton;
+    private ButtonWidget noButton;
 
     public ConfirmationDialog(Screen parent, String title, String message, Runnable onConfirm) {
-        super(Component.literal(title));
+        super(Text.literal(title));
         this.parent = parent;
         this.message = message;
         this.onConfirm = onConfirm;
@@ -41,38 +41,38 @@ public class ConfirmationDialog extends Screen {
         int totalButtonWidth = btnWidth * 2 + spacing;
         int buttonsStartX = x + (dialogWidth - totalButtonWidth) / 2;
         
-        yesButton = Button.builder(Component.literal("Yes"), b -> onYes())
-            .pos(buttonsStartX, btnY)
+        yesButton = ButtonWidget.builder(Text.literal("Yes"), b -> onYes())
+            .position(buttonsStartX, btnY)
             .size(btnWidth, 20)
             .build();
         
-        noButton = Button.builder(Component.literal("No"), b -> onNo())
-            .pos(buttonsStartX + btnWidth + spacing, btnY)
+        noButton = ButtonWidget.builder(Text.literal("No"), b -> onNo())
+            .position(buttonsStartX + btnWidth + spacing, btnY)
             .size(btnWidth, 20)
             .build();
         
-        this.addRenderableWidget(yesButton);
-        this.addRenderableWidget(noButton);
+        this.addDrawableChild(yesButton);
+        this.addDrawableChild(noButton);
     }
 
     private void onYes() {
         if (onConfirm != null) {
             onConfirm.run();
         }
-        Minecraft.getInstance().setScreen(parent);
+        MinecraftClient.getInstance().setScreen(parent);
     }
 
     private void onNo() {
-        Minecraft.getInstance().setScreen(parent);
+        MinecraftClient.getInstance().setScreen(parent);
     }
 
     @Override
-    public boolean isPauseScreen() {
+    public boolean shouldPause() {
         return false;
     }
 
     @Override
-    public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+    public void render(DrawContext g, int mouseX, int mouseY, float partialTick) {
         // Dim background
         g.fill(0, 0, this.width, this.height, 0xA0000000);
 
@@ -84,14 +84,14 @@ public class ConfirmationDialog extends Screen {
         // Panel
         g.fill(x, y, x + dialogWidth, y + dialogHeight, 0xFF2B2B2B);
         g.fill(x, y, x + dialogWidth, y + 22, 0xFF3B3B3B);
-        g.drawString(this.font, this.title, x + 10, y + 7, 0xFFFFFF, false);
+        g.drawText(this.textRenderer, this.title, x + 10, y + 7, 0xFFFFFF, false);
 
         // Message
         int messageY = y + 35;
         // Word wrap for long messages
-        var lines = this.font.split(Component.literal(message), dialogWidth - 32);
+        var lines = this.textRenderer.wrapLines(Text.literal(message), dialogWidth - 32);
         for (var line : lines) {
-            g.drawString(this.font, line, x + 16, messageY, 0xCCCCCC, false);
+            g.drawText(this.textRenderer, line, x + 16, messageY, 0xCCCCCC, false);
             messageY += 10;
         }
 

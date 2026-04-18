@@ -2,47 +2,48 @@ package com.blockeditor.mod.content;
 
 import com.blockeditor.mod.client.ClientColorManager;
 import com.mojang.logging.LogUtils;
-import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.context.UseOnContext;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.util.ActionResult;
+import net.minecraft.item.BlockItem;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemUsageContext;
+import net.minecraft.world.World;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class DynamicBlockItem extends BlockItem {
     private static final Logger LOGGER = LogUtils.getLogger();
 
-    public DynamicBlockItem(Block block, Properties properties) {
-        super(block, properties);
+    public DynamicBlockItem(Block block, Item.Settings settings) {
+        super(block, settings);
     }
 
     @Override
-    public InteractionResult useOn(UseOnContext context) {
-        LOGGER.info("DynamicBlockItem.useOn called - isClient: {}", context.getLevel().isClientSide);
+    public ActionResult useOnBlock(ItemUsageContext context) {
+        LOGGER.info("DynamicBlockItem.useOnBlock called - isClient: {}", context.getWorld().isClient);
         
         // Register custom block data on client side when placing
-        if (context.getLevel().isClientSide) {
-            ClientColorManager.registerCustomBlockCreation(context.getItemInHand());
+        if (context.getWorld().isClient) {
+            ClientColorManager.registerCustomBlockCreation(context.getStack());
         }
         
-        InteractionResult result = super.useOn(context);
-        LOGGER.info("DynamicBlockItem.useOn result: {} - isClient: {}", result, context.getLevel().isClientSide);
+        ActionResult result = super.useOnBlock(context);
+        LOGGER.info("DynamicBlockItem.useOn result: {} - isClient: {}", result, context.getWorld().isClient);
         return result;
     }
 
     @Override
-    protected boolean updateCustomBlockEntityTag(BlockPos pos, Level level, @Nullable net.minecraft.world.entity.player.Player player,
+    protected boolean postPlacement(BlockPos pos, World level, @Nullable net.minecraft.entity.player.PlayerEntity player,
                                                   ItemStack stack, BlockState state) {
-        boolean result = super.updateCustomBlockEntityTag(pos, level, player, stack, state);
+        boolean result = super.postPlacement(pos, level, player, stack, state);
 
         // Transfer NBT data from item to block entity, even in creative mode
         if (level.getBlockEntity(pos) instanceof DynamicBlockEntity blockEntity) {
-            CompoundTag tag = stack.getTag();
+            NbtCompound tag = stack.getNbt();
             if (tag != null) {
                 // Read color from NBT
                 if (tag.contains("Color")) {

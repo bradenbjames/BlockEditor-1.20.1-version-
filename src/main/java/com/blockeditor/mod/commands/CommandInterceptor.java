@@ -1,62 +1,17 @@
 package com.blockeditor.mod.commands;
 
 import com.blockeditor.mod.worldedit.BlockNameResolver;
-import net.minecraftforge.event.CommandEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 
 /**
- * Intercepts commands and replaces custom block names with actual registry names
- * This allows WorldEdit commands like //set be:customname to work
+ * Utility class that replaces custom block names with actual registry names in commands.
+ * This allows WorldEdit commands like //set be:customname to work.
+ * In Fabric, command interception is handled via chat message events in
+ * integration/WorldEditIntegration rather than a CommandEvent (which doesn't exist).
  */
-@Mod.EventBusSubscriber(modid = "be")
 public class CommandInterceptor {
-    
-    static {
-        System.out.println("COMMAND INTERCEPTOR: Class loaded and registered!");
-    }
-    
-    @SubscribeEvent
-    public static void onCommand(CommandEvent event) {
-        String command = event.getParseResults().getReader().getString();
-        
-        // Debug: Always log commands that start with //set
-        if (command.startsWith("//set")) {
-            System.out.println("COMMAND INTERCEPTOR: Detected //set command: " + command);
-        }
-        
-        // Check if this is a command that might contain block names
-        if (containsBlockReference(command)) {
-            System.out.println("COMMAND INTERCEPTOR: Command contains block reference: " + command);
-            String modifiedCommand = replaceCustomBlockNames(command);
-            System.out.println("COMMAND INTERCEPTOR: Original: " + command);
-            System.out.println("COMMAND INTERCEPTOR: Modified: " + modifiedCommand);
-            if (!modifiedCommand.equals(command)) {
-                // Command was modified, we need to re-parse it
-                System.out.println("COMMAND INTERCEPTOR: *** COMMAND CHANGED - INTERCEPTING ***");
-                System.out.println("  Original: " + command);
-                System.out.println("  Modified: " + modifiedCommand);
-                
-                // Cancel the original command and execute the modified one
-                event.setCanceled(true);
-                
-                // Execute the modified command
-                try {
-                    event.getParseResults().getContext().getSource().getServer()
-                        .getCommands().performPrefixedCommand(
-                            event.getParseResults().getContext().getSource(), 
-                            modifiedCommand
-                        );
-                } catch (Exception e) {
-                    System.err.println("Failed to execute modified command: " + e.getMessage());
-                }
-            }
-        }
-    }
-    
-    private static boolean containsBlockReference(String command) {
-        // Check for common commands that use block names
-        return command.contains("//set ") || 
+
+    public static boolean containsBlockReference(String command) {
+        return command.contains("//set ") ||
                command.contains("//replace ") ||
                command.contains("//walls ") ||
                command.contains("//faces ") ||
@@ -64,35 +19,29 @@ public class CommandInterceptor {
                command.contains("/fill ") ||
                command.contains("be:");
     }
-    
-    private static String replaceCustomBlockNames(String command) {
-        String modifiedCommand = command;
-        
-        // Find all "be:customname" patterns and replace them
+
+    public static String replaceCustomBlockNames(String command) {
         java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("be:([a-zA-Z0-9_]+)");
         java.util.regex.Matcher matcher = pattern.matcher(command);
-        
+
         StringBuffer sb = new StringBuffer();
         while (matcher.find()) {
             String customName = matcher.group(1);
-            
-            // Skip if it's already an internal name (starts with u_)
+
             if (customName.startsWith("u_")) {
                 matcher.appendReplacement(sb, matcher.group(0));
                 continue;
             }
-            
+
             String registryName = BlockNameResolver.getRegistryName(customName);
             if (registryName != null) {
-                // Replace be:customname with the actual registry name
                 matcher.appendReplacement(sb, registryName);
             } else {
-                // Keep original if no mapping found
                 matcher.appendReplacement(sb, matcher.group(0));
             }
         }
         matcher.appendTail(sb);
-        
+
         return sb.toString();
     }
 }

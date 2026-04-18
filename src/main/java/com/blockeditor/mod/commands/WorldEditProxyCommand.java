@@ -4,11 +4,11 @@ import com.blockeditor.mod.registry.UserBlockRegistry;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.Commands;
-import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.server.command.CommandManager;
+import net.minecraft.text.Text;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.server.network.ServerPlayerEntity;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -20,99 +20,117 @@ public class WorldEditProxyCommand {
     private static final Logger LOGGER = LogManager.getLogger();
     private static final Pattern CUSTOM_BLOCK_PATTERN = Pattern.compile("\\bbe:([a-zA-Z0-9_]+)\\b");
     
-    public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
+    public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         // Register bset command as proxy for //set
-        dispatcher.register(Commands.literal("bset")
-            .then(Commands.argument("pattern", StringArgumentType.greedyString())
+        dispatcher.register(CommandManager.literal("bset")
+            .then(CommandManager.argument("pattern", StringArgumentType.greedyString())
                 .executes(WorldEditProxyCommand::handleBSetCommand)
             )
         );
         
         // Register breplace command as proxy for //replace
-        dispatcher.register(Commands.literal("breplace")
-            .then(Commands.argument("from_to_pattern", StringArgumentType.greedyString())
+        dispatcher.register(CommandManager.literal("breplace")
+            .then(CommandManager.argument("from_to_pattern", StringArgumentType.greedyString())
                 .executes(WorldEditProxyCommand::handleBReplaceCommand)
             )
         );
     }
     
-    private static int handleBSetCommand(CommandContext<CommandSourceStack> context) {
+    private static int handleBSetCommand(CommandContext<ServerCommandSource> context) {
         String pattern = StringArgumentType.getString(context, "pattern");
         return executeTranslatedWorldEditCommand(context, "//set " + pattern);
     }
     
-    private static int handleBReplaceCommand(CommandContext<CommandSourceStack> context) {
+    private static int handleBReplaceCommand(CommandContext<ServerCommandSource> context) {
         String fromToPattern = StringArgumentType.getString(context, "from_to_pattern");
         return executeTranslatedWorldEditCommand(context, "//replace " + fromToPattern);
     }
     
-    private static int executeTranslatedWorldEditCommand(CommandContext<CommandSourceStack> context, String originalCommand) {
-        CommandSourceStack source = context.getSource();
+    private static int executeTranslatedWorldEditCommand(CommandContext<ServerCommandSource> context, String originalCommand) {
+        ServerCommandSource source = context.getSource();
         
         LOGGER.info("WorldEdit Proxy: Processing command: {}", originalCommand);
         
-        if (!(source.getEntity() instanceof ServerPlayer player)) {
-            source.sendFailure(Component.literal("§cCommand must be used by a player"));
+        if (!(source.getEntity() instanceof ServerPlayerEntity player)) {
+            source.sendError(Text.literal("§cCommand must be used by a player"));
             return 0;
         }
         
-        // Check if the command contains custom block references
-        if (originalCommand.contains("be:")) {
-            ServerLevel level = player.serverLevel();
-            UserBlockRegistry registry = UserBlockRegistry.get(level);
-            
-            Matcher matcher = CUSTOM_BLOCK_PATTERN.matcher(originalCommand);
-            StringBuffer translatedCommand = new StringBuffer();
-            boolean foundReplacement = false;
+        ServerWorld level = player.getServerWorld();
+        UserBlockRegistry registry = UserBlockRegistry.get(level);
+        
+        // First, handle explicit be: prefixed references
+        String command = originalCommand;
+        if (command.contains("be:")) {
+            Matcher matcher = CUSTOM_BLOCK_PATTERN.matcher(command);
+            StringBuffer sb = new StringBuffer();
             
             while (matcher.find()) {
                 String customName = matcher.group(1).toLowerCase();
-                LOGGER.info("WorldEdit Proxy: Found custom block reference: {}", customName);
+                LOGGER.info("WorldEdit Proxy: Found be: reference: {}", customName);
                 
                 String internalId = registry.getInternalIdentifier(customName);
-                
                 if (internalId != null) {
                     String replacement = "be:u_" + internalId;
-                    matcher.appendReplacement(translatedCommand, replacement);
-                    foundReplacement = true;
-                    LOGGER.info("WorldEdit Proxy: Translated '{}' -> '{}'", customName, replacement);
+                    matcher.appendReplacement(sb, replacement);
+                    LOGGER.info("WorldEdit Proxy: Translated be:{} -> {}", customName, replacement);
                 } else {
-                    // No mapping found, keep original
-                    matcher.appendReplacement(translatedCommand, matcher.group());
-                    LOGGER.warn("WorldEdit Proxy: No mapping found for custom name: {}", customName);
+                    matcher.appendReplacement(sb, matcher.group());
+                    LOGGER.warn("WorldEdit Proxy: No mapping for be:{}", customName);
                 }
             }
+            matcher.appendTail(sb);
+            command = sb.toString();
+        }
+        
+        // Then, translate bare custom block names (e.g. "blue" -> "be:u_calcite1")
+        // Split command into parts: "//set blue" -> ["//set", "blue"]
+        // or "//replace stone blue" -> ["//replace", "stone", "blue"]
+        String[] parts = command.split(" ");
+        StringBuilder translated = new StringBuilder();
+        for (int i = 0; i < parts.length; i++) {
+            if (i > 0) translated.append(" ");
+            String part = parts[i];
             
-            if (foundReplacement) {
-                matcher.appendTail(translatedCommand);
-                String finalCommand = translatedCommand.toString();
-                LOGGER.info("WorldEdit Proxy: Final translated command: {}", finalCommand);
-                
-                // Execute the translated WorldEdit command
-                try {
-                    player.server.getCommands().performPrefixedCommand(
-                        player.createCommandSourceStack(),
-                        finalCommand
-                    );
-                    return 1;
-                } catch (Exception e) {
-                    LOGGER.error("WorldEdit Proxy: Failed to execute command: {}", e.getMessage());
-                    player.sendSystemMessage(Component.literal("§cFailed to execute command: " + e.getMessage()));
-                    return 0;
-                }
+            // Skip the command itself (//set, //replace, etc.)
+            if (i == 0 || part.startsWith("//") || part.startsWith("-")) {
+                translated.append(part);
+                continue;
+            }
+            
+            // If it already has a namespace (e.g. be:, minecraft:), leave it alone
+            if (part.contains(":")) {
+                translated.append(part);
+                continue;
+            }
+            
+            // Try to look up as a custom block name
+            String internalId = registry.getInternalIdentifier(part.toLowerCase());
+            if (internalId != null) {
+                String replacement = "be:u_" + internalId;
+                LOGGER.info("WorldEdit Proxy: Translated bare name '{}' -> '{}'", part, replacement);
+                translated.append(replacement);
+            } else {
+                // Not a custom block, pass through (could be vanilla like "stone", "dirt")
+                translated.append(part);
             }
         }
         
-        // No translation needed, execute original command
+        String finalCommand = translated.toString();
+        if (!finalCommand.equals(originalCommand)) {
+            LOGGER.info("WorldEdit Proxy: Final translated command: {}", finalCommand);
+        }
+        
+        // Execute the command
         try {
-            player.server.getCommands().performPrefixedCommand(
-                player.createCommandSourceStack(),
-                originalCommand
+            player.server.getCommandManager().executeWithPrefix(
+                player.getCommandSource(),
+                finalCommand
             );
             return 1;
         } catch (Exception e) {
-            LOGGER.error("WorldEdit Proxy: Failed to execute original command: {}", e.getMessage());
-            player.sendSystemMessage(Component.literal("§cFailed to execute command: " + e.getMessage()));
+            LOGGER.error("WorldEdit Proxy: Failed to execute command: {}", e.getMessage());
+            player.sendMessage(Text.literal("§cFailed to execute command: " + e.getMessage()));
             return 0;
         }
     }

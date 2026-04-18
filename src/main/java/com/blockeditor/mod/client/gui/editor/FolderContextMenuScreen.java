@@ -1,9 +1,9 @@
 package com.blockeditor.mod.client.gui.editor;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.network.chat.Component;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.text.Text;
 
 /**
  * Simple context menu for folder actions (right-click).
@@ -19,7 +19,7 @@ public class FolderContextMenuScreen extends Screen {
     private static final int CORNER_RADIUS = 3;
 
     public FolderContextMenuScreen(Screen parent, BlockEditorHistory.BlockFolder folder, double x, double y) {
-        super(Component.literal("Folder Menu"));
+        super(Text.literal("Folder Menu"));
         this.parent = parent;
         this.folder = folder;
         this.menuX = x;
@@ -27,11 +27,11 @@ public class FolderContextMenuScreen extends Screen {
     }
 
     @Override
-    public boolean isPauseScreen() {
+    public boolean shouldPause() {
         return false;
     }
 
-    private void drawRoundedRect(GuiGraphics g, int x, int y, int width, int height, int radius, int color) {
+    private void drawRoundedRect(DrawContext g, int x, int y, int width, int height, int radius, int color) {
         // Fill main body
         g.fill(x + radius, y, x + width - radius, y + height, color);
         g.fill(x, y + radius, x + radius, y + height - radius, color);
@@ -56,7 +56,7 @@ public class FolderContextMenuScreen extends Screen {
     }
 
     @Override
-    public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+    public void render(DrawContext g, int mouseX, int mouseY, float partialTick) {
         // Very light dim overlay so we can still see the editor underneath
         g.fill(0, 0, this.width, this.height, 0x30000000);
 
@@ -72,19 +72,19 @@ public class FolderContextMenuScreen extends Screen {
         drawRoundedRect(g, x, y, MENU_WIDTH, ITEM_HEIGHT, CORNER_RADIUS, bgColor);
         
         // Center text horizontally and vertically
-        var pose = g.pose();
-        pose.pushPose();
+        var pose = g.getMatrices();
+        pose.push();
         pose.scale(0.8f, 0.8f, 1.0f);
         
         String text = "Delete";
-        int textWidth = (int) (this.font.width(text) * 0.8f);
-        int textHeight = (int) (this.font.lineHeight * 0.8f);
+        int textWidth = (int) (this.textRenderer.getWidth(text) * 0.8f);
+        int textHeight = (int) (this.textRenderer.fontHeight * 0.8f);
         
         int centeredX = (int) ((x + MENU_WIDTH / 2.0f - textWidth / 2.0f) / 0.8f);
         int centeredY = (int) ((y + ITEM_HEIGHT / 2.0f - textHeight / 2.0f) / 0.8f);
         
-        g.drawString(this.font, text, centeredX, centeredY, hovered ? 0xFFFFFF : 0xCCCCCC, false);
-        pose.popPose();
+        g.drawText(this.textRenderer, text, centeredX, centeredY, hovered ? 0xFFFFFF : 0xCCCCCC, false);
+        pose.pop();
     }
 
     @Override
@@ -98,7 +98,7 @@ public class FolderContextMenuScreen extends Screen {
             // Show confirmation dialog
             int itemCount = folder.blocks.size();
             String message = "Delete folder and all " + itemCount + " item" + (itemCount == 1 ? "" : "s") + " inside?";
-            Minecraft.getInstance().setScreen(new ConfirmationDialog(
+            MinecraftClient.getInstance().setScreen(new ConfirmationDialog(
                 parent,
                 "Delete Folder?",
                 message,
@@ -108,7 +108,7 @@ public class FolderContextMenuScreen extends Screen {
         }
         
         // Click outside menu - close
-        Minecraft.getInstance().setScreen(parent);
+        MinecraftClient.getInstance().setScreen(parent);
         return true;
     }
 
@@ -116,7 +116,7 @@ public class FolderContextMenuScreen extends Screen {
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         // ESC closes menu
         if (keyCode == 256) { // ESC
-            Minecraft.getInstance().setScreen(parent);
+            MinecraftClient.getInstance().setScreen(parent);
             return true;
         }
         return super.keyPressed(keyCode, scanCode, modifiers);

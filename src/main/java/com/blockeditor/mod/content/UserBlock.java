@@ -3,16 +3,16 @@ package com.blockeditor.mod.content;
 import com.blockeditor.mod.client.ClientColorManager;
 import com.blockeditor.mod.registry.UserBlockRegistry;
 import com.mojang.logging.LogUtils;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.level.block.SoundType;
-import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.registry.Registries;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.util.Identifier;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.sound.BlockSoundGroup;
+import net.minecraft.block.AbstractBlock;
+import net.minecraft.item.ItemStack;
+import net.minecraft.world.World;
+import net.minecraft.block.BlockState;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
@@ -29,18 +29,18 @@ public class UserBlock extends DynamicBlock implements IUserBlock {
         this.blockType = blockType;
     }
 
-    private static BlockBehaviour.Properties createProperties(String blockType) {
+    private static AbstractBlock.Settings createProperties(String blockType) {
         if ("glass".equalsIgnoreCase(blockType) || "tinted_glass".equalsIgnoreCase(blockType) || "stained_glass".equalsIgnoreCase(blockType)) {
-            return BlockBehaviour.Properties.of()
-                .noOcclusion()
+            return AbstractBlock.Settings.create()
+                .nonOpaque()
                 .strength(0.3f)
-                .sound(SoundType.GLASS);
+                .sounds(BlockSoundGroup.GLASS);
         }
         // default solid-like behavior for other user blocks
-        return BlockBehaviour.Properties.of()
+        return AbstractBlock.Settings.create()
             .strength(1.5f, 6.0f)
-            .sound(SoundType.STONE)
-            .requiresCorrectToolForDrops();
+            .sounds(BlockSoundGroup.STONE)
+            .requiresTool();
     }
 
     public String getBlockType() {
@@ -48,13 +48,13 @@ public class UserBlock extends DynamicBlock implements IUserBlock {
     }
 
     @Override
-    public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
+    public void onPlaced(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
         // Call the parent method first
-        super.setPlacedBy(level, pos, state, placer, stack);
+        super.onPlaced(world, pos, state, placer, stack);
         
         // Then handle UserBlock-specific logic
-        if (!level.isClientSide && level.getBlockEntity(pos) instanceof DynamicBlockEntity blockEntity) {
-            CompoundTag tag = stack.getTag();
+        if (!world.isClient && world.getBlockEntity(pos) instanceof DynamicBlockEntity blockEntity) {
+            NbtCompound tag = stack.getNbt();
             
             if (tag != null && tag.contains("Color")) {
                 // NBT color data was provided (from WorldEdit command)
@@ -82,11 +82,11 @@ public class UserBlock extends DynamicBlock implements IUserBlock {
             
             // No NBT color data, try to load from user block registry
             LOGGER.info("UserBlock: No NBT color data found, trying registry lookup");
-            if (level instanceof net.minecraft.server.level.ServerLevel serverLevel) {
+            if (world instanceof net.minecraft.server.world.ServerWorld serverLevel) {
                 UserBlockRegistry registry = UserBlockRegistry.get(serverLevel);
                 
                 // Extract the number from this block's registry name
-                ResourceLocation blockId = BuiltInRegistries.BLOCK.getKey(this);
+                Identifier blockId = Registries.BLOCK.getId(this);
                 String blockName = blockId.getPath(); // e.g., "u_wool1"
                 LOGGER.info("UserBlock: Block registry name: {}", blockName);
                 
@@ -125,8 +125,8 @@ public class UserBlock extends DynamicBlock implements IUserBlock {
     }
     
     @Override
-    public void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean isMoving) {
-        super.onPlace(state, level, pos, oldState, isMoving);
+    public void onBlockAdded(BlockState state, World world, BlockPos pos, BlockState oldState, boolean isMoving) {
+        super.onBlockAdded(state, world, pos, oldState, isMoving);
         // Color application is now handled by WorldEditIntegration event handler
         // This ensures consistency whether blocks are placed manually or via WorldEdit
     }
@@ -193,13 +193,13 @@ public class UserBlock extends DynamicBlock implements IUserBlock {
     }
 
     @Override
-    public ItemStack getCloneItemStack(net.minecraft.world.level.BlockGetter level, BlockPos pos, BlockState state) {
-        if (level.getBlockEntity(pos) instanceof DynamicBlockEntity blockEntity) {
+    public ItemStack getPickStack(net.minecraft.world.BlockView world, BlockPos pos, BlockState state) {
+        if (world.getBlockEntity(pos) instanceof DynamicBlockEntity blockEntity) {
             // Create the item stack with the correct block
             ItemStack stack = new ItemStack(this);
             
             // Create NBT data with the block entity's color and mimic block
-            net.minecraft.nbt.CompoundTag tag = new net.minecraft.nbt.CompoundTag();
+            net.minecraft.nbt.NbtCompound tag = new net.minecraft.nbt.NbtCompound();
             tag.putString("Color", String.format("%06X", blockEntity.getColor()));
             tag.putString("OriginalBlock", blockEntity.getMimicBlock());
             
@@ -213,11 +213,11 @@ public class UserBlock extends DynamicBlock implements IUserBlock {
             tag.putInt("Blue", blue);
             
             // Set the NBT tag
-            stack.setTag(tag);
+            stack.setNbt(tag);
             
             // Set display name to show it's a user block with color and type
             String hexColor = String.format("%06X", blockEntity.getColor());
-            stack.setHoverName(net.minecraft.network.chat.Component.literal(
+            stack.setCustomName(net.minecraft.text.Text.literal(
                 "§6USER_" + blockType.toUpperCase() + " §7(#" + hexColor + ")"
             ));
             
@@ -226,25 +226,19 @@ public class UserBlock extends DynamicBlock implements IUserBlock {
         }
         
         // Fallback to default behavior
-        return super.getCloneItemStack(level, pos, state);
-    }
-    
-    // Make glass blocks transparent
-    @Override
-    public boolean propagatesSkylightDown(BlockState state, net.minecraft.world.level.BlockGetter level, BlockPos pos) {
-        return blockType.equals("glass") || blockType.equals("stained_glass");
+        return super.getPickStack(world, pos, state);
     }
     
     @Override
-    public float getShadeBrightness(BlockState state, net.minecraft.world.level.BlockGetter level, BlockPos pos) {
+    public float getAmbientOcclusionLightLevel(BlockState state, net.minecraft.world.BlockView world, BlockPos pos) {
         return (blockType.equals("glass") || blockType.equals("tinted_glass") || blockType.equals("stained_glass")) ? 1.0F : 0.2F;
     }
 
     @Override
-    public int getLightBlock(BlockState state, net.minecraft.world.level.BlockGetter level, BlockPos pos) {
+    public int getOpacity(BlockState state, net.minecraft.world.BlockView world, BlockPos pos) {
         if (blockType.equals("tinted_glass")) {
             return 15; // Tinted glass blocks all light
         }
-        return super.getLightBlock(state, level, pos);
+        return super.getOpacity(state, world, pos);
     }
 }

@@ -2,26 +2,18 @@ package com.blockeditor.mod.network;
 
 import com.blockeditor.mod.content.DynamicBlockEntity;
 import com.blockeditor.mod.registry.UserBlockRegistry;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.registry.Registries;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.util.Identifier;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.block.Block;
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.BlockState;
 
-import java.util.function.Supplier;
-
-/**
- * Server-verified packet to give the player the block they middle-clicked.
- * Carries only the BlockPos; server validates and reconstructs the ItemStack
- * from the actual block + block entity data to prevent spoofing.
- */
 public class GivePickedBlockPacket {
     private final BlockPos pos;
 
@@ -29,26 +21,23 @@ public class GivePickedBlockPacket {
         this.pos = pos;
     }
 
-    public static void encode(GivePickedBlockPacket pkt, FriendlyByteBuf buf) {
+    public static void encode(GivePickedBlockPacket pkt, PacketByteBuf buf) {
         buf.writeBlockPos(pkt.pos);
     }
 
-    public static GivePickedBlockPacket decode(FriendlyByteBuf buf) {
+    public static GivePickedBlockPacket decode(PacketByteBuf buf) {
         return new GivePickedBlockPacket(buf.readBlockPos());
     }
 
-    public static void handle(GivePickedBlockPacket pkt, Supplier<NetworkEvent.Context> ctxSupplier) {
-        NetworkEvent.Context ctx = ctxSupplier.get();
-        ctx.enqueueWork(() -> {
-            ServerPlayer player = ctx.getSender();
-            if (player == null) return;
+    public static void handle(GivePickedBlockPacket pkt, ServerPlayerEntity player) {
+        if (player == null) return;
 
-            ServerLevel level = player.serverLevel();
-            if (!level.isLoaded(pkt.pos)) return;
+            ServerWorld level = player.getServerWorld();
+            if (!level.getChunkManager().isChunkLoaded(pkt.pos.getX() >> 4, pkt.pos.getZ() >> 4)) return;
 
             BlockState state = level.getBlockState(pkt.pos);
             Block block = state.getBlock();
-            ResourceLocation blockId = BuiltInRegistries.BLOCK.getKey(block);
+            Identifier blockId = Registries.BLOCK.getId(block);
             // Use the actual mod id constant instead of a hardcoded namespace
             if (!com.blockeditor.mod.BlockEditorMod.MOD_ID.equals(blockId.getNamespace())) {
                 return;
@@ -68,7 +57,7 @@ public class GivePickedBlockPacket {
             String hex = String.format("%06X", color);
             String mimic = dbe.getMimicBlock();
 
-            CompoundTag tag = new CompoundTag();
+            NbtCompound tag = new NbtCompound();
             tag.putString("Color", hex);
             tag.putString("OriginalBlock", mimic);
             tag.putInt("Red", (color >> 16) & 0xFF);
@@ -83,25 +72,25 @@ public class GivePickedBlockPacket {
                 maybeCustomName = registry.getCustomName(identifier);
             }
 
-            stack.setTag(tag);
+            stack.setNbt(tag);
             if (maybeCustomName != null && !maybeCustomName.isBlank()) {
                 tag.putString("CustomName", maybeCustomName);
-                stack.setHoverName(net.minecraft.network.chat.Component.literal(maybeCustomName));
+                stack.setCustomName(net.minecraft.text.Text.literal(maybeCustomName));
             } else {
                 // Fallback readable name
                 String mimicName = mimic.replace("minecraft:", "").replace('_', ' ');
-                stack.setHoverName(net.minecraft.network.chat.Component.literal("§r" + mimicName + " §7(#" + hex + ")"));
+                stack.setCustomName(net.minecraft.text.Text.literal("§r" + mimicName + " §7(#" + hex + ")"));
             }
 
             // Enforce only one copy for custom-named user blocks in Creative
-            boolean isCreative = player.getAbilities().instabuild;
+            boolean isCreative = player.getAbilities().creativeMode;
 
             // Match predicate: same item, same Color & OriginalBlock, and if CustomName present must match
             java.util.function.BiPredicate<ItemStack, ItemStack> sameCustomBlock = (a, b) -> {
                 if (a.isEmpty() || b.isEmpty()) return false;
-                if (!a.is(b.getItem())) return false;
-                CompoundTag ta = a.getTag();
-                CompoundTag tb = b.getTag();
+                if (!a.isOf(b.getItem())) return false;
+                NbtCompound ta = a.getNbt();
+                NbtCompound tb = b.getNbt();
                 if (ta == null || tb == null) return false;
                 String ca = ta.getString("Color");
                 String cb = tb.getString("Color");
@@ -116,8 +105,8 @@ public class GivePickedBlockPacket {
 
             // Search for existing matching stack first
             int foundSlot = -1;
-            for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
-                ItemStack cur = player.getInventory().getItem(i);
+            for (int i = 0; i < player.getInventory().size(); i++) {
+                ItemStack cur = player.getInventory().getStack(i);
                 if (sameCustomBlock.test(cur, stack)) {
                     foundSlot = i;
                     break;
@@ -126,33 +115,33 @@ public class GivePickedBlockPacket {
 
             if (foundSlot != -1) {
                 // Move existing to selected slot if possible, else swap
-                int selected = player.getInventory().selected;
-                if (player.getInventory().getItem(selected).isEmpty()) {
-                    player.getInventory().setItem(selected, player.getInventory().getItem(foundSlot));
-                    player.getInventory().setItem(foundSlot, ItemStack.EMPTY);
+                int selected = player.getInventory().selectedSlot;
+                if (player.getInventory().getStack(selected).isEmpty()) {
+                    player.getInventory().setStack(selected, player.getInventory().getStack(foundSlot));
+                    player.getInventory().setStack(foundSlot, ItemStack.EMPTY);
                 } else if (foundSlot != selected) {
-                    ItemStack tmp = player.getInventory().getItem(selected);
-                    player.getInventory().setItem(selected, player.getInventory().getItem(foundSlot));
-                    player.getInventory().setItem(foundSlot, tmp);
+                    ItemStack tmp = player.getInventory().getStack(selected);
+                    player.getInventory().setStack(selected, player.getInventory().getStack(foundSlot));
+                    player.getInventory().setStack(foundSlot, tmp);
                 }
 
                 // If creative, also de-duplicate extra copies beyond one
                 if (isCreative) {
                     boolean keepOne = false;
-                    for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
-                        ItemStack cur = player.getInventory().getItem(i);
+                    for (int i = 0; i < player.getInventory().size(); i++) {
+                        ItemStack cur = player.getInventory().getStack(i);
                         if (sameCustomBlock.test(cur, stack)) {
                             if (!keepOne) {
                                 // Normalize to a single item in this slot
                                 cur.setCount(1);
                                 keepOne = true;
                             } else {
-                                player.getInventory().setItem(i, ItemStack.EMPTY);
+                                player.getInventory().setStack(i, ItemStack.EMPTY);
                             }
                         }
                     }
                 }
-                player.inventoryMenu.broadcastChanges();
+                player.playerScreenHandler.sendContentUpdates();
                 return;
             }
 
@@ -160,13 +149,13 @@ public class GivePickedBlockPacket {
             if (isCreative) stack.setCount(1);
 
             boolean placed = false;
-            int containerSize = player.getInventory().getContainerSize();
+            int containerSize = player.getInventory().size();
 
             // 1) Try an empty hotbar slot and select it
             for (int i = 0; i < 9; i++) {
-                if (player.getInventory().getItem(i).isEmpty()) {
-                    player.getInventory().setItem(i, stack);
-                    player.getInventory().selected = i;
+                if (player.getInventory().getStack(i).isEmpty()) {
+                    player.getInventory().setStack(i, stack);
+                    player.getInventory().selectedSlot = i;
                     placed = true;
                     break;
                 }
@@ -175,8 +164,8 @@ public class GivePickedBlockPacket {
             // 2) Try an empty main inventory slot
             if (!placed) {
                 for (int i = 9; i < containerSize; i++) {
-                    if (player.getInventory().getItem(i).isEmpty()) {
-                        player.getInventory().setItem(i, stack);
+                    if (player.getInventory().getStack(i).isEmpty()) {
+                        player.getInventory().setStack(i, stack);
                         placed = true;
                         break;
                     }
@@ -186,12 +175,12 @@ public class GivePickedBlockPacket {
             // 3) Replace a non-hotbar slot: drop replaced stack, insert new one; keep hotbar untouched
             if (!placed) {
                 for (int i = containerSize - 1; i >= 9; i--) {
-                    ItemStack toReplace = player.getInventory().getItem(i);
+                    ItemStack toReplace = player.getInventory().getStack(i);
                     if (!toReplace.isEmpty()) {
                         ItemStack dropCopy = toReplace.copy();
-                        player.getInventory().setItem(i, ItemStack.EMPTY);
-                        player.drop(dropCopy, false);
-                        player.getInventory().setItem(i, stack);
+                        player.getInventory().setStack(i, ItemStack.EMPTY);
+                        player.dropItem(dropCopy, false);
+                        player.getInventory().setStack(i, stack);
                         placed = true;
                         break;
                     }
@@ -200,21 +189,19 @@ public class GivePickedBlockPacket {
 
             if (placed) {
                 String show = (maybeCustomName != null && !maybeCustomName.isBlank()) ? maybeCustomName : ("#" + hex);
-                boolean inHand = player.getInventory().selected < 9 && player.getInventory().getItem(player.getInventory().selected) == stack;
-                player.displayClientMessage(
-                    net.minecraft.network.chat.Component.literal("§a§lPicked! §r§f" + show + (inHand ? " §7(in your hand)" : " §7(in inventory)")),
+                boolean inHand = player.getInventory().selectedSlot < 9 && player.getInventory().getStack(player.getInventory().selectedSlot) == stack;
+                player.sendMessage(
+                    net.minecraft.text.Text.literal("§a§lPicked! §r§f" + show + (inHand ? " §7(in your hand)" : " §7(in inventory)")),
                     true
                 );
             } else {
                 // Fallback (should not happen): drop
-                player.drop(stack, false);
-                player.displayClientMessage(
-                    net.minecraft.network.chat.Component.literal("§c§lInventory Full! §r§7Block dropped on ground"),
+                player.dropItem(stack, false);
+                player.sendMessage(
+                    net.minecraft.text.Text.literal("§c§lInventory Full! §r§7Block dropped on ground"),
                     true
                 );
             }
-            player.inventoryMenu.broadcastChanges();
-        });
-        ctx.setPacketHandled(true);
+            player.playerScreenHandler.sendContentUpdates();
     }
 }

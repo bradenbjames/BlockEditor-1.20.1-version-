@@ -1,6 +1,6 @@
 package com.blockeditor.mod.client.gui.editor;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.DrawContext;
 
 import java.util.function.Consumer;
 
@@ -23,8 +23,8 @@ public final class PixelatedToggleButton {
         return mouseX >= x && mouseX < x + width && mouseY >= y && mouseY < y + height;
     }
 
-    // Render using the project's GuiGraphics and GuiRenderUtil helpers so it matches other UI code
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+    // Render using the project's DrawContext and GuiRenderUtil helpers so it matches other UI code
+    public void render(DrawContext graphics, int mouseX, int mouseY, float partialTick) {
         boolean hovered = mouseX >= x && mouseX < x + width && mouseY >= y && mouseY < y + height;
 
         // Colors - iOS style

@@ -1,9 +1,9 @@
 package com.blockeditor.mod.client.gui.editor;
 
-import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.network.chat.Component;
+import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.gui.widget.TextFieldWidget;
+import net.minecraft.text.Text;
 
 import java.util.Locale;
 import java.util.function.Consumer;
@@ -11,17 +11,17 @@ import java.util.function.Consumer;
 public final class BlockEditorWidgets {
     private BlockEditorWidgets() {}
 
-    public static EditBox createHexBox(Font font, int x, int y, String initialHex) {
+    public static TextFieldWidget createHexBox(TextRenderer textRenderer, int x, int y, String initialHex) {
         // Size the hex box to exactly fit 6 hex characters plus a small padding
-        int hexTextWidth = font.width("FFFFFF");
+        int hexTextWidth = textRenderer.getWidth("FFFFFF");
         int hexPadding = 8; // left+right padding in pixels
-        EditBox box = new EditBox(font, x, y, Math.max(40, hexTextWidth + hexPadding), 20, Component.literal("Hex"));
+        TextFieldWidget box = new TextFieldWidget(textRenderer, x, y, Math.max(40, hexTextWidth + hexPadding), 20, Text.literal("Hex"));
         box.setMaxLength(6);
         if (initialHex != null) {
-            box.setValue(sanitizeHex(initialHex));
+            box.setText(sanitizeHex(initialHex));
         }
         // Allow only hex characters - but be permissive during typing/pasting
-        box.setFilter(s -> {
+        box.setTextPredicate(s -> {
             if (s == null) return false;
             // Allow empty string
             if (s.isEmpty()) return true;
@@ -30,26 +30,28 @@ public final class BlockEditorWidgets {
             // Allow hex characters up to 6 chars
             return cleaned.matches("[0-9A-Fa-f]{0,6}");
         });
-        box.setHint(Component.literal("Hex (RRGGBB)"));
+        box.setSuggestion("Hex (RRGGBB)");
+        box.setChangedListener(text -> box.setSuggestion(text.isEmpty() ? "Hex (RRGGBB)" : null));
         return box;
     }
 
     // Now accepts an explicit desired width so the screen can ensure the name box doesn't overlap
     // nearby UI (for example, the block preview). The method will still enforce a small minimum width.
-    public static EditBox createNameBox(Font font, int x, int y, int width) {
+    public static TextFieldWidget createNameBox(TextRenderer textRenderer, int x, int y, int width) {
         int minWidth = 40; // very small fallback to avoid zero/negative widths
         int usedWidth = Math.max(minWidth, width);
-        EditBox box = new EditBox(font, x, y, usedWidth, 20, Component.literal("Name"));
+        TextFieldWidget box = new TextFieldWidget(textRenderer, x, y, usedWidth, 20, Text.literal("Name"));
         box.setMaxLength(32);
         // Make the placeholder text light blue so it's visually distinct
-        box.setHint(Component.literal("new block name").withStyle(s -> s.withColor(0xADD8E6)));
+        box.setSuggestion("new block name");
+        box.setChangedListener(text -> box.setSuggestion(text.isEmpty() ? "new block name" : null));
         return box;
     }
 
-    public static Button createButton(String label, int x, int y, int width, Runnable onClick) {
-        return Button.builder(Component.literal(label), btn -> {
+    public static ButtonWidget createButton(String label, int x, int y, int width, Runnable onClick) {
+        return ButtonWidget.builder(Text.literal(label), btn -> {
             if (onClick != null) onClick.run();
-        }).bounds(x, y, width, 20).build();
+        }).dimensions(x, y, width, 20).build();
     }
 
     // Factory for the Apple-style pixelated toggle

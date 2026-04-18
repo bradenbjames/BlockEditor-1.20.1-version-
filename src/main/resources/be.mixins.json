@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "package": "com.blockeditor.mod.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "DynamicBlockMapColorMixin"
+  ],
+  "client": [
+    "DoItemPickMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

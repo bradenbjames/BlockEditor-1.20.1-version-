@@ -1,14 +1,14 @@
 package com.blockeditor.mod.client.gui.editor;
 
 import com.blockeditor.mod.BlockEditorMod;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.registry.Registries;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtList;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtIo;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
+import net.minecraft.util.Identifier;
+import net.minecraft.block.Block;
+import net.minecraft.block.Blocks;
 
 import java.io.File;
 import java.io.IOException;
@@ -62,7 +62,7 @@ public class BlockEditorHistory {
             if (customName != null && !customName.trim().isEmpty()) {
                 this.blockName = customName.trim();
             } else {
-                ResourceLocation blockId = BuiltInRegistries.BLOCK.getKey(block);
+                Identifier blockId = Registries.BLOCK.getId(block);
                 String path = blockId.getPath();
                 if (path.startsWith("dynamic_block_")) {
                     this.blockName = path.substring(14) + " #" + hex;
@@ -143,16 +143,16 @@ public class BlockEditorHistory {
                 configDir.mkdirs();
             }
             File historyFile = new File(configDir, "blockeditor_history.dat");
-            CompoundTag rootTag = new CompoundTag();
+            NbtCompound rootTag = new NbtCompound();
             
             // Save UI preferences
             rootTag.putBoolean("compactView", com.blockeditor.mod.client.gui.editor.HistoryPanel.isCompactView());
             
             // Save main history
-            ListTag historyList = new ListTag();
+            NbtList historyList = new NbtList();
             for (CreatedBlockInfo info : createdBlocksHistory) {
-                CompoundTag blockTag = new CompoundTag();
-                ResourceLocation blockId = BuiltInRegistries.BLOCK.getKey(info.originalBlock);
+                NbtCompound blockTag = new NbtCompound();
+                Identifier blockId = Registries.BLOCK.getId(info.originalBlock);
                 blockTag.putString("block", blockId.toString());
                 blockTag.putString("hexColor", info.hexColor);
                 blockTag.putInt("color", info.color);
@@ -163,18 +163,18 @@ public class BlockEditorHistory {
             rootTag.put("history", historyList);
             
             // Save folders
-            ListTag foldersList = new ListTag();
+            NbtList foldersList = new NbtList();
             for (BlockFolder folder : folders) {
-                CompoundTag folderTag = new CompoundTag();
+                NbtCompound folderTag = new NbtCompound();
                 folderTag.putString("id", folder.id);
                 folderTag.putString("name", folder.name);
                 folderTag.putBoolean("expanded", folder.expanded);
                 folderTag.putInt("color", folder.color);
                 
-                ListTag folderBlocks = new ListTag();
+                NbtList folderBlocks = new NbtList();
                 for (CreatedBlockInfo info : folder.blocks) {
-                    CompoundTag blockTag = new CompoundTag();
-                    ResourceLocation blockId = BuiltInRegistries.BLOCK.getKey(info.originalBlock);
+                    NbtCompound blockTag = new NbtCompound();
+                    Identifier blockId = Registries.BLOCK.getId(info.originalBlock);
                     blockTag.putString("block", blockId.toString());
                     blockTag.putString("hexColor", info.hexColor);
                     blockTag.putInt("color", info.color);
@@ -199,7 +199,7 @@ public class BlockEditorHistory {
             if (!historyFile.exists()) {
                 return;
             }
-            CompoundTag rootTag = NbtIo.read(historyFile);
+            NbtCompound rootTag = NbtIo.read(historyFile);
             if (rootTag == null) {
                 return;
             }
@@ -212,9 +212,9 @@ public class BlockEditorHistory {
             // Load main history
             createdBlocksHistory.clear();
             if (rootTag.contains("history")) {
-                ListTag historyList = rootTag.getList("history", Tag.TAG_COMPOUND);
+                NbtList historyList = rootTag.getList("history", NbtElement.COMPOUND_TYPE);
                 for (int i = 0; i < historyList.size(); i++) {
-                    CompoundTag blockTag = historyList.getCompound(i);
+                    NbtCompound blockTag = historyList.getCompound(i);
                     CreatedBlockInfo info = loadBlockInfo(blockTag);
                     if (info != null) {
                         createdBlocksHistory.add(info);
@@ -225,9 +225,9 @@ public class BlockEditorHistory {
             // Load folders
             folders.clear();
             if (rootTag.contains("folders")) {
-                ListTag foldersList = rootTag.getList("folders", Tag.TAG_COMPOUND);
+                NbtList foldersList = rootTag.getList("folders", NbtElement.COMPOUND_TYPE);
                 for (int i = 0; i < foldersList.size(); i++) {
-                    CompoundTag folderTag = foldersList.getCompound(i);
+                    NbtCompound folderTag = foldersList.getCompound(i);
                     String id = folderTag.getString("id");
                     String name = folderTag.getString("name");
                     boolean expanded = folderTag.getBoolean("expanded");
@@ -237,9 +237,9 @@ public class BlockEditorHistory {
                     }
                     
                     if (folderTag.contains("blocks")) {
-                        ListTag folderBlocks = folderTag.getList("blocks", Tag.TAG_COMPOUND);
+                        NbtList folderBlocks = folderTag.getList("blocks", NbtElement.COMPOUND_TYPE);
                         for (int j = 0; j < folderBlocks.size(); j++) {
-                            CompoundTag blockTag = folderBlocks.getCompound(j);
+                            NbtCompound blockTag = folderBlocks.getCompound(j);
                             CreatedBlockInfo info = loadBlockInfo(blockTag);
                             if (info != null) {
                                 folder.blocks.add(info);
@@ -254,10 +254,10 @@ public class BlockEditorHistory {
         }
     }
     
-    private static CreatedBlockInfo loadBlockInfo(CompoundTag blockTag) {
+    private static CreatedBlockInfo loadBlockInfo(NbtCompound blockTag) {
         String blockIdStr = blockTag.getString("block");
-        ResourceLocation blockId = new ResourceLocation(blockIdStr);
-        Block block = BuiltInRegistries.BLOCK.get(blockId);
+        Identifier blockId = new Identifier(blockIdStr);
+        Block block = Registries.BLOCK.get(blockId);
         if (block != null && block != Blocks.AIR) {
             String hexColor = blockTag.getString("hexColor");
             int color = blockTag.getInt("color");

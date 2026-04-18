@@ -1,11 +1,11 @@
 package com.blockeditor.mod.registry;
 
 import com.blockeditor.mod.BlockEditorMod;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.level.saveddata.SavedData;
-import net.minecraft.world.level.storage.DimensionDataStorage;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtList;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.world.PersistentState;
+import net.minecraft.world.PersistentStateManager;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -13,7 +13,7 @@ import java.util.Map;
 /**
  * Manages the assignment of numbered user blocks to custom colors
  */
-public class UserBlockRegistry extends SavedData {
+public class UserBlockRegistry extends PersistentState {
     private static final String DATA_NAME = BlockEditorMod.MOD_ID + "_user_blocks";
     
     // Maps block type to next available number (e.g., "wool" -> 3 means next available is user_wool3)
@@ -67,7 +67,7 @@ public class UserBlockRegistry extends SavedData {
         assignedBlocks.put(identifier, new UserBlockData(color, mimicBlock));
         nextAvailableNumbers.put(blockType, assignedNumber + 1);
         
-        setDirty(); // Mark for saving
+        setDirty(true); // Mark for saving
         return assignedNumber;
     }
     
@@ -89,7 +89,7 @@ public class UserBlockRegistry extends SavedData {
         customNameMappings.put(customName, internalIdentifier);
         reverseCustomNameMappings.put(internalIdentifier, customName);
         
-        setDirty(); // Mark for saving
+        setDirty(true); // Mark for saving
         return internalIdentifier;
     }
     
@@ -129,18 +129,18 @@ public class UserBlockRegistry extends SavedData {
     }
     
     @Override
-    public CompoundTag save(CompoundTag tag) {
+    public NbtCompound writeNbt(NbtCompound tag) {
         // Save next available numbers
-        CompoundTag nextNumbers = new CompoundTag();
+        NbtCompound nextNumbers = new NbtCompound();
         for (Map.Entry<String, Integer> entry : nextAvailableNumbers.entrySet()) {
             nextNumbers.putInt(entry.getKey(), entry.getValue());
         }
         tag.put("nextNumbers", nextNumbers);
         
         // Save assigned blocks
-        ListTag assignedList = new ListTag();
+        NbtList assignedList = new NbtList();
         for (Map.Entry<String, UserBlockData> entry : assignedBlocks.entrySet()) {
-            CompoundTag blockTag = new CompoundTag();
+            NbtCompound blockTag = new NbtCompound();
             blockTag.putString("identifier", entry.getKey());
             blockTag.putInt("color", entry.getValue().color());
             blockTag.putString("mimicBlock", entry.getValue().mimicBlock());
@@ -149,7 +149,7 @@ public class UserBlockRegistry extends SavedData {
         tag.put("assignedBlocks", assignedList);
         
         // Save custom name mappings
-        CompoundTag customNames = new CompoundTag();
+        NbtCompound customNames = new NbtCompound();
         for (Map.Entry<String, String> entry : customNameMappings.entrySet()) {
             customNames.putString(entry.getKey(), entry.getValue());
         }
@@ -158,22 +158,22 @@ public class UserBlockRegistry extends SavedData {
         return tag;
     }
     
-    public static UserBlockRegistry load(CompoundTag tag) {
+    public static UserBlockRegistry load(NbtCompound tag) {
         UserBlockRegistry registry = new UserBlockRegistry();
         
         // Load next available numbers
         if (tag.contains("nextNumbers")) {
-            CompoundTag nextNumbers = tag.getCompound("nextNumbers");
-            for (String key : nextNumbers.getAllKeys()) {
+            NbtCompound nextNumbers = tag.getCompound("nextNumbers");
+            for (String key : nextNumbers.getKeys()) {
                 registry.nextAvailableNumbers.put(key, nextNumbers.getInt(key));
             }
         }
         
         // Load assigned blocks
         if (tag.contains("assignedBlocks")) {
-            ListTag assignedList = tag.getList("assignedBlocks", 10); // 10 = CompoundTag
+            NbtList assignedList = tag.getList("assignedBlocks", 10); // 10 = NbtCompound
             for (int i = 0; i < assignedList.size(); i++) {
-                CompoundTag blockTag = assignedList.getCompound(i);
+                NbtCompound blockTag = assignedList.getCompound(i);
                 String identifier = blockTag.getString("identifier");
                 int color = blockTag.getInt("color");
                 String mimicBlock = blockTag.getString("mimicBlock");
@@ -183,8 +183,8 @@ public class UserBlockRegistry extends SavedData {
         
         // Load custom name mappings
         if (tag.contains("customNames")) {
-            CompoundTag customNames = tag.getCompound("customNames");
-            for (String customName : customNames.getAllKeys()) {
+            NbtCompound customNames = tag.getCompound("customNames");
+            for (String customName : customNames.getKeys()) {
                 String internalId = customNames.getString(customName);
                 registry.customNameMappings.put(customName, internalId);
                 registry.reverseCustomNameMappings.put(internalId, customName);
@@ -197,9 +197,9 @@ public class UserBlockRegistry extends SavedData {
     /**
      * Gets the user block registry for the given server level
      */
-    public static UserBlockRegistry get(ServerLevel level) {
-        DimensionDataStorage storage = level.getDataStorage();
-        return storage.computeIfAbsent(UserBlockRegistry::load, UserBlockRegistry::new, DATA_NAME);
+    public static UserBlockRegistry get(ServerWorld level) {
+        PersistentStateManager storage = level.getPersistentStateManager();
+        return storage.getOrCreate(UserBlockRegistry::load, UserBlockRegistry::new, DATA_NAME);
     }
     
     /**
@@ -234,7 +234,7 @@ public class UserBlockRegistry extends SavedData {
         nextAvailableNumbers.put("cobblestone", 1);
         nextAvailableNumbers.put("smooth_stone", 1);
         
-        setDirty(); // Mark as dirty to save changes
+        setDirty(true); // Mark as dirty to save changes
         return clearedCount;
     }
     
@@ -246,7 +246,7 @@ public class UserBlockRegistry extends SavedData {
         if (internalId != null) {
             reverseCustomNameMappings.remove(internalId);
             assignedBlocks.remove(internalId);
-            setDirty();
+            setDirty(true);
             return true;
         }
         return false;

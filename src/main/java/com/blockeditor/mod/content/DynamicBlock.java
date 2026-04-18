@@ -2,71 +2,66 @@ package com.blockeditor.mod.content;
 
 import com.blockeditor.mod.registry.ModBlockEntities;
 import com.mojang.logging.LogUtils;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.EntityBlock;
-import net.minecraft.world.level.block.RenderShape;
-import net.minecraft.world.level.block.SoundType;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.MapColor;
-import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.registry.Registries;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.Hand;
+import net.minecraft.util.ActionResult;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.world.World;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockEntityProvider;
+import net.minecraft.block.BlockRenderType;
+import net.minecraft.sound.BlockSoundGroup;
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.AbstractBlock;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.MapColor;
+import net.minecraft.util.hit.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
-public class DynamicBlock extends Block implements EntityBlock {
+public class DynamicBlock extends Block implements BlockEntityProvider {
     private static final Logger LOGGER = LogUtils.getLogger();
 
     public DynamicBlock() {
-        this(BlockBehaviour.Properties.of()
-            .mapColor(MapColor.STONE)
+        this(AbstractBlock.Settings.create()
+            .mapColor(MapColor.STONE_GRAY)
             .strength(1.5f, 6.0f)
-            .requiresCorrectToolForDrops()
-            .sound(SoundType.STONE));
+            .requiresTool()
+            .sounds(BlockSoundGroup.STONE));
     }
 
     /**
      * Advanced constructor so subclasses (or special cases like glass) can customize properties
      * such as noOcclusion without duplicating logic.
      */
-    protected DynamicBlock(BlockBehaviour.Properties properties) {
+    protected DynamicBlock(AbstractBlock.Settings properties) {
         super(properties);
-    }
-
-    @Override
-    public boolean propagatesSkylightDown(BlockState state, net.minecraft.world.level.BlockGetter level, BlockPos pos) {
-        return false; // Block is opaque
     }
 
     @Nullable
     @Override
-    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return ModBlockEntities.DYNAMIC_BLOCK_ENTITY.get().create(pos, state);
+    public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
+        return ModBlockEntities.DYNAMIC_BLOCK_ENTITY.instantiate(pos, state);
     }
 
     @Override
-    public RenderShape getRenderShape(BlockState state) {
+    public BlockRenderType getRenderType(BlockState state) {
         // Use vanilla model rendering; tint is applied via BlockColors based on BlockEntity data
-        return RenderShape.MODEL;
+        return BlockRenderType.MODEL;
     }
     
     @Override
-    public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
-        super.setPlacedBy(level, pos, state, placer, stack);
+    public void onPlaced(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
+        super.onPlaced(world, pos, state, placer, stack);
         
         // Transfer NBT data from item to block entity
-        if (level.getBlockEntity(pos) instanceof DynamicBlockEntity blockEntity) {
-            CompoundTag tag = stack.getTag();
+        if (world.getBlockEntity(pos) instanceof DynamicBlockEntity blockEntity) {
+            NbtCompound tag = stack.getNbt();
             if (tag != null) {
                 // Read color from NBT
                 if (tag.contains("Color")) {
@@ -89,27 +84,26 @@ public class DynamicBlock extends Block implements EntityBlock {
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level level, BlockPos pos,
-                                               Player player, InteractionHand hand, BlockHitResult hitResult) {
+    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hitResult) {
         // Only show info when player is sneaking (shift + right-click)
-        if (player.isShiftKeyDown()) {
-            if (!level.isClientSide && level.getBlockEntity(pos) instanceof DynamicBlockEntity blockEntity) {
+        if (player.isSneaking()) {
+            if (!world.isClient && world.getBlockEntity(pos) instanceof DynamicBlockEntity blockEntity) {
                 // Format color with zero-padding to always show 6 hex digits
                 String colorHex = String.format("%06X", blockEntity.getColor());
                 
                 // Get the block ID
-                ResourceLocation blockId = BuiltInRegistries.BLOCK.getKey(this);
+                Identifier blockId = Registries.BLOCK.getId(this);
                 
                 // Create WorldEdit command for regular dynamic block
                 String worldEditCommand = String.format("//set %s{Color:\"%s\",OriginalBlock:\"%s\"}", 
                     blockId.toString(), colorHex, blockEntity.getMimicBlock());
                 
                 // Show block info
-                player.displayClientMessage(net.minecraft.network.chat.Component.literal(
+                player.sendMessage(net.minecraft.text.Text.literal(
                     "§aMimic: §f" + blockEntity.getMimicBlock() + "§a, Color: §f#" + colorHex), false);
                 
                 // Show WorldEdit command
-                player.displayClientMessage(net.minecraft.network.chat.Component.literal(
+                player.sendMessage(net.minecraft.text.Text.literal(
                     "§bWorldEdit: §7" + worldEditCommand), false);
                 
                 // Show user block alternatives for WorldEdit autocomplete
@@ -117,7 +111,7 @@ public class DynamicBlock extends Block implements EntityBlock {
                 String userBlockType = getUserBlockTypeFromMimic(mimicBlock);
                 if (userBlockType != null) {
                     // Try to assign this block if not already assigned
-                    if (level instanceof net.minecraft.server.level.ServerLevel serverLevel) {
+                    if (world instanceof net.minecraft.server.world.ServerWorld serverLevel) {
                         com.blockeditor.mod.registry.UserBlockRegistry registry = 
                             com.blockeditor.mod.registry.UserBlockRegistry.get(serverLevel);
                         
@@ -125,25 +119,25 @@ public class DynamicBlock extends Block implements EntityBlock {
                         if (assignedNumber > 0) {
                             String userBlockCommand = String.format("//set be:u_%s%d{Color:\"%s\"}", 
                                 userBlockType, assignedNumber, colorHex);
-                            player.displayClientMessage(net.minecraft.network.chat.Component.literal(
+                            player.sendMessage(net.minecraft.text.Text.literal(
                                 "§6User Block Assigned: §7" + userBlockCommand), false);
-                            player.displayClientMessage(net.minecraft.network.chat.Component.literal(
+                            player.sendMessage(net.minecraft.text.Text.literal(
                                 "§7(This block is now available as USER_" + userBlockType.toUpperCase() + assignedNumber + " with color #" + colorHex + ")"), false);
                         } else {
-                            player.displayClientMessage(net.minecraft.network.chat.Component.literal(
+                            player.sendMessage(net.minecraft.text.Text.literal(
                                 "§cNo more user " + userBlockType + " slots available!"), false);
                         }
                     }
                 }
                 
                 // Copy to clipboard message
-                player.displayClientMessage(net.minecraft.network.chat.Component.literal(
+                player.sendMessage(net.minecraft.text.Text.literal(
                     "§7(Copy any command above for WorldEdit)"), false);
             }
-            return InteractionResult.SUCCESS;
+            return ActionResult.SUCCESS;
         }
         // Pass through to allow normal block placement
-        return InteractionResult.PASS;
+        return ActionResult.PASS;
     }
 
     /**
@@ -171,12 +165,12 @@ public class DynamicBlock extends Block implements EntityBlock {
     }
 
     @Override
-    public void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean isMoving) {
-        super.onPlace(state, level, pos, oldState, isMoving);
+    public void onBlockAdded(BlockState state, World world, BlockPos pos, BlockState oldState, boolean notify) {
+        super.onBlockAdded(state, world, pos, oldState, notify);
 
         // For UserBlocks, check for color data when first placed
-        if (!level.isClientSide && this instanceof com.blockeditor.mod.content.UserBlock) {
-            if (level.getBlockEntity(pos) instanceof DynamicBlockEntity blockEntity) {
+        if (!world.isClient && this instanceof com.blockeditor.mod.content.UserBlock) {
+            if (world.getBlockEntity(pos) instanceof DynamicBlockEntity blockEntity) {
                 // Only apply if no color has been set yet (default white)
                 if (blockEntity.getColor() == 0xFFFFFF) {
                     blockEntity.checkAndApplyUserBlockData();
@@ -186,24 +180,24 @@ public class DynamicBlock extends Block implements EntityBlock {
     }
 
     @Override
-    public void tick(BlockState state, net.minecraft.server.level.ServerLevel level, BlockPos pos, net.minecraft.util.RandomSource random) {
+    public void scheduledTick(BlockState state, net.minecraft.server.world.ServerWorld world, BlockPos pos, net.minecraft.util.math.random.Random random) {
         // Tick method disabled to prevent loading lag
         // Use manual /be refresh command instead for color updates
     }
 
     @Override
-    public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
-        super.onRemove(state, level, pos, newState, isMoving);
+    public void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
+        super.onStateReplaced(state, world, pos, newState, moved);
     }
 
     @Override
-    public ItemStack getCloneItemStack(net.minecraft.world.level.BlockGetter level, BlockPos pos, BlockState state) {
-        if (level.getBlockEntity(pos) instanceof DynamicBlockEntity blockEntity) {
+    public ItemStack getPickStack(net.minecraft.world.BlockView world, BlockPos pos, BlockState state) {
+        if (world.getBlockEntity(pos) instanceof DynamicBlockEntity blockEntity) {
             // Create the item stack with the correct block
             ItemStack stack = new ItemStack(this);
             
             // Create NBT data with the block entity's color and mimic block
-            net.minecraft.nbt.CompoundTag tag = new net.minecraft.nbt.CompoundTag();
+            net.minecraft.nbt.NbtCompound tag = new net.minecraft.nbt.NbtCompound();
             tag.putString("Color", String.format("%06X", blockEntity.getColor()));
             tag.putString("OriginalBlock", blockEntity.getMimicBlock());
             
@@ -217,12 +211,12 @@ public class DynamicBlock extends Block implements EntityBlock {
             tag.putInt("Blue", blue);
             
             // Set the NBT tag
-            stack.setTag(tag);
+            stack.setNbt(tag);
             
             // Set display name to show the color and block type
             String mimicBlockName = blockEntity.getMimicBlock().replace("minecraft:", "").replace("_", " ");
             String hexColor = String.format("%06X", blockEntity.getColor());
-            stack.setHoverName(net.minecraft.network.chat.Component.literal(
+            stack.setCustomName(net.minecraft.text.Text.literal(
                 "§r" + mimicBlockName + " §7(#" + hexColor + ")"
             ));
             
@@ -230,6 +224,6 @@ public class DynamicBlock extends Block implements EntityBlock {
         }
         
         // Fallback to default behavior
-        return super.getCloneItemStack(level, pos, state);
+        return super.getPickStack(world, pos, state);
     }
 }

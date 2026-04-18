@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "id": "be",
+  "version": "${version}",
+  "name": "Block Editor",
+  "description": "A mod for editing and manipulating block colors in Minecraft.",
+  "authors": ["brade"],
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "com.blockeditor.mod.BlockEditorMod"
+    ],
+    "client": [
+      "com.blockeditor.mod.client.ClientModInit"
+    ]
+  },
+  "mixins": ["be.mixins.json"],
+  "depends": {
+    "fabricloader": ">=0.19.2",
+    "fabric-api": "*",
+    "minecraft": "~1.20.1"
+  }
+}

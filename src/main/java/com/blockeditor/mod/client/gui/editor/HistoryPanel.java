@@ -3,10 +3,10 @@ package com.blockeditor.mod.client.gui.editor;
 import com.blockeditor.mod.client.gui.editor.BlockEditorHistory.CreatedBlockInfo;
 import com.blockeditor.mod.client.gui.editor.BlockEditorHistory.BlockFolder;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.Minecraft;
+import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.MinecraftClient;
 
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -158,7 +158,7 @@ public final class HistoryPanel {
         this.bottomBoundY = bottomY;
     }
 
-    public void render(Screen screen, GuiGraphics graphics, Font font, int mouseX, int mouseY) {
+    public void render(Screen screen, DrawContext graphics, TextRenderer textRenderer, int mouseX, int mouseY) {
         List<DisplayItem> displayList = buildDisplayList();
 
         int panelWidth = computePanelWidth(screen);
@@ -181,8 +181,8 @@ public final class HistoryPanel {
         // to ensure the title bar is always on top and covers any artifact fragments from the content
 
         if (displayList.isEmpty()) {
-            var none = net.minecraft.network.chat.Component.literal("No blocks yet").withStyle(s -> s.withColor(0xAAAAAA));
-            graphics.drawCenteredString(font, none, panelX + panelWidth / 2, panelY + 20, 0);
+            var none = net.minecraft.text.Text.literal("No blocks yet").styled(s -> s.withColor(0xAAAAAA));
+            graphics.drawCenteredTextWithShadow(textRenderer, none, panelX + panelWidth / 2, panelY + 20, 0);
             return;
         }
 
@@ -250,15 +250,15 @@ public final class HistoryPanel {
                 int nameColor = 0xFFFFFF;
                 int textLeft = itemX + 4; // left padding
                 int textAvail = itemWidth - 24; // reserve space for count + arrow on right
-                String trimmedName = trimToWidthScaled(font, folderName, textAvail, NAME_TEXT_SCALE);
-                drawScaledString(graphics, font, trimmedName, textLeft, itemY + 6, NAME_TEXT_SCALE, nameColor);
+                String trimmedName = trimToWidthScaled(textRenderer, folderName, textAvail, NAME_TEXT_SCALE);
+                drawScaledString(graphics, textRenderer, trimmedName, textLeft, itemY + 6, NAME_TEXT_SCALE, nameColor);
                 
                 // Block count to the left of the arrow (italicized)
                 String count = "§o" + folder.blocks.size();
-                int countWidth = (int) (font.width(count) * NAME_TEXT_SCALE);
+                int countWidth = (int) (textRenderer.getWidth(count) * NAME_TEXT_SCALE);
                 int arrowX = itemX + itemWidth - 10;
                 int countX = arrowX - countWidth - 3; // 3px spacing before arrow
-                drawScaledString(graphics, font, count, countX, itemY + 6, NAME_TEXT_SCALE, 0xFFAAAAAA);
+                drawScaledString(graphics, textRenderer, count, countX, itemY + 6, NAME_TEXT_SCALE, 0xFFAAAAAA);
                 
                 // Arrow icon on the right (▼ expanded, ► collapsed)
                 int arrowY = itemY + (ITEM_HEIGHT - 7) / 2;
@@ -268,17 +268,17 @@ public final class HistoryPanel {
                 CreatedBlockInfo info = item.block;
                 
                 // Render tinted item icon (16x16) with tight padding
-                var pose = graphics.pose();
-                pose.pushPose();
+                var pose = graphics.getMatrices();
+                pose.push();
                 RenderSystem.setShaderColor(
                     ((info.color >> 16) & 0xFF) / 255.0f,
                     ((info.color >> 8) & 0xFF) / 255.0f,
                     (info.color & 0xFF) / 255.0f,
                     1.0f
                 );
-                graphics.renderItem(info.originalBlock.asItem().getDefaultInstance(), itemX + 1, itemY + 1);
+                graphics.drawItem(info.originalBlock.asItem().getDefaultStack(), itemX + 1, itemY + 1);
                 RenderSystem.setShaderColor(1, 1, 1, 1);
-                pose.popPose();
+                pose.pop();
 
                 // Text area (scaled)
                 String name = info.blockName != null ? info.blockName : "";
@@ -293,16 +293,16 @@ public final class HistoryPanel {
 
                 // Decide whether the raw name fits entirely (in unscaled px space) in the available width.
                 // Only consider real names for the hex-layout decision; placeholder should not force hex rendering.
-                boolean nameFitsRaw = !name.isEmpty() && font.width(name) <= (int) Math.floor(textAvail / Math.max(0.001f, NAME_TEXT_SCALE));
+                boolean nameFitsRaw = !name.isEmpty() && textRenderer.getWidth(name) <= (int) Math.floor(textAvail / Math.max(0.001f, NAME_TEXT_SCALE));
 
                 // Name (smaller)
-                String trimmedName = trimToWidthScaled(font, displayName, textAvail, NAME_TEXT_SCALE);
-                drawScaledString(graphics, font, trimmedName, textLeft, itemY + 2, NAME_TEXT_SCALE, nameColor);
+                String trimmedName = trimToWidthScaled(textRenderer, displayName, textAvail, NAME_TEXT_SCALE);
+                drawScaledString(graphics, textRenderer, trimmedName, textLeft, itemY + 2, NAME_TEXT_SCALE, nameColor);
 
                 // Hex (smaller) - show formatted '#FFFFFF' in compact view for all items; otherwise only if the name fits
                 if (hexText != null && (compactView || nameFitsRaw)) {
-                    String trimmedHex = trimToWidthScaled(font, hexText, textAvail, HEX_TEXT_SCALE);
-                    drawScaledString(graphics, font, trimmedHex, textLeft, itemY + 10, HEX_TEXT_SCALE, 0xAAAAAA);
+                    String trimmedHex = trimToWidthScaled(textRenderer, hexText, textAvail, HEX_TEXT_SCALE);
+                    drawScaledString(graphics, textRenderer, trimmedHex, textLeft, itemY + 10, HEX_TEXT_SCALE, 0xAAAAAA);
                 }
 
                 // Collect hover info so we can render a tooltip after scissor is disabled (not clipped)
@@ -328,17 +328,17 @@ public final class HistoryPanel {
             GuiRenderUtil.drawRoundedRect(graphics, dragCardX, dragCardY, dragCardWidth, ITEM_HEIGHT, 3, 0x80FFFFFF);
             
             // Render tinted item icon
-            var pose = graphics.pose();
-            pose.pushPose();
+            var pose = graphics.getMatrices();
+            pose.push();
             RenderSystem.setShaderColor(
                 ((draggedBlock.color >> 16) & 0xFF) / 255.0f,
                 ((draggedBlock.color >> 8) & 0xFF) / 255.0f,
                 (draggedBlock.color & 0xFF) / 255.0f,
                 0.6f  // Semi-transparent
             );
-            graphics.renderItem(draggedBlock.originalBlock.asItem().getDefaultInstance(), dragCardX + 1, dragCardY + 1);
+            graphics.drawItem(draggedBlock.originalBlock.asItem().getDefaultStack(), dragCardX + 1, dragCardY + 1);
             RenderSystem.setShaderColor(1, 1, 1, 1);
-            pose.popPose();
+            pose.pop();
             
             // Text (name and hex)
             String name = draggedBlock.blockName != null ? draggedBlock.blockName : "";
@@ -348,33 +348,33 @@ public final class HistoryPanel {
             int textLeft = dragCardX + 18;
             int textAvail = dragCardWidth - 20;
             
-            String trimmedName = trimToWidthScaled(font, displayName, textAvail, NAME_TEXT_SCALE);
-            drawScaledString(graphics, font, trimmedName, textLeft, dragCardY + 2, NAME_TEXT_SCALE, nameColor);
+            String trimmedName = trimToWidthScaled(textRenderer, displayName, textAvail, NAME_TEXT_SCALE);
+            drawScaledString(graphics, textRenderer, trimmedName, textLeft, dragCardY + 2, NAME_TEXT_SCALE, nameColor);
             
             if (hexText != null) {
-                String trimmedHex = trimToWidthScaled(font, hexText, textAvail, HEX_TEXT_SCALE);
-                drawScaledString(graphics, font, trimmedHex, textLeft, dragCardY + 10, HEX_TEXT_SCALE, 0x80AAAAAA);
+                String trimmedHex = trimToWidthScaled(textRenderer, hexText, textAvail, HEX_TEXT_SCALE);
+                drawScaledString(graphics, textRenderer, trimmedHex, textLeft, dragCardY + 10, HEX_TEXT_SCALE, 0x80AAAAAA);
             }
         }
         
         // If an item was hovered we want to render an unclipped tooltip with the full name
         if (hoveredName != null && !hoveredName.isEmpty()) {
             // renderTooltip expects integer coordinates in this MC version
-            graphics.renderTooltip(font, net.minecraft.network.chat.Component.literal(hoveredName), (int) hoverX, (int) hoverY);
+            graphics.drawTooltip(textRenderer, List.of(net.minecraft.text.Text.literal(hoveredName)), (int) hoverX, (int) hoverY);
         }
 
         // Redraw title on top of scissored content to avoid artifacts
-        var title = net.minecraft.network.chat.Component.literal("Recent Blocks");
-        graphics.drawCenteredString(font, title, panelX + panelWidth / 2, panelY - TITLE_BAR_HEIGHT + 4, 0xFFFFFF);
+        var title = net.minecraft.text.Text.literal("Recent Blocks");
+        graphics.drawCenteredTextWithShadow(textRenderer, title, panelX + panelWidth / 2, panelY - TITLE_BAR_HEIGHT + 4, 0xFFFFFF);
 
         // Draw "+" button for creating new folders (to the left of the title)
             // "+" button for creating new folders (move to top-right)
             int addButtonSize = 12;
             // Check if player is in survival mode to know if the full-stack toggle is visible on right
             boolean inSurvival = false;
-            var mcForAdd = net.minecraft.client.Minecraft.getInstance();
+            var mcForAdd = net.minecraft.client.MinecraftClient.getInstance();
             if (mcForAdd.player != null) {
-                inSurvival = !mcForAdd.player.getAbilities().instabuild;
+                inSurvival = !mcForAdd.player.getAbilities().creativeMode;
             }
             int rightInset = INNER_PADDING;
             int fullStackToggleWidth = 24;
@@ -392,7 +392,7 @@ public final class HistoryPanel {
                                        mouseY >= addButtonY && mouseY < addButtonY + addButtonSize;
             int addButtonBg = addButtonHovered ? 0xFF555555 : 0xFF333333;
             GuiRenderUtil.drawRoundedRect(graphics, addButtonX, addButtonY, addButtonSize, addButtonSize, 3, addButtonBg);
-            graphics.drawCenteredString(font, "+", addButtonX + addButtonSize / 2, addButtonY + 2, 0xFFFFFF);
+            graphics.drawCenteredTextWithShadow(textRenderer, "+", addButtonX + addButtonSize / 2, addButtonY + 2, 0xFFFFFF);
 
         // Draw toggles in the title bar
         // Nudge toggles down by 1px to avoid overlapping the title bar's top seam, which
@@ -475,7 +475,7 @@ public final class HistoryPanel {
         
         // Check "+" button hover (reuse variables from above)
         if (addButtonHovered) {
-            graphics.renderTooltip(font, net.minecraft.network.chat.Component.literal("Create New Folder"), (int) mouseX, (int) mouseY);
+            graphics.drawTooltip(textRenderer, List.of(net.minecraft.text.Text.literal("Create New Folder")), (int) mouseX, (int) mouseY);
         }
         
         // Check compact toggle hover
@@ -483,19 +483,19 @@ public final class HistoryPanel {
                                        mouseY >= compactToggleY && mouseY < compactToggleY + TOGGLE_SIZE;
         if (compactToggleHovered) {
             String compactTooltip = compactView ? "Switch to Large View" : "Switch to Compact View";
-            graphics.renderTooltip(font, net.minecraft.network.chat.Component.literal(compactTooltip), (int) mouseX, (int) mouseY);
+            graphics.drawTooltip(textRenderer, List.of(net.minecraft.text.Text.literal(compactTooltip)), (int) mouseX, (int) mouseY);
         }
         
         // Check full stack toggle hover (only if in survival mode)
         if (inSurvival && fullStackToggleButton != null && fullStackToggleButton.isHovered((int) mouseX, (int) mouseY)) {
             String fullStackTooltip = fullStackMode ? "Full Stack Mode (x64)" : "Single Item Mode (x1)";
-            graphics.renderTooltip(font, net.minecraft.network.chat.Component.literal(fullStackTooltip), (int) mouseX, (int) mouseY);
+            graphics.drawTooltip(textRenderer, List.of(net.minecraft.text.Text.literal(fullStackTooltip)), (int) mouseX, (int) mouseY);
         }
         
             // Note: overlay is rendered by the parent screen after all widgets for top-most z-order
     }
 
-            private void renderContextMenu(GuiGraphics graphics, Font font, int mouseX, int mouseY) {
+            private void renderContextMenu(DrawContext graphics, TextRenderer textRenderer, int mouseX, int mouseY) {
                 // Check if mouse is over the menu
                 boolean hovered = mouseX >= contextMenuX && mouseX < contextMenuX + contextMenuWidth &&
                                  mouseY >= contextMenuY && mouseY < contextMenuY + CONTEXT_MENU_HEIGHT;
@@ -503,8 +503,8 @@ public final class HistoryPanel {
                 // Ensure the context menu renders above any 3D item icons by disabling depth test
                 // and translating far forward on the GUI Z axis.
                 RenderSystem.disableDepthTest();
-                var poseTop = graphics.pose();
-                poseTop.pushPose();
+                var poseTop = graphics.getMatrices();
+                poseTop.push();
                 poseTop.translate(0, 0, 400.0f);
 
                 int bgColor = hovered ? 0xFF444444 : 0xFF2B2B2B;
@@ -513,21 +513,21 @@ public final class HistoryPanel {
                 GuiRenderUtil.drawRoundedRect(graphics, contextMenuX, contextMenuY, contextMenuWidth, CONTEXT_MENU_HEIGHT, 3, bgColor);
 
                 // Draw centered label at 0.8 scale
-                poseTop.pushPose();
+                poseTop.push();
                 poseTop.scale(0.8f, 0.8f, 1.0f);
 
                 String text = contextMenuLabel;
-                int textWidth = (int) (font.width(text) * 0.8f);
-                int textHeight = (int) (font.lineHeight * 0.8f);
+                int textWidth = (int) (textRenderer.getWidth(text) * 0.8f);
+                int textHeight = (int) (textRenderer.fontHeight * 0.8f);
 
                 int centeredX = (int) ((contextMenuX + contextMenuWidth / 2.0f - textWidth / 2.0f) / 0.8f);
                 int centeredY = (int) ((contextMenuY + CONTEXT_MENU_HEIGHT / 2.0f - textHeight / 2.0f) / 0.8f);
 
-                graphics.drawString(font, text, centeredX, centeredY, hovered ? 0xFFFFFF : 0xCCCCCC, false);
+                graphics.drawText(textRenderer, text, centeredX, centeredY, hovered ? 0xFFFFFF : 0xCCCCCC, false);
 
                 // Pop inner (scale) and outer (z-translate) poses, and restore depth state
-                poseTop.popPose();
-                poseTop.popPose();
+                poseTop.pop();
+                poseTop.pop();
                 RenderSystem.enableDepthTest();
             }
 
@@ -542,7 +542,7 @@ public final class HistoryPanel {
                         final BlockFolder toDelete = contextMenuFolder; // capture before clearing
                         int itemCount = toDelete.blocks.size();
                         String message = "Delete folder and all " + itemCount + " item" + (itemCount == 1 ? "" : "s") + " inside?";
-                        Minecraft.getInstance().setScreen(new ConfirmationDialog(
+                        MinecraftClient.getInstance().setScreen(new ConfirmationDialog(
                             screen,
                             "Delete Folder?",
                             message,
@@ -550,7 +550,7 @@ public final class HistoryPanel {
                         ));
                     } else if (contextMenuBlock != null) {
                         final CreatedBlockInfo toDelete = contextMenuBlock; // capture before clearing
-                        Minecraft.getInstance().setScreen(new ConfirmationDialog(
+                        MinecraftClient.getInstance().setScreen(new ConfirmationDialog(
                             screen,
                             "Delete Item?",
                             "Delete this item from history?",
@@ -573,9 +573,9 @@ public final class HistoryPanel {
 
         // Check if player is in survival mode for full stack toggle
         boolean inSurvival = false;
-        var mc = net.minecraft.client.Minecraft.getInstance();
+        var mc = net.minecraft.client.MinecraftClient.getInstance();
         if (mc.player != null) {
-            inSurvival = !mc.player.getAbilities().instabuild;
+            inSurvival = !mc.player.getAbilities().creativeMode;
         }
 
         // Compute toggle bounds in the title bar
@@ -599,7 +599,7 @@ public final class HistoryPanel {
                                    mouseY >= addButtonY && mouseY < addButtonY + addButtonSize;
         if (clickedAddButton) {
             // Open folder creation dialog (name + color)
-            Minecraft.getInstance().setScreen(new FolderDialogScreen((Screen) screen, (folderName, colorRgb) -> {
+            MinecraftClient.getInstance().setScreen(new FolderDialogScreen((Screen) screen, (folderName, colorRgb) -> {
                 String effectiveName = (folderName == null || folderName.trim().isEmpty()) ? "New Folder" : folderName.trim();
                 BlockEditorHistory.createFolder(effectiveName, colorRgb);
             }));
@@ -686,7 +686,7 @@ public final class HistoryPanel {
                 contextMenuLabel = "Delete Folder";
                 // compute dynamic width at 0.8 scale with padding
                 int padding = 10;
-                int textW = (int) (Minecraft.getInstance().font.width(contextMenuLabel) * 0.8f);
+                int textW = (int) (MinecraftClient.getInstance().textRenderer.getWidth(contextMenuLabel) * 0.8f);
                 contextMenuWidth = Math.max(40, textW + padding);
                 // clamp position to screen bounds
                 contextMenuX = (int) Math.min(mouseX, screen.width - contextMenuWidth - 5);
@@ -706,7 +706,7 @@ public final class HistoryPanel {
             contextMenuBlock = item.block;
             contextMenuLabel = "Delete Item";
             int padding = 10;
-            int textW = (int) (Minecraft.getInstance().font.width(contextMenuLabel) * 0.8f);
+            int textW = (int) (MinecraftClient.getInstance().textRenderer.getWidth(contextMenuLabel) * 0.8f);
             contextMenuWidth = Math.max(40, textW + padding);
             contextMenuX = (int) Math.min(mouseX, screen.width - contextMenuWidth - 5);
             contextMenuY = (int) Math.min(mouseY, screen.height - CONTEXT_MENU_HEIGHT - 5);
@@ -721,9 +721,9 @@ public final class HistoryPanel {
     }
 
     // Public overlay render to be called at the very end by the parent screen
-    public void renderOverlay(GuiGraphics graphics, Font font, int mouseX, int mouseY) {
+    public void renderOverlay(DrawContext graphics, TextRenderer textRenderer, int mouseX, int mouseY) {
         if (contextMenuFolder != null || contextMenuBlock != null) {
-            renderContextMenu(graphics, font, mouseX, mouseY);
+            renderContextMenu(graphics, textRenderer, mouseX, mouseY);
         }
     }
 
@@ -766,26 +766,26 @@ public final class HistoryPanel {
     }
 
     // Helpers
-    private static void drawScaledString(GuiGraphics g, Font font, String text, int x, int y, float scale, int color) {
-        var pose = g.pose();
-        pose.pushPose();
+    private static void drawScaledString(DrawContext g, TextRenderer textRenderer, String text, int x, int y, float scale, int color) {
+        var pose = g.getMatrices();
+        pose.push();
         pose.translate(x, y, 0);
         pose.scale(scale, scale, 1f);
-        g.drawString(font, text, 0, 0, color, false);
-        pose.popPose();
+        g.drawText(textRenderer, text, 0, 0, color, false);
+        pose.pop();
     }
 
-    private static String trimToWidthScaled(Font font, String text, int widthPx, float scale) {
+    private static String trimToWidthScaled(TextRenderer textRenderer, String text, int widthPx, float scale) {
         if (text == null) return "";
         // Work in unscaled space by dividing allowed width by scale
         int allowed = (int) Math.floor(widthPx / Math.max(0.001f, scale));
-        int w = font.width(text);
+        int w = textRenderer.getWidth(text);
         if (w <= allowed) return text;
         String ell = "...";
-        int ellW = font.width(ell);
+        int ellW = textRenderer.getWidth(ell);
         for (int i = text.length() - 1; i >= 0; i--) {
             String sub = text.substring(0, i);
-            if (font.width(sub) + ellW <= allowed) return sub + ell;
+            if (textRenderer.getWidth(sub) + ellW <= allowed) return sub + ell;
         }
         return text;
     }
@@ -826,7 +826,7 @@ public final class HistoryPanel {
         int guiWidth = (screen != null) ? screen.width : 1920;
         int windowPixelWidth;
         try {
-            windowPixelWidth = Minecraft.getInstance().getWindow().getScreenWidth();
+            windowPixelWidth = MinecraftClient.getInstance().getWindow().getWidth();
         } catch (Exception ignored) {
             windowPixelWidth = guiWidth;
         }
@@ -903,7 +903,7 @@ public final class HistoryPanel {
             int guiWidth = (screen != null) ? screen.width : 1920;
             int windowPixelWidth;
             try {
-                windowPixelWidth = Minecraft.getInstance().getWindow().getScreenWidth();
+                windowPixelWidth = MinecraftClient.getInstance().getWindow().getWidth();
             } catch (Exception ignored) {
                 windowPixelWidth = guiWidth;
             }

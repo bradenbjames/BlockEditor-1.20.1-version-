@@ -1,10 +1,10 @@
 package com.blockeditor.mod.content;
 
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.block.SoundType;
-import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.BlockView;
+import net.minecraft.sound.BlockSoundGroup;
+import net.minecraft.block.AbstractBlock;
+import net.minecraft.block.BlockState;
 
 /**
  * A DynamicBlock variant for tinted glass which blocks light but remains transparent.
@@ -14,24 +14,19 @@ import net.minecraft.world.level.block.state.BlockState;
 public class TintedDynamicBlock extends DynamicBlock {
 
     public TintedDynamicBlock() {
-        super(BlockBehaviour.Properties.of()
-            .noOcclusion()
+        super(AbstractBlock.Settings.create()
+            .nonOpaque()
             .strength(0.3f)
-            .sound(SoundType.GLASS));
+            .sounds(BlockSoundGroup.GLASS));
     }
 
     @Override
-    public boolean propagatesSkylightDown(BlockState state, BlockGetter level, BlockPos pos) {
-        return false; // Tinted glass blocks skylight propagation
-    }
-
-    @Override
-    public int getLightBlock(BlockState state, BlockGetter level, BlockPos pos) {
+    public int getOpacity(BlockState state, BlockView world, BlockPos pos) {
         return 15; // Tinted glass blocks all light
     }
 
     @Override
-    public float getShadeBrightness(BlockState state, BlockGetter level, BlockPos pos) {
+    public float getAmbientOcclusionLightLevel(BlockState state, BlockView world, BlockPos pos) {
         return 1.0F; // Still visually bright for rendering
     }
 }

@@ -7,24 +7,26 @@ import com.blockeditor.mod.client.gui.editor.BlockAllowList;
 import com.blockeditor.mod.client.gui.editor.BlockValidation;
 import com.blockeditor.mod.client.gui.editor.TextureBlockResolver;
 import com.blockeditor.mod.client.gui.editor.InventoryHelper;
+import com.blockeditor.mod.client.ModKeyMappings;
 import com.blockeditor.mod.network.ClearRegistryPacket;
 import com.blockeditor.mod.network.CreateBlockPacket;
 import com.blockeditor.mod.network.ModNetworking;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
+import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.gui.widget.TextFieldWidget;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
+import net.minecraft.block.Block;
+import net.minecraft.block.Blocks;
+import net.minecraft.registry.Registries;
 import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
 import java.util.List;
 import java.util.ArrayList;
 import java.io.File;
-import net.minecraftforge.registries.ForgeRegistries;
+
 
 public class BlockEditorScreen extends Screen {
 
@@ -45,12 +47,12 @@ public class BlockEditorScreen extends Screen {
     private Block selectedBlock = Blocks.STONE;
     private int scrollOffset = 0;
 
-    private EditBox hexBox;
-    private EditBox searchBox;
-    private EditBox nameBox;
-    private Button createButton;
-    private Button cancelButton;
-    private Button clearRegistryButton;
+    private TextFieldWidget hexBox;
+    private TextFieldWidget searchBox;
+    private TextFieldWidget nameBox;
+    private ButtonWidget createButton;
+    private ButtonWidget cancelButton;
+    private ButtonWidget clearRegistryButton;
 
     // Confirmation dialog state
     private boolean showingClearConfirmation = false;
@@ -78,7 +80,7 @@ public class BlockEditorScreen extends Screen {
      }
 
     public BlockEditorScreen() {
-        super(Component.literal("Block Editor"));
+        super(Text.literal("Block Editor"));
         BlockEditorHistory.loadHistoryFromFile(); // Load history when screen is created
     }
     
@@ -92,7 +94,7 @@ public class BlockEditorScreen extends Screen {
         
         // Get all registered blocks (filter to only allowed blocks)
         allBlocks.clear();
-        for (Block block : ForgeRegistries.BLOCKS.getValues()) {
+        for (Block block : Registries.BLOCK.stream().toList()) {
             if (block != Blocks.AIR && block != Blocks.CAVE_AIR && block != Blocks.VOID_AIR) {
                 if (BlockAllowList.isAllowed(block)) {
                     allBlocks.add(block);
@@ -110,16 +112,16 @@ public class BlockEditorScreen extends Screen {
 
         // Search box - hidden from UI but functionality kept
         int searchWidth = 120; 
-        searchBox = new EditBox(this.font, -1000, -1000, searchWidth, 20, Component.literal("Search")); // Move off-screen
-        searchBox.setHint(Component.literal("Search blocks..."));
+        searchBox = new TextFieldWidget(this.textRenderer, -1000, -1000, searchWidth, 20, Text.literal("Search")); // Move off-screen
+        searchBox.setSuggestion("Search blocks...");
         // Don't add to renderableWidget - keep functionality but hide UI
         
         // Hex color input box - positioned to align with block grid
         int hexY = 30;
 
         // Custom hex input box
-        hexBox = BlockEditorWidgets.createHexBox(this.font, gridStartX, hexY, hexColor);
-        this.addRenderableWidget(hexBox);
+        hexBox = BlockEditorWidgets.createHexBox(this.textRenderer, gridStartX, hexY, hexColor);
+        this.addDrawableChild(hexBox);
 
         // Custom name input box - placed with consistent gap after hex box
         int gap = 10; // slightly thinner gap
@@ -136,8 +138,8 @@ public class BlockEditorScreen extends Screen {
         // As a safety fallback, keep it at least 64px so hint text fits on very small screens
         if (computedNameWidth < 64) computedNameWidth = 64;
 
-        nameBox = BlockEditorWidgets.createNameBox(this.font, nameX, hexY, computedNameWidth);
-        this.addRenderableWidget(nameBox);
+        nameBox = BlockEditorWidgets.createNameBox(this.textRenderer, nameX, hexY, computedNameWidth);
+        this.addDrawableChild(nameBox);
 
         // Buttons - positioned lower (moved down) so they don't overlap the block grid
         // Compute grid bottom and place buttons 30px below it instead of anchoring to window bottom
@@ -176,13 +178,13 @@ public class BlockEditorScreen extends Screen {
         int startButtonsX = Math.max(gridStartX, gridRightX - totalButtonsWidth); // clamp so buttons don't go left of grid
 
         createButton = BlockEditorWidgets.createButton("Create Block", startButtonsX, buttonY, buttonWidthActual, this::createColoredBlock);
-        this.addRenderableWidget(createButton);
+        this.addDrawableChild(createButton);
 
-        cancelButton = BlockEditorWidgets.createButton("Cancel", startButtonsX + (buttonWidthActual + buttonSpacing), buttonY, buttonWidthActual, this::onClose);
-        this.addRenderableWidget(cancelButton);
+        cancelButton = BlockEditorWidgets.createButton("Cancel", startButtonsX + (buttonWidthActual + buttonSpacing), buttonY, buttonWidthActual, this::close);
+        this.addDrawableChild(cancelButton);
 
         clearRegistryButton = BlockEditorWidgets.createButton("Clear Registry", startButtonsX + (buttonWidthActual + buttonSpacing) * 2, buttonY, buttonWidthActual, this::handleClearRegistryClick);
-        this.addRenderableWidget(clearRegistryButton);
+        this.addDrawableChild(clearRegistryButton);
 
         // Constrain history panel so it doesn't overlap the main grid or buttons; place it to the right of the block grid
         // On very wide screens, prefer to give the history panel a minimum width so it can show
@@ -215,22 +217,22 @@ public class BlockEditorScreen extends Screen {
             } else { // left/right: set as template
                 selectedBlock = info.originalBlock;
                 hexColor = info.hexColor;
-                if (hexBox != null) hexBox.setValue(hexColor);
-                if (nameBox != null) nameBox.setValue("");
+                if (hexBox != null) hexBox.setText(hexColor);
+                if (nameBox != null) nameBox.setText("");
             }
         });
 
     }
 
     @Override
-    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+    public void render(DrawContext context, int mouseX, int mouseY, float partialTick) {
 
         
         // Render background
-        graphics.fill(0, 0, this.width, this.height, 0xC0101010);
+        context.fill(0, 0, this.width, this.height, 0xC0101010);
 
         // Draw block grid
-         renderBlockGrid(graphics, mouseX, mouseY);
+         renderBlockGrid(context, mouseX, mouseY);
 
         // Calculate positions to match init() - grid centered in left half
         int blocksPerRowRuntime = computeBlocksPerRow();
@@ -240,11 +242,11 @@ public class BlockEditorScreen extends Screen {
         // # symbol is now integrated into the hex input box
         
         // NOTE: removed the red rectangle border in favor of coloring the text red when invalid
-        // Name text color is now handled in tick() to ensure the EditBox shows red text when invalid
+        // Name text color is now handled in tick() to ensure the TextFieldWidget shows red text when invalid
 
         // Draw block preview to the right of the name text box, same size as selection grid blocks
         if (hexBox != null && nameBox != null) {
-            int color = BlockValidation.parseHexColor(hexBox.getValue());
+            int color = BlockValidation.parseHexColor(hexBox.getText());
             int previewSize = 16; // Same size as blocks in selection grid (16px item size, not scaled)
 
             // Position aligned with the rightmost column of the selection grid
@@ -253,11 +255,11 @@ public class BlockEditorScreen extends Screen {
             int blockPreviewY = nameBox.getY() + (nameBox.getHeight() - previewSize) / 2; // Vertically centered with name box
 
             // Save the current pose
-            var pose = graphics.pose();
-            pose.pushPose();
+            var matrices = context.getMatrices();
+            matrices.push();
 
             // No scaling - render at natural 16px item size like the grid blocks
-            pose.translate(blockPreviewX, blockPreviewY, 0);
+            matrices.translate(blockPreviewX, blockPreviewY, 0);
 
             // Apply color tint using RenderSystem
             RenderSystem.setShaderColor(
@@ -268,11 +270,11 @@ public class BlockEditorScreen extends Screen {
             );
 
             // Render the selected block item with tint
-            graphics.renderItem(selectedBlock.asItem().getDefaultInstance(), 0, 0);
+            context.drawItem(selectedBlock.asItem().getDefaultStack(), 0, 0);
 
             // Reset color and transform
             RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
-            pose.popPose();
+            matrices.pop();
         }
 
         // Recompute left bound each frame based on the current grid so the panel follows the grid if the window is resized
@@ -302,16 +304,16 @@ public class BlockEditorScreen extends Screen {
         if (cancelButton != null) panelBottom = Math.max(panelBottom, cancelButton.getY() + cancelButton.getHeight() - 1);
         if (clearRegistryButton != null) panelBottom = Math.max(panelBottom, clearRegistryButton.getY() + clearRegistryButton.getHeight() - 1);
         historyPanel.setVerticalBounds(panelTop, panelBottom);
-    historyPanel.render(this, graphics, this.font, mouseX, mouseY);
+    historyPanel.render(this, context, this.textRenderer, mouseX, mouseY);
 
     // Render all widgets (buttons and text boxes)
-    super.render(graphics, mouseX, mouseY, partialTick);
+    super.render(context, mouseX, mouseY, partialTick);
 
     // Render overlay (context menus) last so they sit above everything
-    historyPanel.renderOverlay(graphics, this.font, mouseX, mouseY);
+    historyPanel.renderOverlay(context, this.textRenderer, mouseX, mouseY);
     }
 
-    private void renderBlockGrid(GuiGraphics graphics, int mouseX, int mouseY) {
+    private void renderBlockGrid(DrawContext context, int mouseX, int mouseY) {
         // Grid start X should be computed to occupy the left half
         int blocksPerRow = computeBlocksPerRow();
         int blockGridWidth = blocksPerRow * BLOCK_SIZE + (blocksPerRow - 1) * BLOCK_PADDING;
@@ -319,11 +321,11 @@ public class BlockEditorScreen extends Screen {
         int startY = 55;
 
         // Filter blocks based on search
-        String search = (searchBox != null ? searchBox.getValue() : "").toLowerCase();
+        String search = (searchBox != null ? searchBox.getText() : "").toLowerCase();
         if (!search.isEmpty()) {
             filteredBlocks = new ArrayList<>();
             for (Block block : allBlocks) {
-                ResourceLocation key = ForgeRegistries.BLOCKS.getKey(block);
+                Identifier key = net.minecraft.registry.Registries.BLOCK.getId(block);
                 if (key != null) {
                     String blockName = key.toString();
                     if (blockName.contains(search)) {
@@ -347,14 +349,14 @@ public class BlockEditorScreen extends Screen {
 
                 // Draw block background
                 int bgColor = block == selectedBlock ? 0xFF44FF44 : 0xFF888888;
-                graphics.fill(x, y, x + BLOCK_SIZE, y + BLOCK_SIZE, bgColor);
+                context.fill(x, y, x + BLOCK_SIZE, y + BLOCK_SIZE, bgColor);
 
                 // Draw block item
-                graphics.renderItem(block.asItem().getDefaultInstance(), x + 8, y + 8);
+                context.drawItem(block.asItem().getDefaultStack(), x + 8, y + 8);
 
                 // Highlight on hover
                 if (mouseX >= x && mouseX < x + BLOCK_SIZE && mouseY >= y && mouseY < y + BLOCK_SIZE) {
-                    graphics.fill(x, y, x + BLOCK_SIZE, y + BLOCK_SIZE, 0x80FFFFFF);
+                    context.fill(x, y, x + BLOCK_SIZE, y + BLOCK_SIZE, 0x80FFFFFF);
                 }
             }
         }
@@ -362,25 +364,26 @@ public class BlockEditorScreen extends Screen {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        // Handle hex box click - select all text
+        // Handle hex box click - select all text so paste/typing replaces it
         if (hexBox != null && hexBox.isMouseOver(mouseX, mouseY) && button == 0) {
-            if (!hexBox.isFocused()) {
-                hexBox.setFocused(true);
-                hexBox.setHighlightPos(0);
-                hexBox.moveCursorToEnd();
-            }
+            hexBox.setFocused(true);
+            // Let super handle the click first, then select all afterwards
+            boolean result = super.mouseClicked(mouseX, mouseY, button);
+            hexBox.setCursorToStart();
+            hexBox.setSelectionEnd(hexBox.getText().length());
+            return result;
         }
         
         // Handle middle-click (button 2) to toggle full stack mode in survival
         if (button == 2) { // Middle mouse button
             // Only allow middle-click toggle in survival mode
-            if (this.minecraft.player != null && !this.minecraft.player.getAbilities().instabuild) {
+            if (this.client.player != null && !this.client.player.getAbilities().creativeMode) {
                 HistoryPanel.setFullStackMode(!HistoryPanel.isFullStackMode());
 
                 // Show feedback message
                 String modeText = HistoryPanel.isFullStackMode() ? "Full Stack (x64)" : "Single Block (x1)";
-                this.minecraft.player.displayClientMessage(
-                    Component.literal("§7Block creation mode: §f" + modeText),
+                this.client.player.sendMessage(
+                    Text.literal("§7Block creation mode: §f" + modeText),
                     true // Action bar message
                 );
                 return true;
@@ -493,10 +496,23 @@ public class BlockEditorScreen extends Screen {
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        boolean textFieldFocused = (nameBox != null && nameBox.isFocused()) || (hexBox != null && hexBox.isFocused()) || (searchBox != null && searchBox.isFocused());
+
+        // Close screen when the open key (G) is pressed again, but not while typing in a text field
+        if (!textFieldFocused && ModKeyMappings.OPEN_BLOCK_EDITOR.matchesKey(keyCode, scanCode)) {
+            this.close();
+            return true;
+        }
+
         // Reset confirmation state if user presses escape or any other key (except Enter)
         if (showingClearConfirmation && keyCode != 257) { // 257 is ENTER key
             showingClearConfirmation = false;
             updateClearButtonText();
+        }
+
+        // If a text field is focused, let it handle all key input
+        if (textFieldFocused) {
+            return super.keyPressed(keyCode, scanCode, modifiers);
         }
         
         // Test direct scroll with number keys (not affected by text focus)
@@ -547,38 +563,38 @@ public class BlockEditorScreen extends Screen {
             nameBox.tick();
         }
 
-        // Check for scroll input using Minecraft's input system
+        // Check for scroll input using client's input system
         checkScrollInput();
 
         // Validate and clean hex input (only allow hex characters)
         if (hexBox != null) {
-            String value = hexBox.getValue().toUpperCase();
+            String value = hexBox.getText().toUpperCase();
             value = value.replaceAll("[^0-9A-F]", "");
             if (value.length() > 6) {
                 value = value.substring(0, 6);
             }
             hexColor = value;
-            if (!hexBox.getValue().equals(value)) {
-                hexBox.setValue(value);
+            if (!hexBox.getText().equals(value)) {
+                hexBox.setText(value);
             }
         }
         
         // Real-time validation of name input (filter illegal characters as user types)
         if (nameBox != null) {
-            String nameValue = nameBox.getValue();
+            String nameValue = nameBox.getText();
             // Remove illegal characters in real-time
             String cleanedName = nameValue.replaceAll("[^a-zA-Z0-9 _\\-'.()]", "");
             if (cleanedName.length() > 32) {
                 cleanedName = cleanedName.substring(0, 32);
             }
             if (!nameValue.equals(cleanedName)) {
-                nameBox.setValue(cleanedName);
+                nameBox.setText(cleanedName);
             }
             // Update the edit box text color: red when invalid, white when valid
             try {
                 int validColor = 16777215; // white
                 int invalidColor = 16711680; // red
-                nameBox.setTextColor(isNameBoxValid() ? validColor : invalidColor);
+                nameBox.setEditableColor(isNameBoxValid() ? validColor : invalidColor);
             } catch (Exception ignored) {
                 // setTextColor may not exist or behave differently on some mappings; ignore failures
             }
@@ -591,20 +607,20 @@ public class BlockEditorScreen extends Screen {
     }
 
     private void checkScrollInput() {
-        if (minecraft != null) {
+        if (client != null) {
             // Get mouse position
-            double mouseX = minecraft.mouseHandler.xpos() * minecraft.getWindow().getGuiScaledWidth() / minecraft.getWindow().getScreenWidth();
-            double mouseY = minecraft.mouseHandler.ypos() * minecraft.getWindow().getGuiScaledHeight() / minecraft.getWindow().getScreenHeight();
+            double mouseX = client.mouse.getX() * client.getWindow().getScaledWidth() / client.getWindow().getWidth();
+            double mouseY = client.mouse.getY() * client.getWindow().getScaledHeight() / client.getWindow().getHeight();
             
             // Check if mouse is over history panel
             if (historyPanel.isMouseOver(this, mouseX, mouseY)) {
                 // Check for key-based scrolling as alternative
-                if (org.lwjgl.glfw.GLFW.glfwGetKey(minecraft.getWindow().getWindow(), org.lwjgl.glfw.GLFW.GLFW_KEY_UP) == org.lwjgl.glfw.GLFW.GLFW_PRESS) {
+                if (org.lwjgl.glfw.GLFW.glfwGetKey(client.getWindow().getHandle(), org.lwjgl.glfw.GLFW.GLFW_KEY_UP) == org.lwjgl.glfw.GLFW.GLFW_PRESS) {
                     if (System.currentTimeMillis() % 200 < 50) { // Throttle key repeat
                         scrollHistoryUp();
                     }
                 }
-                if (org.lwjgl.glfw.GLFW.glfwGetKey(minecraft.getWindow().getWindow(), org.lwjgl.glfw.GLFW.GLFW_KEY_DOWN) == org.lwjgl.glfw.GLFW.GLFW_PRESS) {
+                if (org.lwjgl.glfw.GLFW.glfwGetKey(client.getWindow().getHandle(), org.lwjgl.glfw.GLFW.GLFW_KEY_DOWN) == org.lwjgl.glfw.GLFW.GLFW_PRESS) {
                     if (System.currentTimeMillis() % 200 < 50) // Throttle key repeat
                         scrollHistoryDown();
                 }
@@ -618,12 +634,12 @@ public class BlockEditorScreen extends Screen {
         int guiWidth = this.width; // scaled GUI units
         int windowPixelWidth = guiWidth;
         int guiScaledWidth = guiWidth;
-        if (this.minecraft != null) {
+        if (this.client != null) {
             try {
-                var window = this.minecraft.getWindow();
+                var window = this.client.getWindow();
                 // window is expected to be non-null here in the client environment; use directly
-                windowPixelWidth = window.getScreenWidth();
-                guiScaledWidth = window.getGuiScaledWidth();
+                windowPixelWidth = window.getWidth();
+                guiScaledWidth = window.getScaledWidth();
             } catch (Exception ignored) {
                 // fall back to guiWidth
             }
@@ -646,7 +662,7 @@ public class BlockEditorScreen extends Screen {
             return false;
         }
         
-        String nameValue = nameBox.getValue();
+        String nameValue = nameBox.getText();
         boolean validName = BlockValidation.isValidBlockName(nameValue);
         boolean notDuplicate = !isDuplicateName(nameValue);
         
@@ -685,12 +701,12 @@ public class BlockEditorScreen extends Screen {
     }
 
     private void createColoredBlock() {
-        if (this.minecraft != null && this.minecraft.player != null) {
+        if (this.client != null && this.client.player != null) {
             // Validate hex color is exactly 6 characters
             if (hexColor.length() != 6) {
                 // Show error message to player
-                this.minecraft.player.displayClientMessage(
-                    Component.literal("§cError: Hex color must be exactly 6 characters (e.g., FF0000 for red)"),
+                this.client.player.sendMessage(
+                    Text.literal("§cError: Hex color must be exactly 6 characters (e.g., FF0000 for red)"),
                     false
                 );
                 return;
@@ -698,23 +714,23 @@ public class BlockEditorScreen extends Screen {
             
             // Strict validation: Block name MUST be provided and valid
             if (!isNameBoxValid()) {
-                String errorMsg = nameBox.getValue().trim().isEmpty() ?
+                String errorMsg = nameBox.getText().trim().isEmpty() ?
                     "§cError: Block name cannot be empty!" :
                     "§cError: Block name contains illegal characters! Use letters, numbers, spaces, and basic punctuation only.";
-                this.minecraft.player.displayClientMessage(
-                    Component.literal(errorMsg),
+                this.client.player.sendMessage(
+                    Text.literal(errorMsg),
                     false
                 );
                 return;
             }
 
             // Check for duplicate custom names - CAPTURE VALUE IMMEDIATELY
-            String nameBoxRawValue = nameBox.getValue();
+            String nameBoxRawValue = nameBox.getText();
             String customNameCheck = nameBoxRawValue.trim();
 
             if (isDuplicateName(customNameCheck)) {
-                this.minecraft.player.displayClientMessage(
-                    Component.literal("§cError: Block name '" + customNameCheck + "' already exists! Please choose a different name."),
+                this.client.player.sendMessage(
+                    Text.literal("§cError: Block name '" + customNameCheck + "' already exists! Please choose a different name."),
                     false
                 );
                 return;
@@ -723,8 +739,8 @@ public class BlockEditorScreen extends Screen {
             // Check if inventory is full before creating
             boolean inventoryWasFull = isInventoryFull();
             if (inventoryWasFull) {
-                this.minecraft.player.displayClientMessage(
-                    Component.literal("§eInventory full! §7Block will be dropped near you."),
+                this.client.player.sendMessage(
+                    Text.literal("§eInventory full! §7Block will be dropped near you."),
                     false
                 );
             }
@@ -732,24 +748,24 @@ public class BlockEditorScreen extends Screen {
             // Determine which block type to use based on the selected block
             Block blockToUse = TextureBlockResolver.resolve(selectedBlock);
 
-            ResourceLocation blockId = ForgeRegistries.BLOCKS.getKey(blockToUse);
-            ResourceLocation mimicBlockId = ForgeRegistries.BLOCKS.getKey(selectedBlock);
+            Identifier blockId = net.minecraft.registry.Registries.BLOCK.getId(blockToUse);
+            Identifier mimicBlockId = net.minecraft.registry.Registries.BLOCK.getId(selectedBlock);
             if (blockId == null || mimicBlockId == null) {
                 LOGGER.error("Missing registry key for block(s): blockId={}, mimicBlockId={}", blockId, mimicBlockId);
-                this.minecraft.player.displayClientMessage(
-                    Component.literal("§cInternal error: Could not resolve block registry keys."),
+                this.client.player.sendMessage(
+                    Text.literal("§cInternal error: Could not resolve block registry keys."),
                     false
                 );
                 return;
             }
 
             // Send packet to server to create the item - CAPTURE VALUE AGAIN
-            String packetNameBoxRaw = nameBox.getValue();
+            String packetNameBoxRaw = nameBox.getText();
             String customName = packetNameBoxRaw.trim();
             
             // Determine stack size based on game mode and toggle state
             int stackSize = 1; // default
-            if (this.minecraft.player != null && !this.minecraft.player.getAbilities().instabuild) {
+            if (this.client.player != null && !this.client.player.getAbilities().creativeMode) {
                 // In survival mode, check the full stack toggle
                 if (HistoryPanel.isFullStackMode()) {
                     stackSize = 64;
@@ -782,19 +798,19 @@ public class BlockEditorScreen extends Screen {
             // Show success message (only if inventory wasn't full)
             if (!inventoryWasFull) {
                 String blockName = mimicBlockId.getPath().replace("_", " ");
-                this.minecraft.player.displayClientMessage(
-                    Component.literal("§aCreated colored block: §f" + blockName + " §7(#" + hexColor.toUpperCase() + ")"),
+                this.client.player.sendMessage(
+                    Text.literal("§aCreated colored block: §f" + blockName + " §7(#" + hexColor.toUpperCase() + ")"),
                     false
                 );
             }
         }
-        this.onClose();
+        this.close();
     }
 
     private boolean isInventoryFull() {
-        if (this.minecraft != null && this.minecraft.player != null) {
-            for (int i = 0; i < this.minecraft.player.getInventory().getContainerSize(); i++) {
-                if (this.minecraft.player.getInventory().getItem(i).isEmpty()) {
+        if (this.client != null && this.client.player != null) {
+            for (int i = 0; i < this.client.player.getInventory().size(); i++) {
+                if (this.client.player.getInventory().getStack(i).isEmpty()) {
                     return false; // Found an empty slot
                 }
             }
@@ -819,15 +835,15 @@ public class BlockEditorScreen extends Screen {
     private void updateClearButtonText() {
         if (clearRegistryButton != null) {
             if (showingClearConfirmation) {
-                clearRegistryButton.setMessage(Component.literal("§c§lARE YOU SURE?"));
+                clearRegistryButton.setMessage(Text.literal("§c§lARE YOU SURE?"));
             } else {
-                clearRegistryButton.setMessage(Component.literal("Clear Registry"));
+                clearRegistryButton.setMessage(Text.literal("Clear Registry"));
             }
         }
     }
 
     private void clearServerRegistry() {
-        if (this.minecraft != null && this.minecraft.player != null) {
+        if (this.client != null && this.client.player != null) {
             // Clear client-side history first
             BlockEditorHistory.getHistory().clear();
             // Also clear folders
@@ -840,21 +856,21 @@ public class BlockEditorScreen extends Screen {
                 if (historyFile.exists()) {
                     boolean deleted = historyFile.delete();
                     if (deleted) {
-                        this.minecraft.player.displayClientMessage(
-                            Component.literal("§aDeleted history file: " + historyFile.getAbsolutePath()),
+                        this.client.player.sendMessage(
+                            Text.literal("§aDeleted history file: " + historyFile.getAbsolutePath()),
                             false
                         );
                     } else {
-                        this.minecraft.player.displayClientMessage(
-                            Component.literal("§cCould not delete history file: " + historyFile.getAbsolutePath()),
+                        this.client.player.sendMessage(
+                            Text.literal("§cCould not delete history file: " + historyFile.getAbsolutePath()),
                             false
                         );
                         LOGGER.warn("Failed to delete history file at {}", historyFile.getAbsolutePath());
                     }
                 }
             } catch (Exception e) {
-                this.minecraft.player.displayClientMessage(
-                    Component.literal("§cError deleting history file: " + e.getMessage()),
+                this.client.player.sendMessage(
+                    Text.literal("§cError deleting history file: " + e.getMessage()),
                     false
                 );
                 LOGGER.error("Error deleting history file", e);
@@ -864,8 +880,8 @@ public class BlockEditorScreen extends Screen {
             ModNetworking.sendToServer(new ClearRegistryPacket(true));
             
             // Show confirmation message
-            this.minecraft.player.displayClientMessage(
-                Component.literal("§aClearing server registry and client history..."),
+            this.client.player.sendMessage(
+                Text.literal("§aClearing server registry and client history..."),
                 false
             );
         }
@@ -899,7 +915,7 @@ public class BlockEditorScreen extends Screen {
     }
 
     @Override 
-    public void setFocused(net.minecraft.client.gui.components.events.GuiEventListener focused) {
+    public void setFocused(net.minecraft.client.gui.Element focused) {
         super.setFocused(focused);
     }
 
@@ -908,7 +924,7 @@ public class BlockEditorScreen extends Screen {
     }
 
     @Override
-    public boolean isPauseScreen() {
+    public boolean shouldPause() {
         return false;
     }
 

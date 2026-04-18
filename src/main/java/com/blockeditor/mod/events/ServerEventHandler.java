@@ -1,18 +1,9 @@
 package com.blockeditor.mod.events;
 
-import com.blockeditor.mod.commands.ModCommands;
-import net.minecraftforge.event.RegisterCommandsEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-
 /**
- * Server-side event handler for BlockEditor mod
+ * Server-side event handler for BlockEditor mod.
+ * Commands are now registered in BlockEditorMod.onInitialize() via CommandRegistrationCallback.
+ * This class is kept empty for compatibility; it can be deleted.
  */
-@Mod.EventBusSubscriber(modid = "blockeditor")
 public class ServerEventHandler {
-
-    @SubscribeEvent
-    public static void onRegisterCommands(RegisterCommandsEvent event) {
-        ModCommands.register(event.getDispatcher());
-    }
 }

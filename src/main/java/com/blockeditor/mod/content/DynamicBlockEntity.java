@@ -3,27 +3,42 @@ package com.blockeditor.mod.content;
 import com.blockeditor.mod.registry.ModBlockEntities;
 import com.mojang.logging.LogUtils;
 import org.slf4j.Logger;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.ClientGamePacketListener;
-import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.registry.Registries;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.network.packet.Packet;
+import net.minecraft.network.listener.ClientPlayPacketListener;
+import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
+import net.minecraft.util.Identifier;
+import net.minecraft.block.Block;
+import net.minecraft.block.Blocks;
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.BlockState;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.concurrent.ConcurrentHashMap;
 
 public class DynamicBlockEntity extends BlockEntity {
     private static final Logger LOGGER = LogUtils.getLogger();
+
+    // Thread-safe cache of block colors for map color lookups from non-main threads (e.g. Xaero's map thread)
+    private static final ConcurrentHashMap<BlockPos, Integer> COLOR_CACHE = new ConcurrentHashMap<>();
+
+    /** Get a cached color for a position, or -1 if not cached. */
+    public static int getCachedColor(BlockPos pos) {
+        Integer c = COLOR_CACHE.get(pos);
+        return c != null ? c : -1;
+    }
+
+    private void updateColorCache() {
+        COLOR_CACHE.put(getPos().toImmutable(), color);
+    }
 
     private String mimicBlock = "minecraft:stone"; // Default mimic block
     private int color = 0xFFFFFF; // Default white color
 
     public DynamicBlockEntity(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.DYNAMIC_BLOCK_ENTITY.get(), pos, state);
+        super(ModBlockEntities.DYNAMIC_BLOCK_ENTITY, pos, state);
         // Constructor: minimal logging to avoid spam during world loading
     }
 
@@ -34,35 +49,43 @@ public class DynamicBlockEntity extends BlockEntity {
 
     public BlockState getMimicState() {
         checkAndApplyUserBlockData();
-        ResourceLocation location = ResourceLocation.tryParse(mimicBlock);
+        Identifier location = Identifier.tryParse(mimicBlock);
         if (location != null) {
-            Block block = BuiltInRegistries.BLOCK.get(location);
+            Block block = Registries.BLOCK.get(location);
             if (block != Blocks.AIR) {
-                return block.defaultBlockState();
+                return block.getDefaultState();
             }
         }
-        return Blocks.STONE.defaultBlockState();
+        return Blocks.STONE.getDefaultState();
     }
 
     public void setMimicBlock(String mimicBlock) {
         this.mimicBlock = mimicBlock;
-        setChanged();
-        if (level != null && !level.isClientSide) {
+        markDirty();
+        if (world != null && !world.isClient) {
             // Flag 2: notify clients only (no neighbor updates that could break block)
-            level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 2);
+            world.updateListeners(getPos(), getCachedState(), getCachedState(), 2);
         }
+    }
+
+    /**
+     * Returns the raw color value without triggering any side effects.
+     * Used by map color lookups where we only need the stored value.
+     */
+    public int getRawColor() {
+        return color;
     }
 
     public int getColor() {
         // For UserBlocks (including specialized glass variants), check if we need to apply color data (only if still default white)
-        if (color == 0xFFFFFF && getBlockState().getBlock() instanceof IUserBlock) {
+        if (color == 0xFFFFFF && getCachedState().getBlock() instanceof IUserBlock) {
             checkAndApplyUserBlockData();
         }
         
         // Debug logging for glass blocks
-        if (getBlockState().getBlock().toString().contains("glass")) {
+        if (getCachedState().getBlock().toString().contains("glass")) {
             LOGGER.info("DynamicBlockEntity.getColor(): Block={}, Color={}, Pos={}",
-                getBlockState().getBlock(), String.format("#%06X", color), getBlockPos());
+                getCachedState().getBlock(), String.format("#%06X", color), getPos());
         }
 
         return color;
@@ -70,36 +93,38 @@ public class DynamicBlockEntity extends BlockEntity {
 
     public void setColor(int color) {
         // Debug logging for glass blocks
-        if (getBlockState().getBlock().toString().contains("glass")) {
+        if (getCachedState().getBlock().toString().contains("glass")) {
             LOGGER.info("DynamicBlockEntity.setColor(): Block={}, Old Color={}, New Color={}, Pos={}",
-                getBlockState().getBlock(), String.format("#%06X", this.color),
-                String.format("#%06X", color), getBlockPos());
+                getCachedState().getBlock(), String.format("#%06X", this.color),
+                String.format("#%06X", color), getPos());
         }
 
         this.color = color;
-        setChanged();
-        if (level != null && !level.isClientSide) {
+        updateColorCache();
+        markDirty();
+        if (world != null && !world.isClient) {
             // Flag 2: notify clients only (no neighbor updates that could break block)
-            level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 2);
+            world.updateListeners(getPos(), getCachedState(), getCachedState(), 2);
         }
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag) {
-        super.saveAdditional(tag);
+    public void writeNbt(NbtCompound tag) {
+        super.writeNbt(tag);
         tag.putString("MimicBlock", mimicBlock);
         tag.putInt("Color", color);
     }
 
     @Override
-    public void load(CompoundTag tag) {
-        super.load(tag);
+    public void readNbt(NbtCompound tag) {
+        super.readNbt(tag);
         if (tag.contains("MimicBlock")) {
             mimicBlock = tag.getString("MimicBlock");
         }
         if (tag.contains("Color")) {
             color = tag.getInt("Color");
         }
+        updateColorCache();
         
         // Only check for UserBlock data if we don't already have a color set
         if (color == 0xFFFFFF) { // Default white color means it hasn't been set yet
@@ -108,8 +133,14 @@ public class DynamicBlockEntity extends BlockEntity {
     }
 
     @Override
-    public CompoundTag getUpdateTag() {
-        CompoundTag tag = super.getUpdateTag();
+    public void markRemoved() {
+        COLOR_CACHE.remove(getPos());
+        super.markRemoved();
+    }
+
+    @Override
+    public NbtCompound toInitialChunkDataNbt() {
+        NbtCompound tag = super.toInitialChunkDataNbt();
         tag.putString("MimicBlock", mimicBlock);
         tag.putInt("Color", color);
         return tag;
@@ -117,40 +148,13 @@ public class DynamicBlockEntity extends BlockEntity {
 
     @Nullable
     @Override
-    public Packet<ClientGamePacketListener> getUpdatePacket() {
-        return ClientboundBlockEntityDataPacket.create(this);
+    public Packet<ClientPlayPacketListener> toUpdatePacket() {
+        return BlockEntityUpdateS2CPacket.create(this);
     }
     
     @Override
-    public void handleUpdateTag(CompoundTag tag) {
-        // Apply server-sent data to the client-side BE immediately
-        super.handleUpdateTag(tag);
-
-        if (tag.contains("MimicBlock")) {
-            this.mimicBlock = tag.getString("MimicBlock");
-        }
-        if (tag.contains("Color")) {
-            this.color = tag.getInt("Color");
-        }
-
-        // Request a re-render/model refresh on client so tint updates without flicker
-        if (getLevel() != null && getLevel().isClientSide) {
-            getLevel().sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 8);
-        }
-    }
-
-    @Override
-    public void onDataPacket(net.minecraft.network.Connection net, ClientboundBlockEntityDataPacket pkt) {
-        // Ensure packet data applies to client BE state
-        CompoundTag tag = pkt.getTag();
-        if (tag != null) {
-            handleUpdateTag(tag);
-        }
-    }
-    
-    @Override
-    public void setLevel(net.minecraft.world.level.Level level) {
-        super.setLevel(level);
+    public void setWorld(net.minecraft.world.World world) {
+        super.setWorld(world);
         // Reset check flag when level changes
         hasCheckedUserBlockData = false;
         // Don't force check during world loading to avoid issues
@@ -159,9 +163,9 @@ public class DynamicBlockEntity extends BlockEntity {
     // Public method to force re-checking (useful for WorldEdit placement)
     public void forceUserBlockDataCheck() {
         // Only allow forced check if level is fully loaded
-        if (getLevel() != null && !getLevel().isClientSide && getLevel() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
+        if (getWorld() != null && !getWorld().isClient && getWorld() instanceof net.minecraft.server.world.ServerWorld serverLevel) {
             // Check if the level is properly loaded
-            if (serverLevel.isLoaded(getBlockPos())) {
+            if (serverLevel.getChunkManager().isChunkLoaded(getPos().getX() >> 4, getPos().getZ() >> 4)) {
                 hasCheckedUserBlockData = false;
                 checkAndApplyUserBlockData();
             }
@@ -171,7 +175,7 @@ public class DynamicBlockEntity extends BlockEntity {
     private boolean hasCheckedUserBlockData = false;
     
     public void checkAndApplyUserBlockData() {
-        if (getLevel() == null || getLevel().isClientSide) {
+        if (getWorld() == null || getWorld().isClient) {
             return;
         }
         
@@ -183,28 +187,28 @@ public class DynamicBlockEntity extends BlockEntity {
         hasCheckedUserBlockData = true;
         // Minimal logging to prevent spam during world loading
         
-        if (getBlockState().getBlock() instanceof com.blockeditor.mod.content.UserBlock userBlock) {
+        if (getCachedState().getBlock() instanceof com.blockeditor.mod.content.UserBlock userBlock) {
             // Minimal logging for UserBlock detection
             autoApplyUserBlockData(userBlock);
         }
     }
     
     private void autoApplyUserBlockData(com.blockeditor.mod.content.UserBlock userBlock) {
-        if (getLevel() == null || getLevel().isClientSide) {
+        if (getWorld() == null || getWorld().isClient) {
             LOGGER.warn("DynamicBlockEntity: Cannot auto-apply, level is null or client side");
             return;
         }
         
-        if (getLevel() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
+        if (getWorld() instanceof net.minecraft.server.world.ServerWorld serverLevel) {
             com.blockeditor.mod.registry.UserBlockRegistry registry = 
                 com.blockeditor.mod.registry.UserBlockRegistry.get(serverLevel);
             
             // Extract the identifier from the block name
-            net.minecraft.resources.ResourceLocation blockId = 
-                net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(userBlock);
+            net.minecraft.util.Identifier blockId = 
+                net.minecraft.registry.Registries.BLOCK.getId(userBlock);
             String blockName = blockId.getPath(); // e.g., "u_dirt1"
             
-            LOGGER.info("DynamicBlockEntity: Auto-applying data for block: {} at {}", blockName, getBlockPos());
+            LOGGER.info("DynamicBlockEntity: Auto-applying data for block: {} at {}", blockName, getPos());
             
             if (blockName.startsWith("u_")) {
                 String identifier = blockName.substring(2); // Remove "u_" prefix
@@ -217,11 +221,12 @@ public class DynamicBlockEntity extends BlockEntity {
                     // Set values directly
                     this.color = data.color();
                     this.mimicBlock = data.mimicBlock();
-                    setChanged(); // Mark as changed
+                    updateColorCache();
+                    markDirty(); // Mark as changed
                     
                     // Simple client update
-                    if (getLevel() != null && !getLevel().isClientSide) {
-                        getLevel().sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
+                    if (getWorld() != null && !getWorld().isClient) {
+                        getWorld().updateListeners(getPos(), getCachedState(), getCachedState(), 3);
                     }
                     
                     LOGGER.info("DynamicBlockEntity: Auto-applied registry data for {}: color={}, mimic={}", 

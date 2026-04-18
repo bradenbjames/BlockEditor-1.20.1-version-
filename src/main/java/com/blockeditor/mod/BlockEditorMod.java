@@ -1,66 +1,58 @@
 package com.blockeditor.mod;
 
+import com.blockeditor.mod.commands.BlockEditorCommands;
 import com.blockeditor.mod.commands.DebugCommand;
 import com.blockeditor.mod.commands.TranslateCommand;
 import com.blockeditor.mod.commands.WorldEditProxyCommand;
+import com.blockeditor.mod.integration.WorldEditBlockAliasManager;
+import com.blockeditor.mod.integration.WorldEditIntegration;
 import com.blockeditor.mod.network.ModNetworking;
 import com.blockeditor.mod.registry.ModBlockEntities;
 import com.blockeditor.mod.registry.ModBlocks;
 import com.blockeditor.mod.registry.ModCreativeModeTabs;
 import com.blockeditor.mod.registry.ModItems;
+import com.blockeditor.mod.worldedit.BlockNameResolver;
 import com.mojang.logging.LogUtils;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.RegisterCommandsEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import org.slf4j.Logger;
 
-@Mod(BlockEditorMod.MOD_ID)
-public class BlockEditorMod {
+public class BlockEditorMod implements ModInitializer {
     public static final String MOD_ID = "be";
     public static final Logger LOGGER = LogUtils.getLogger();
 
-    public BlockEditorMod() {
-        LOGGER.debug("BlockEditor mod constructor called");
+    @Override
+    public void onInitialize() {
+        LOGGER.debug("BlockEditor mod initializing");
 
-        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+        ModBlocks.register();
+        ModItems.register();
+        ModBlockEntities.register();
+        ModCreativeModeTabs.register();
 
-        // Register all deferred registers
-        ModBlocks.BLOCKS.register(modEventBus);
-        ModItems.ITEMS.register(modEventBus);
-        ModBlockEntities.BLOCK_ENTITIES.register(modEventBus);
-        ModCreativeModeTabs.register(modEventBus);
+        LOGGER.debug("Registries registered, setting up networking");
+        ModNetworking.register();
 
-        LOGGER.debug("Registries registered, adding common setup listener");
-
-        // Register common setup event for networking
-        modEventBus.addListener(this::commonSetup);
-        
-        // Register for server events (commands)
-        MinecraftForge.EVENT_BUS.register(this);
-
-        LOGGER.debug("Constructor complete");
-    }
-
-    private void commonSetup(final FMLCommonSetupEvent event) {
-        LOGGER.info("Common setup event fired");
-
-        event.enqueueWork(() -> {
-            LOGGER.debug("Enqueue work: registering network packets");
-            ModNetworking.register();
-            LOGGER.debug("Network packet registration completed");
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
+            DebugCommand.register(dispatcher);
+            TranslateCommand.register(dispatcher);
+            WorldEditProxyCommand.register(dispatcher);
+            BlockEditorCommands.register(dispatcher);
         });
 
-        LOGGER.debug("Common setup complete");
-    }
-    
-    @SubscribeEvent
-    public void onRegisterCommands(RegisterCommandsEvent event) {
-        DebugCommand.register(event.getDispatcher());
-        TranslateCommand.register(event.getDispatcher());
-        WorldEditProxyCommand.register(event.getDispatcher());
+        // Server lifecycle events
+        ServerLifecycleEvents.SERVER_STARTED.register(server -> {
+            BlockNameResolver.setServer(server);
+            WorldEditBlockAliasManager.onServerStarted(server);
+        });
+        ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
+            BlockNameResolver.clearServer();
+        });
+
+        // WorldEdit integration events (chat interception, player join)
+        WorldEditIntegration.registerEvents();
+
+        LOGGER.debug("BlockEditor initialization complete");
     }
 }
